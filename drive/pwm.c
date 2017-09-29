@@ -1,10 +1,6 @@
-#include "mfc_pwm.h"
+#include "pwm.h"
 
-/**
- * @brief  配置TIM2复用输出PWM时用到的I/O
- * @param  无
- * @retval 无
- */
+ 
 void TIM2_GPIO_Config(void) 
 {
  
@@ -13,7 +9,7 @@ void TIM2_GPIO_Config(void)
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
   /* Configure PC0 and PC1 in output pushpull mode */
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -79,13 +75,13 @@ void TIM2_Mode_Config(unsigned int Prescaler)
 	TIM_OCInitStructure.TIM_Pulse = 0;										  			//设置初始PWM脉冲宽度为0	
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  	  //当定时器计数值小于CCR1_Val时为低电平
 
-	TIM_OC2Init(TIM2, &TIM_OCInitStructure);	 									//使能通道2
+	TIM_OC4Init(TIM2, &TIM_OCInitStructure);	 									//使能通道 -CH4
 
 
-	TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);						//使能预装载2	
+	TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);						//使能预装载 	-CH4
 
 	TIM_ARRPreloadConfig(TIM2, ENABLE);			 										//使能TIM2重载寄存器ARR
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_1);
 	/* TIM2 enable counter */
 	TIM_Cmd(TIM2, ENABLE);                   										//使能定时器2	
 
@@ -101,7 +97,7 @@ void TIM2_Mode_Config(unsigned int Prescaler)
  * @param  无
  * @retval 无
  */
-void TIM2_PWM_Init(void)
+void PWM_Init(void)
 {
 	TIM2_GPIO_Config();//引脚
 	TIM2_Mode_Config(0);	//TIMER 相关
@@ -111,9 +107,9 @@ void TIM2_Set_Prescaler(unsigned int Prescaler){
 	TIM2_Mode_Config(Prescaler);	//TIMER 相关
 }
 /**************** 计算PWM重装值函数 *******************/
-//注意：TIM_SetCompare2的2为ch2的寄存器（PA1）
+//注意：TIM_SetCompare4的4为ch4的寄存器（PA3）-TIM2 CH4
 void    LoadPWM(unsigned int pwmval)
 {
-	TIM_SetCompare2(TIM2,pwmval);	
+	TIM_SetCompare4(TIM2,pwmval);	
 }
 /*********************************************END OF FILE**********************/

@@ -15,8 +15,12 @@
   ******************************************************************************
   */ 
 
-#include "mfc_TiMbase.h" 
-void TIM4_PID_Init(void){
+#include "timebase.h" 
+
+uint8_t Count_1ms,Count_2ms,Count_4ms;
+uint32_t Timer4_Count = 0;//记录Timer3中断次数
+extern uint8_t Bsp_Int_Ok;
+void TIM4_Init(void){
 	/* TIM4 定时配置 */	
   TIM4_Configuration(71);
 	
@@ -58,7 +62,7 @@ void TIM4_Configuration(unsigned int Prescaler)
     //TIM_DeInit(TIM4);
 	
 	/* 自动重装载寄存器周期的值(计数值) */
-    TIM_TimeBaseStructure.TIM_Period=1;
+    TIM_TimeBaseStructure.TIM_Period=1000;
 	
     /* 累计 TIM_Period个频率后产生一个更新或者中断 */
 	  /* 时钟预分频数为72 */
@@ -77,5 +81,23 @@ void TIM4_Configuration(unsigned int Prescaler)
     TIM_Cmd(TIM4, ENABLE);																		
     
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , DISABLE);		/*先关闭等待使用*/    
+}
+
+void TIM4_IRQHandler(void)//Timer4中断
+{	
+	if(TIM4->SR & TIM_IT_Update)
+	{     
+		TIM4->SR = ~TIM_FLAG_Update;//清除中断标志
+		
+		if( Bsp_Int_Ok == 0 )	return;//硬件未初始化完成，则返回
+		Timer4_Count++;
+		/*if(Timer4_Count%2 ==0)
+			GPIO_SetBits(GPIOA, GPIO_Pin_15);
+		else
+			GPIO_ResetBits(GPIOA, GPIO_Pin_15);*/
+		Count_1ms++;
+		Count_2ms++;
+		Count_4ms++;
+	}
 }
 /*********************************************END OF FILE**********************/

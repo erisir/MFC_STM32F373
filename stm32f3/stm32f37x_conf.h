@@ -40,7 +40,7 @@
 //#include "stm32f37x_dbgmcu.h"
 #include "stm32f37x_dma.h"
 //#include "stm32f37x_exti.h"
-//#include "stm32f37x_flash.h"
+#include "stm32f37x_flash.h"
 #include "stm32f37x_gpio.h"
 //#include "stm32f37x_syscfg.h"
 //#include "stm32f37x_i2c.h"

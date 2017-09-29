@@ -29,9 +29,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f37x_it.h"
-#include "main.h"
-int16_t InjectedConvData[2];
-
 
 /** @addtogroup STM32F37x_StdPeriph_Examples
   * @{
@@ -139,15 +136,7 @@ void PendSV_Handler(void)
 {
 }
 
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void)
-{
-	 
-}
+
  
 /******************************************************************************/
 /*                 STM32F37x Peripherals Interrupt Handlers                   */
@@ -161,7 +150,6 @@ void ADC1_IRQHandler(void)
 {
 }
 
-
 /******************************************************************************/
 /*                 STM32F37x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -169,49 +157,23 @@ void ADC1_IRQHandler(void)
 /*  file (startup_stm32f37x.s).                                               */
 /******************************************************************************/
  
-
-
-/* PWM?????? */
 void TIM2_IRQHandler(void)
 {	
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)	//TIM_IT_Update
  	{					
-		TIM_ClearITPendingBit (TIM2, TIM_IT_Update);	//??????????
+		TIM_ClearITPendingBit (TIM2, TIM_IT_Update);	 
 	}
 }
-/* PWM?????? */
+ 
 void TIM3_IRQHandler(void)
 {	
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)	//TIM_IT_Update
  	{					
-		TIM_ClearITPendingBit (TIM3, TIM_IT_Update);	//??????????
+		TIM_ClearITPendingBit (TIM3, TIM_IT_Update);	 
 	}
 }
 
-/**
-  * @brief  This function handles SDADC1 interrupt request.
-  * @param  None
-  * @retval : None
-  */
-void SDADC1_IRQHandler(void)
-{
-  uint32_t ChannelIndex;
-  int16_t value = 0;
-  if(SDADC_GetFlagStatus(SDADC1, SDADC_FLAG_JEOC) != RESET)
-  {
-    /* Get the converted value */
-    value = SDADC_GetInjectedConversionValue(SDADC1, &ChannelIndex);
-		if(ChannelIndex == 0x00050020)//5 PB1
-			{
-			InjectedConvData[1] = value;
-		}
-		if(ChannelIndex == 0x00060040)//6 PB0
-			{
-			InjectedConvData[0] = value;
-		}
-		 
-  }
-}
+
 
 /**
   * @}

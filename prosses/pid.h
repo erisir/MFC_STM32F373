@@ -12,14 +12,34 @@ Copyright(C) bg8wj
 #define  __PID_H__
 
 #include "stdint.h"
+
+///////////////////////////////////////////////////////////
+#define EEPROM_offset_acc_x		0
+#define EEPROM_offset_acc_y		1
+#define EEPROM_offset_acc_z		2
+#define EEPROM_offset_gyro_x	3
+#define EEPROM_offset_gyro_y	4
+#define EEPROM_offset_gyro_z	5
+
+#define EEPROM_PID_P		6
+#define EEPROM_PID_I		7
+#define EEPROM_PID_D		8
+#define EEPROM_PID_sumMax		9
+#define EEPROM_PID_sumMin		10
+#define EEPROM_PID_Thredhold		11
+
+#define EEPROM_PID_DeadZone		12
+#define EEPROM_PID_Period		13
+#define EEPROM_PID_YAW_D		14
+#define EEPROM_SUM				15
 /************************************************
 PID函数
  *************************************************/ 
 /*************PID**********************************/
 struct PID {
-	double Proportion; // 比例常数 Proportional Const
-	double Integral; // 积分常数 Integral Const
-	double Derivative; // 微分常数 Derivative Const
+	float Proportion; // 比例常数 Proportional Const
+	float Integral; // 积分常数 Integral Const
+	float Derivative; // 微分常数 Derivative Const
 
 	int LastError; // Error[-1]
 	int PrevError; // Error[-2]
@@ -43,7 +63,8 @@ struct PWMVotageFitPara {
 	double BackwardC; // 微分常数 Derivative Const
 };
 
-void PIDInit (void);  
+void PID_Init (void);  
+void PID_Reset(void);
 void PIDStart(void); 		 
 
 void SetSetPoint(float v_data); 
@@ -66,12 +87,16 @@ void SetBackwardB(float v_data);
 void SetBackwardC(float v_data);
 unsigned int getPWMByVotage(unsigned int votage,char forBackward);
 uint32_t GetPIDOutput(void);
-void GetPIDStatu(void); 
+void GetPIDStatu(char *buf); 
 unsigned int getPeriod(void);
 unsigned char isPIDEnable(void);
 unsigned int abs( int val);
 unsigned int LocPIDCalc(struct PID *spid,int NextPoint);
 int IncPIDCalc(struct PID *spid,int NextPoint);
 int IncAutoPIDCalc(struct PID *spid,int NextPoint);
+
+void EEPROM_INIT(void);
+void EEPROM_READ_PID(void);
+void EEPROM_SAVE_PID(void);
 #endif
 /*********************************************END OF FILE**********************/

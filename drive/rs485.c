@@ -20,6 +20,7 @@
 
 //接收缓存区 	
 u8 RS485_RX_BUF[64];  	//接收缓冲,最大64个字节.
+u8 RS485_TX_BUF[64];	  //串口发送缓冲区
 //接收到的数据长度
 u8 RS485_RX_CNT=0;   		  
   
@@ -109,10 +110,24 @@ void RS485_Send_Data(u8 *buf,u8 len)
 {
 	u8 t;
 	RS485_Mode_Tx();			//设置为发送模式
-  	for(t=0;t<len;t++)		//循环发送数据
+  for(t=0;t<len;t++)		//循环发送数据
 	{		   
 		while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);	  
 		USART_SendData(USART1,buf[t]);
+	}	 
+ 
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);		
+	RS485_RX_CNT=0;	  
+	RS485_Mode_Rx();				//设置为接收模式	
+}
+void RS485_PrintString(u8 *buf)
+{
+	RS485_Mode_Tx();			//设置为发送模式
+  while(*buf)		//循环发送数据
+	{		   
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);	  
+		USART_SendData(USART1,*buf);
+		buf++;
 	}	 
  
 	while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);		
@@ -127,7 +142,7 @@ void RS485_Receive_Data(u8 *buf,u8 *len)
 	u8 rxlen=RS485_RX_CNT;
 	u8 i=0;
 	*len=0;				//默认为0
-	delay_ms(10);		//等待10ms,连续超过10ms没有接收到一个数据,则认为接收结束
+	delay_us(200);		//等待10ms,连续超过10ms没有接收到一个数据,则认为接收结束
 	if(rxlen==RS485_RX_CNT&&rxlen)//接收到了数据,且接收完成了
 	{
 		for(i=0;i<rxlen;i++)
@@ -172,22 +187,7 @@ void RS485_ON_OFF(void)
 	delay_ms(100);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 

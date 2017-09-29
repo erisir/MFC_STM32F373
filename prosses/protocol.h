@@ -2,7 +2,7 @@
 #define	__USART1_H
 
 #include "stm32f37x.h"
-#include "../sys/sys.h"
+#include "sys.h"
 #include <stdio.h>
 
 #define _U_SetVotage	 '0'
@@ -30,13 +30,8 @@
 
 #define RS485_TX_EN		PDout(8)	//485模式控制.0,接收;1,发送.
 
-void USART1_Init(void);
-void USART1_GPIO_Config(void);
-void USART1_NVIC_Config(void);
-int fputc(int ch, FILE *f);
-int fgetc(FILE *f);
-unsigned char cmd_ready(void);
-void parseCMD(void);
+float Byte2Float(unsigned char* byteArry);
+void parseData(u8 *buf,u8 len);
 void PrintHexU8(uint8_t data);
 void PrintHexS16(int16_t num);
 void PrintS8( int8_t num);

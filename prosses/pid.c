@@ -1,33 +1,41 @@
-#include "../pid/mfc_pid.h"
-#include "../adc/mfc_adc.h"
-#include "../../user/main.h"
-
-#include "../pwm/mfc_pwm.h"
-#include "../usart/mfc_usart1.h"
+#include "pid.h"
+#include "sdadc.h"
+#include "delay.h" 
+#include <stdio.h>
+#include "pwm.h"
+#include "eeprom.h"
+#include "rs485.h"
 #include "string.h"
 #include "math.h"
 
 //xdata struct PID spid; // PID Control Structure
 struct PID spid; // PID Control Structure
 struct PWMVotageFitPara sPVFP;
-unsigned int PIDVotageChanel = 1;
+unsigned int PIDVotageChanel = 0;
 unsigned int PIDMode = 0;
 unsigned char PIDEnable=0;
 float PWMDelayRate = 0.1;
+
+uint16_t data_x,data_y,data_z;
+
+uint16_t VirtAddVarTab[NumbOfVar] = {
+	0x9A00,0x9A01,0x9A02,0x9A03,0x9A04,0x9A05,0x9A06,0x9A07,0x9A08,0x9A09,
+	0x9A10,0x9A12,0x9A13,0x9A14,0x9A15
+};//VirtAddVarTab
+
 void SetPIDMode(float mode){
 	PIDMode = mode;
 }
 void SetPIDVotageChanel(float ch){
-	//PIDVotageChanel = ch;
-	PWMDelayRate = ch;
+	PIDVotageChanel = ch;	 
 }
-uint32_t GetPIDOutput(){
+uint32_t GetPIDOutput(void){
 	return spid.Output;
 }
 
-void GetPIDStatu(){
-	printf("%.3f,%.3f,%.3f,%d,%d,%d,%d,%d,%d,%d\n",spid.Proportion  ,spid.Integral ,spid.Derivative  ,spid.DeadZone ,spid.SetPoint ,spid.Output,spid.LastError,spid.PrevError,spid.SetPoint-spid.LastError,spid.SumError );	
-	printf("FA:%.3f,FB:%.3f,FC:%.3f,BA:%.3f,BB:%.3f,BC:%.3f\n",sPVFP.ForwardA,sPVFP.ForwardB,sPVFP.ForwardC,sPVFP.BackwardA,sPVFP.BackwardB,sPVFP.BackwardC );	
+void GetPIDStatu(char *buf){
+	sprintf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",spid.Proportion  ,spid.Integral ,spid.Derivative  ,spid.DeadZone ,spid.SetPoint ,spid.Output,spid.LastError,spid.PrevError,spid.SetPoint-spid.LastError,spid.SumError );	
+	//printf("FA:%.3f,FB:%.3f,FC:%.3f,BA:%.3f,BB:%.3f,BC:%.3f\n",sPVFP.ForwardA,sPVFP.ForwardB,sPVFP.ForwardC,sPVFP.BackwardA,sPVFP.BackwardB,sPVFP.BackwardC );	
 }  
 /*********************************************************** 
               PID温度控制动作函数
@@ -51,7 +59,7 @@ void PIDStart()
 	if(spid.Output <PWM_HIGH_MIN)
 		spid.Output = PWM_HIGH_MIN;  
 	LoadPWM(spid.Output) ;
-	Delay(abs(iIncpid)*PWMDelayRate);
+	//delay_ms(abs(iIncpid)*PWMDelayRate);
 
 }
 
@@ -73,6 +81,9 @@ int IncPIDCalc(struct PID *spid,int NextPoint)
 	spid->PrevError = spid->LastError;
 	spid->LastError = iError;
 	//返回增量值
+		if(abs(iIncpid) >spid->Thredhold){
+		iIncpid = iIncpid>0?spid->Thredhold:(-1*spid->Thredhold);
+	}
 	spid->Output += iIncpid;
 	return iIncpid;
 }
@@ -99,20 +110,89 @@ int IncAutoPIDCalc(struct PID *spid,int NextPoint)
 	spid->Output += iIncpid;
 	return iIncpid;
 }
+void EEPROM_INIT(void)// 
+{
+	EE_Init();	
+	EEPROM_READ_PID();
+	
+	EE_ReadVariable(VirtAddVarTab[EEPROM_SUM], &data_x);
+	if(data_x != EEPROM_SUM)//
+	{
+		__set_PRIMASK(1);// 
+		EE_WriteVariable(VirtAddVarTab[EEPROM_SUM], EEPROM_SUM);
+		 __set_PRIMASK(0);// 
+		PID_Reset();// 
+	}
+}
+void EEPROM_SAVE_PID(void)	 
+{
+	 __set_PRIMASK(1); 
+	data_x = (int16_t) (spid.Proportion*1000);
+	data_y = (int16_t) (spid.Integral*1000);
+	data_z = (int16_t) (spid.Derivative*1000);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_P], data_x);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_I], data_y);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_D], data_z);
+
+	data_x = (int16_t) (spid.sumMax);
+	data_y = (int16_t) (spid.sumMin);
+	data_z = (int16_t) (spid.Thredhold);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_sumMax], data_x);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_sumMin], data_y);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_Thredhold], data_z);
+
+	data_x = (int16_t) (spid.DeadZone);
+	data_y = (int16_t) (spid.Period);
+ 
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_DeadZone], data_x);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_Period], data_y);
+
+	__set_PRIMASK(0); 
+}
+void EEPROM_READ_PID(void)	// 
+{
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_P], &data_x);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_I], &data_y);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_D], &data_z);
+	spid.Proportion = (float) data_x/1000.0f;
+	spid.Integral = (float) data_y/1000.0f;
+	spid.Derivative = (float) data_z/1000.0f;
+ 
+	
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_sumMax], &data_x);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_sumMin], &data_y);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_Thredhold], &data_z);
+	spid.sumMax = (float) data_x;
+	spid.sumMin = (float) data_y;
+	spid.Thredhold = (float) data_z;
+ 
+	
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_DeadZone], &data_x);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_Period], &data_y);
+ 
+	spid.DeadZone = (float) data_x;
+	spid.Period = (float) data_y;
+ 
+}
 /************************************************
 				PID函数初始化
  *************************************************/
-void PIDInit() 
+void PID_Init() 
 { 
+	 FLASH_Unlock();
+	 EEPROM_INIT();// 
+}
 
+void PID_Reset(void) 
+{ 
 	memset (&spid,0,sizeof(struct PID)); 	// Initialize Structure 
 	memset (&sPVFP,0,sizeof(struct PWMVotageFitPara)); 	// Initialize Structure 
 
-	spid.Proportion = 5;  
-	spid.Integral =   0.00; 
-	spid.Derivative =3; 
+	spid.Proportion = 2;  
+	spid.Integral =   3; 
+	spid.Derivative =5; 
 	spid.Output = 0;
-	spid.SetPoint = 4000;
+	spid.SetPoint = 3000;
 	spid.DeadZone = 0;
 	spid.Period = 100;
 	spid.sumMax=999999;
@@ -125,16 +205,21 @@ void PIDInit()
 	sPVFP.BackwardA = 0;
 	sPVFP.BackwardB = 0;
 	sPVFP.BackwardC = 0;
+	
+	EEPROM_SAVE_PID();
 }
+
 unsigned int getPeriod(){
 return spid.Period;
 }
 
 void SetPIDPeriod(float v_data){
 	spid.Period = v_data;
+		EEPROM_SAVE_PID();
 }
 void SetPIDThredHold(float v_data){
 	spid.Thredhold = v_data;
+		EEPROM_SAVE_PID();
 }
 void SetSetPoint(float v_data)
 {
@@ -173,17 +258,20 @@ void SetPWMValue(float v_data)
 void SetPIDparam_P_inc(float v_data)
 {
 		spid.Proportion = v_data;
+		//EEPROM_SAVE_PID();
 } 
 void SetPIDparam_I_inc(float v_data)
 {
 
 		spid.Integral   = 	 v_data;
+		//EEPROM_SAVE_PID();
 
 } 
 void SetPIDparam_D_inc(float v_data)
 {
 
 		spid.Derivative  = 	 v_data;
+		//EEPROM_SAVE_PID();
 
 } 
 void  SetTClose()

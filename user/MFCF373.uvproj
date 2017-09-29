@@ -408,26 +408,11 @@
               <FileType>1</FileType>
               <FilePath>..\stm32f3\system_stm32f37x.c</FilePath>
             </File>
-            <File>
-              <FileName>sys.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\hardware\sys\sys.c</FilePath>
-            </File>
-            <File>
-              <FileName>sys.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\hardware\sys\sys.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>user</GroupName>
           <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
             <File>
               <FileName>stm32f37x_conf.h</FileName>
               <FileType>5</FileType>
@@ -443,15 +428,75 @@
               <FileType>5</FileType>
               <FilePath>..\stm32f3\stm32f37x_it.h</FilePath>
             </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\prosses\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\prosses\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>readme.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\prosses\readme.txt</FilePath>
+            </File>
+            <File>
+              <FileName>protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\prosses\protocol.c</FilePath>
+            </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\prosses\tasks.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>drive</GroupName>
           <Files>
             <File>
-              <FileName>uart.c</FileName>
+              <FileName>delay.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\drive\uart.c</FilePath>
+              <FilePath>..\drive\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>sdadc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\sdadc.c</FilePath>
+            </File>
+            <File>
+              <FileName>rs485.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\rs485.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\pwm.c</FilePath>
+            </File>
+            <File>
+              <FileName>timebase.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\timebase.c</FilePath>
+            </File>
+            <File>
+              <FileName>EEPROM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\EEPROM.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -502,6 +547,11 @@
               <FileName>stm32f37x_pwr.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\lib\src\stm32f37x_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f37x_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\src\stm32f37x_flash.c</FilePath>
             </File>
           </Files>
         </Group>

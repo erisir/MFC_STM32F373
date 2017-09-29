@@ -1,21 +1,18 @@
-#include "mfc_adc.h"
-#include "../../user/main.h"
-#include "../pid/mfc_pid.h"
+#include "sdadc.h"
+#include "delay.h"
 #include <stdio.h>
 
+#define ADC1_DR_Address    ((uint32_t)0x4001244C)
 // SDADC×ª»»µÄµçÑ¹ÖµÍ¨¹ýinject·½Ê½´«µ½SRAM
 int16_t InjectedConvData[2]={0};
-int16_t ADC_ConvertedValue = 0;
-uint16_t ADC_ConvertedSumWindow=10000;
-#define ADC1_DR_Address    ((uint32_t)0x4001244C)
 
-void SetVotageTimes(float val){
+uint16_t ADC_ConvertedSumWindow=10000;
+
+
+void SetADCMeanWindow(float val){
 	ADC_ConvertedSumWindow = val;
 }
 
-void GetPosition(void){//´®¿Úµ÷ÓÃ
-	printf("@P%.3f,%.3f,%d\n",GetADCVoltage(0),GetADCVoltage(1),GetPIDOutput());
-} 
 float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ
 	float votage = 0.0; 
 	votage =2* (((ADC_Mean(ch) + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL));	
@@ -98,7 +95,7 @@ uint32_t SDADC1_Config(void)
   SDADC_VREFSelect(POT_SDADC_VREF);
 
   /* Insert delay equal to ~5 ms */
-  Delay(5);
+  delay_ms(5);
   /* Enable POT_SDADC */
   SDADC_Cmd(POT_SDADC, ENABLE);
 
@@ -167,92 +164,28 @@ uint32_t SDADC1_Config(void)
   return 0;
 }
 
-static void ADC1_GPIO_Config(void)
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	/* Enable DMA clock */
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-	
-	/* Enable ADC1 and GPIOC clock */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_AHBPeriph_GPIOB, ENABLE);
-	
-	/* Configure PB.01  as analog input */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);				// PC1,ÊäÈë?²»ÓÃÉèÖÃËÙÂÊ
-}
-
 /**
-  * @brief  ÅäÖÃADC1µL¤×÷g??MDAg?
-  * @param  ÎÞ
-  * @retval ÎÞ
+  * @brief  This function handles SDADC1 interrupt request.
+  * @param  None
+  * @retval : None
   */
-static void ADC1_Mode_Config(void)
+void SDADC1_IRQHandler(void)
 {
-	DMA_InitTypeDef DMA_InitStructure;
-	ADC_InitTypeDef ADC_InitStructure;
-	
-	/* DMA channel1 configuration */
-	DMA_DeInit(DMA1_Channel1);
-	
-	DMA_InitStructure.DMA_PeripheralBaseAddr = ADC1_DR_Address;	 			//ADCµØ?
-	DMA_InitStructure.DMA_MemoryBaseAddr = (u32)&ADC_ConvertedValue;	//Ä?æµØ?
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-	DMA_InitStructure.DMA_BufferSize = 1;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;	//ÍâÉèµØ?¹?¨
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Disable;  				//Ä?æµØ?¹?¨
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;	//°ë×Ö
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;										//?»·´«Êä
-	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-	DMA_Init(DMA1_Channel1, &DMA_InitStructure);
-	
-	/* Enable DMA channel1 */
-	DMA_Cmd(DMA1_Channel1, ENABLE);
-	
-	/* ADC1 configuration */	
-	ADC_InitStructure.ADC_ScanConvMode = DISABLE ; 	 				//½û??Ãèg?£¬?Ãèg?ÓÃÓ?à?µ2?¯
-	ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;			//¿ªÆôlÐø?»»g?£¬¼´²»?µ?øÐÐADC?»»
-	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;	//²»'ÓÃÍ?´¥·¢?»»
-	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right; 	//²?¯Êý¾ÝÓ?ÔÆë
-	ADC_InitStructure.ADC_NbrOfChannel = 1;	 								//??»»µÄ?µÀÊý?1
-	ADC_Init(ADC1, &ADC_InitStructure);
-	
-	/*ÅäÖÃADC?Ö?¬?PCLK2µÄ8·Ö?£¬¼´9MHz*/
-	RCC_ADCCLKConfig(RCC_PCLK2_Div4); 
-	/*ÅäÖÃADC1µÄ?µÀ11?55.	5¸ö²ÉÑùÖÜÆ?¬ÐòÁÐ?1 */ 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 1, ADC_SampleTime_55Cycles5);
-	
-	/* Enable ADC1 DMA */
-	ADC_DMACmd(ADC1, ENABLE);
-	
-	/* Enable ADC1 */
-	ADC_Cmd(ADC1, ENABLE);
-	
-	/*¸´???¼JæÆ÷ */   
-	ADC_ResetCalibration(ADC1);
-	/*µ?ý??¼JæÆ÷¸´?Íê³É */
-	while(ADC_GetResetCalibrationStatus(ADC1));
-	
-	/* ADC?? */
-	ADC_StartCalibration(ADC1);
-	/* µ?ý??Íê³É*/
-	while(ADC_GetCalibrationStatus(ADC1));
-	
-	/* ÓÉÓÚûÓ?ÉÓÃÍ?´¥·¢£¬ËùÒÔ'ÓÃÈí¼þ´¥·¢ADC?»» */ 
-	ADC_Cmd(ADC1, ENABLE);
-}
-
-/**
-  * @brief  ADC1³õ'»¯
-  * @param  ÎÞ
-  * @retval ÎÞ
-  */
-void ADC_Config(void)
-{
-	ADC1_GPIO_Config();
-	ADC1_Mode_Config();
+  uint32_t ChannelIndex;
+  int16_t value = 0;
+  if(SDADC_GetFlagStatus(SDADC1, SDADC_FLAG_JEOC) != RESET)
+  {
+    /* Get the converted value */
+    value = SDADC_GetInjectedConversionValue(SDADC1, &ChannelIndex);
+		if(ChannelIndex == 0x00050020)//5 PB1
+			{
+			InjectedConvData[1] = value;
+		}
+		if(ChannelIndex == 0x00060040)//6 PB0
+			{
+			InjectedConvData[0] = value;
+		}
+		 
+  }
 }
 /*********************************************END OF FILE**********************/

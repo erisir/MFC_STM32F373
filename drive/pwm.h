@@ -20,7 +20,7 @@
 void TIM2_GPIO_Config(void) ;
 void NVIC_Config_PWM(void);
 void TIM2_Mode_Config(unsigned int Prescaler);
-void TIM2_PWM_Init(void);
+void PWM_Init(void);
 void LoadPWM(unsigned int high);
 void TIM2_Set_Prescaler(unsigned int Prescaler);
 #endif
