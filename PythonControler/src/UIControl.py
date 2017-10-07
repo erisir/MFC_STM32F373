@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'UIControl.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ class Ui_Dialog(object):
         Dialog.setObjectName("Dialog")
         Dialog.resize(520, 560)
         self.BoxCtrl = QtWidgets.QGroupBox(Dialog)
-        self.BoxCtrl.setGeometry(QtCore.QRect(13, 10, 120, 80))
+        self.BoxCtrl.setGeometry(QtCore.QRect(13, 10, 111, 80))
         self.BoxCtrl.setObjectName("BoxCtrl")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.BoxCtrl)
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 18, 71, 62))
@@ -31,7 +31,7 @@ class Ui_Dialog(object):
         self.PWMPID.setObjectName("PWMPID")
         self.verticalLayout_2.addWidget(self.PWMPID)
         self.BoxMode = QtWidgets.QGroupBox(Dialog)
-        self.BoxMode.setGeometry(QtCore.QRect(13, 94, 121, 111))
+        self.BoxMode.setGeometry(QtCore.QRect(13, 94, 111, 111))
         self.BoxMode.setObjectName("BoxMode")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.BoxMode)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 81, 84))
@@ -52,7 +52,7 @@ class Ui_Dialog(object):
         self.CtrlMode_Der.setObjectName("CtrlMode_Der")
         self.verticalLayout.addWidget(self.CtrlMode_Der)
         self.groupBox_3 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_3.setGeometry(QtCore.QRect(143, 14, 361, 191))
+        self.groupBox_3.setGeometry(QtCore.QRect(130, 14, 381, 191))
         self.groupBox_3.setTitle("")
         self.groupBox_3.setObjectName("groupBox_3")
         self.groupBox_4 = QtWidgets.QGroupBox(self.groupBox_3)
@@ -66,8 +66,6 @@ class Ui_Dialog(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.SetPoint = QtWidgets.QDoubleSpinBox(self.horizontalLayoutWidget_2)
         self.SetPoint.setKeyboardTracking(False)
-        self.SetPoint.setDecimals(1)
-        self.SetPoint.setProperty("value", 50.0)
         self.SetPoint.setObjectName("SetPoint")
         self.horizontalLayout_2.addWidget(self.SetPoint)
         self.label_3 = QtWidgets.QLabel(self.horizontalLayoutWidget_2)
@@ -84,17 +82,13 @@ class Ui_Dialog(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.GetPoint = QtWidgets.QLCDNumber(self.horizontalLayoutWidget_3)
         self.GetPoint.setAutoFillBackground(False)
-        self.GetPoint.setStyleSheet("selection-color: rgb(255, 0, 0);\n"
+        self.GetPoint.setStyleSheet("color: rgb(85, 255, 0);\n"
+"selection-color: rgb(255, 0, 0);\n"
 "font: 75 9pt \"Aharoni\";\n"
 "gridline-color: rgb(85, 0, 0);\n"
 "border-color: rgb(0, 0, 255);\n"
-"background-color: rgb(170, 25, 8);")
-        self.GetPoint.setSmallDecimalPoint(True)
-        self.GetPoint.setDigitCount(6)
-        self.GetPoint.setMode(QtWidgets.QLCDNumber.Bin)
-        self.GetPoint.setSegmentStyle(QtWidgets.QLCDNumber.Filled)
-        self.GetPoint.setProperty("value", 1234.5)
-        self.GetPoint.setProperty("intValue", 1235)
+"background-color: rgb(170, 255, 0);")
+        self.GetPoint.setSmallDecimalPoint(False)
         self.GetPoint.setObjectName("GetPoint")
         self.horizontalLayout_3.addWidget(self.GetPoint)
         self.label_4 = QtWidgets.QLabel(self.horizontalLayoutWidget_3)
@@ -125,7 +119,7 @@ class Ui_Dialog(object):
         self.ShowUnit_mv.setObjectName("ShowUnit_mv")
         self.verticalLayout_3.addWidget(self.ShowUnit_mv)
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.groupBox_3)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(112, 141, 239, 31))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(60, 141, 320, 31))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -140,6 +134,9 @@ class Ui_Dialog(object):
         self.Clear = QtWidgets.QPushButton(self.horizontalLayoutWidget)
         self.Clear.setObjectName("Clear")
         self.horizontalLayout.addWidget(self.Clear)
+        self.Exit = QtWidgets.QPushButton(self.horizontalLayoutWidget)
+        self.Exit.setObjectName("Exit")
+        self.horizontalLayout.addWidget(self.Exit)
         self.gridLayoutWidget = QtWidgets.QWidget(self.groupBox_3)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 10, 51, 161))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
@@ -211,6 +208,7 @@ class Ui_Dialog(object):
         self.startPlot.setText(_translate("Dialog", "开始"))
         self.pausePlot.setText(_translate("Dialog", "暂停"))
         self.Clear.setText(_translate("Dialog", "清零"))
+        self.Exit.setText(_translate("Dialog", "exit"))
         self.label.setText(_translate("Dialog", "SP."))
         self.label_2.setText(_translate("Dialog", "RO."))
 

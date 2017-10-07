@@ -15,8 +15,10 @@
 struct _PID spid;
  
 uint16_t data_x,data_y,data_z;
-float  responce_time=0.5f;
-float  freq_Cutoff=0.5f;
+
+float  responce_time=0.5;
+float  freq_Cutoff=0.5;
+
 uint16_t PWM_Output;
 uint16_t Voltage_Set_Point;
 uint16_t Voltage_Set_Point_temp;
@@ -49,7 +51,7 @@ void PID_Setpoint_Change(){
 }
 uint16_t VirtAddVarTab[NumbOfVar] = {
 	0x9A00,0x9A01,0x9A02,0x9A03,0x9A04,0x9A05,0x9A06,0x9A07,0x9A08,0x9A09,
-	0x9A10,0x9A12,0x9A13,0x9A14,0x9A15
+	0x9A0A,0x9A0B,0x9A0C,0x9A0D,0x9A0F,0x9A10,0x9A11,0x9A12,0x9A13,0x9A14
 };//VirtAddVarTab
 
 
@@ -108,6 +110,7 @@ void Set_PID_Param(uint8_t *buf)
 	spid.deadzone = data_x;		
 	responce_time = (float)(data_y/1000.f);
 	freq_Cutoff = (float)(data_z/1000.f);
+	
 	Calculate_FilteringCoefficient(0.005f, freq_Cutoff);
 	 
 	EEPROM_SAVE_PID();
@@ -184,10 +187,10 @@ void Get_PID_Param(uint8_t *buf){
 	buf[offset] =  data_x & 0xFF ;
 	buf[offset+1] = (data_x >> 8) & 0xFF;
 	offset+=2;	
-	buf[offset] =  data_x & 0xFF ;
+	buf[offset] =  data_y & 0xFF ;
 	buf[offset+1] = (data_y >> 8) & 0xFF;
 	offset+=2;
-	buf[offset] =  data_y & 0xFF ;
+	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
 	
@@ -289,20 +292,19 @@ void Inc_PID_Calc(void)
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
 	iError = Voltage_Set_Point_temp - NextPoint;
-
-	if(abs(iError) >spid.error_High_Threadhold){
+	if(abs(iError)<spid.deadzone){
+	iIncpid = 0;
+	}else if(abs(iError) >spid.error_High_Threadhold){
 	 //增量计算
 	iIncpid = spid.kpH * iError //E[k]项
 			- spid.kiH * spid.LastError //E[k－1]项
 			+ spid.kdH * spid.PrevError; //E[k－2]项
 	
-	}
-	else if(abs(iError) <spid.error_High_Threadhold){
+	}else if(abs(iError) <spid.error_High_Threadhold){
 	 	iIncpid = spid.kpL * iError //E[k]项
 			- spid.kiL * spid.LastError //E[k－1]项
 			+ spid.kdL * spid.PrevError; //E[k－2]项
-	}
-	else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
+	}else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
 	 	iIncpid = spid.kpM * iError //E[k]项
 			- spid.kiM * spid.LastError //E[k－1]项
 			+ spid.kdM * spid.PrevError; //E[k－2]项
@@ -449,6 +451,7 @@ void  Valve_Close(void)
 {
 	isRunning = 0;
 	PWM_Output = 0;
+	Voltage_Set_Point = 0;
 	LoadPWM(PWM_Output) ;
 }
 void Valve_Open(void)

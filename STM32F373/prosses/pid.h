@@ -31,11 +31,10 @@ Copyright(C) bg8wj
 #define EEPROM_PID_THD_H		9
 #define EEPROM_PID_THD_L		10
 #define EEPROM_PID_THD_PWM		11
+
 #define EEPROM_PID_DEADZONE		12
-
-
 #define EEPROM_RUN_RES_TIME		13
-#define EEPROM_RUN_FREQ_CUTOFF		14
+#define EEPROM_RUN_FREQ_CUTOFF 14
  
 
  

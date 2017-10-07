@@ -42,7 +42,6 @@ class UIMainWindow(QDialog):
         self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
         self.ConnectEvent()
         self.uiAction.Connect()
-        self.uiAction.RecaculatePIDParam()
         #self.uiAction.SetPIDParam()
         #QThread.sleep(3)
         
@@ -64,6 +63,7 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.pausePlot.setEnabled(False)
         self.thirdUIControl.pausePlot.clicked.connect(self.thirdUIControl.mplCanvas.pausePlot)
         self.thirdUIControl.Clear.clicked.connect(self.Clear)
+        self.thirdUIControl.Exit.clicked.connect(self.Exit)
         
     
    
@@ -76,7 +76,10 @@ class UIMainWindow(QDialog):
         self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
         self.fourUIOther.ProfControl.clicked.connect(self.showProfControlDlg)
- 
+    def Exit(self):
+        self.thirdUIControl.mplCanvas.releasePlot()
+        #exit()
+        sys.exit("goodbye!");
     def Clear(self):
         self.showProfControlDlg()
         pass

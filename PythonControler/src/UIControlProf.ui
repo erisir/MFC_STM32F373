@@ -406,8 +406,11 @@
        <property name="maximum">
         <double>65535.000000000000000</double>
        </property>
+       <property name="singleStep">
+        <double>0.200000000000000</double>
+       </property>
        <property name="value">
-        <double>700.000000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -513,11 +516,14 @@
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>4.000000000000000</double>
        </property>
        <property name="value">
-        <double>3.000000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -551,7 +557,7 @@
          <string>自动增量</string>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -575,13 +581,6 @@
      </layout>
     </widget>
    </widget>
-   <zorder>SetPIDParam</zorder>
-   <zorder>horizontalLayoutWidget_2</zorder>
-   <zorder>formLayoutWidget_8</zorder>
-   <zorder>formLayoutWidget_9</zorder>
-   <zorder>verticalLayoutWidget</zorder>
-   <zorder>PID_AutoIncMode2</zorder>
-   <zorder>PIDAutoMode</zorder>
   </widget>
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
@@ -663,17 +662,12 @@
         <double>1000.000000000000000</double>
        </property>
        <property name="value">
-        <double>2000.000000000000000</double>
+        <double>3000.000000000000000</double>
        </property>
       </widget>
      </item>
     </layout>
    </widget>
-   <zorder>SetRuningParam</zorder>
-   <zorder>groupBox_3</zorder>
-   <zorder>PID_KpM</zorder>
-   <zorder>formLayoutWidget_4</zorder>
-   <zorder>formLayoutWidget_4</zorder>
   </widget>
   <widget class="QGroupBox" name="groupBox_5">
    <property name="geometry">
@@ -822,16 +816,7 @@
      </item>
     </layout>
    </widget>
-   <zorder>formLayoutWidget_5</zorder>
-   <zorder>horizontalLayoutWidget</zorder>
-   <zorder>groupBox_3</zorder>
-   <zorder>groupBox_4</zorder>
-   <zorder>groupBox_4</zorder>
   </widget>
-  <zorder>groupBox</zorder>
-  <zorder>groupBox_4</zorder>
-  <zorder>groupBox_5</zorder>
-  <zorder>label_7</zorder>
  </widget>
  <resources/>
  <connections/>

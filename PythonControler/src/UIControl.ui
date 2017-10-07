@@ -18,7 +18,7 @@
     <rect>
      <x>13</x>
      <y>10</y>
-     <width>120</width>
+     <width>111</width>
      <height>80</height>
     </rect>
    </property>
@@ -64,7 +64,7 @@
     <rect>
      <x>13</x>
      <y>94</y>
-     <width>121</width>
+     <width>111</width>
      <height>111</height>
     </rect>
    </property>
@@ -115,9 +115,9 @@
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>143</x>
+     <x>130</x>
      <y>14</y>
-     <width>361</width>
+     <width>381</width>
      <height>191</height>
     </rect>
    </property>
@@ -276,9 +276,9 @@ background-color: rgb(170, 255, 0);</string>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>112</x>
+      <x>60</x>
       <y>141</y>
-      <width>239</width>
+      <width>320</width>
       <height>31</height>
      </rect>
     </property>
@@ -304,6 +304,13 @@ background-color: rgb(170, 255, 0);</string>
       <widget class="QPushButton" name="Clear">
        <property name="text">
         <string>清零</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Exit">
+       <property name="text">
+        <string>exit</string>
        </property>
       </widget>
      </item>

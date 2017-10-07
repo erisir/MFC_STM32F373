@@ -1,7 +1,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  *
-import UIComm,UIControl,UIDetail,UIOther
 import matplotlib.pyplot as pl
 import serial  #pip install pyserial
 import sys
@@ -51,15 +50,30 @@ class UIAction():
             KpH = self.proControl.PID_KpH.value()
             KpM = self.proControl.PID_KpM.value()
             KpL = self.proControl.PID_KpL.value()
-            
-            self.proControl.PID_KiH.setProperty("value", float(KpH*3.5/2.45))
-            self.proControl.PID_KdH.setProperty("value", float(KpH*1.25/2.45))
-            
-            self.proControl.PID_KiM.setProperty("value", float(KpM*3.5/2.45))
-            self.proControl.PID_KdM.setProperty("value", float(KpM*1.25/2.45))
-            
-            self.proControl.PID_KiL.setProperty("value", float(KpL*3.5/2.45))
-            self.proControl.PID_KdL.setProperty("value", float(KpL*1.25/2.45))
+            temp = KpH*3.5/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KiH.setProperty("value", float(temp))
+            temp = KpH*1.25/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KdH.setProperty("value", float(temp))
+            temp =KpM*3.5/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KiM.setProperty("value", float(temp))
+            temp = KpM*1.25/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KdM.setProperty("value", float(temp))
+            temp = KpL*3.5/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KiL.setProperty("value", float(temp))
+            temp = KpL*1.25/2.45
+            if temp>65.535:
+                temp = 65.535
+            self.proControl.PID_KdL.setProperty("value", float(temp))
              
         if self.proControl.PID_AutoIncMode2.isChecked():  
             response_time = self.proControl.Responce_Time.value() 
