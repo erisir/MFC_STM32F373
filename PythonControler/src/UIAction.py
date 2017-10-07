@@ -143,6 +143,7 @@ class UIAction():
                 return None 
             
             self.commBusy = True     
+            self.clearComPort()
             self.comm.write(bytes(buf))
             res=self.readAnswer(timeout)  
             self.commBusy = False
@@ -183,7 +184,15 @@ class UIAction():
             self.lastError ='com return buffer len not equal'
             return None
         return res 
-    
+    def clearComPort(self):
+        try:         
+            while self.comm.inWaiting() > 0:
+                    res = bytes(self.comm.read(1))
+            return True
+        except:
+            self.lastError ='clearComPort error,exception occurs' 
+            return False
+        
     def readAnswer(self,timeout):        
         data = bytearray(64)
         readLen = 0
@@ -301,26 +310,23 @@ class UIAction():
     
         
     def Connect(self):
-        commName = 'com13'#self.firstUIComm.CommName.currentText()
+        commName = 'com5'#self.firstUIComm.CommName.currentText()
         Baudrate = self.firstUIComm.Baudrate.currentText()   
         try:   
             self.comm = serial.Serial(commName,int(Baudrate),timeout=2)              
         except:
-            self.errorMessage("串口"+commName+"被其他程序占用")
+            self.lastError = "串口"+commName+"被其他程序占用"
             return self.lastError
         self.isDeviceReady = True
         ret = self.readPIDParam()
         
         if ret:
             self.isDeviceReady = True
-            self.logMessage("连接成功")
+            self.lastError ="连接成功"
         else:
             self.isDeviceReady = False
             self.errorMessage(self.lastError)
-            self.errorMessage("连接失败，请检查串口参数")
-            
-       
-
+                   
         return self.lastError
     def Disconnect(self):
         if  self.comm is not None:
@@ -557,6 +563,5 @@ class UIAction():
     def warnningMessage(self,str):
         print('?'*10+str)
     def logMessage(self,str):
-        self.lastError = str
         print('-'*10+str)       
          

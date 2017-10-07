@@ -134,8 +134,8 @@ class  MyDynamicMplCanvas(QWidget):
 
         #self.startTime = date2num(datetime.now())
         
-    def InitGUI(self,action,getpoint,getpointbar):
-        #self.app = appHandle
+    def InitGUI(self,action,getpoint,getpointbar,appHandle):
+        self.app = appHandle
         self.UIAction = action
         self.getpoint=getpoint
         self.getpointbar = getpointbar
@@ -186,7 +186,7 @@ class  MyDynamicMplCanvas(QWidget):
                     self.getpoint.display(str(newData[2]))
                     #self.getpointbar.setValue(int(newData[2]/2500))
                     self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVSetPoint,self.ydataVCh1,self.ydataPWMOut)   
-                    #self.app.processEvents()
+                    self.app.processEvents()
                     if counter >= MAXCOUNTER:
                         self.dataX.pop(0)
                         self.ydataVCh0.pop(0) 

@@ -4,8 +4,8 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  *
 import UIComm,UIControl,UIDetail,UIOther,UIControlProf
-import sys  
 import time
+import sys  
 from UIAction import   UIAction
 
 class UIMainWindow(QDialog):  
@@ -39,9 +39,10 @@ class UIMainWindow(QDialog):
         tabWidget.addTab(w1,"控制信息")  
         tabWidget.addTab(w4,"其他项目")  
         tabWidget.resize(520,560)
+        
         self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
         self.ConnectEvent()
-        #QThread.sleep(3)
+              
         
     def ConnectEvent(self):
         self.thirdUIControl.PWMOpen.clicked.connect(self.uiAction.PWMOpen)
@@ -61,42 +62,27 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.pausePlot.setEnabled(False)
         self.thirdUIControl.pausePlot.clicked.connect(self.thirdUIControl.mplCanvas.pausePlot)
         self.thirdUIControl.Clear.clicked.connect(self.Clear)
-        self.UIControlProf.PID_AutoInc.clicked.connect(self.uiAction.Set_PID_AutoInc)
-        self.UIControlProf.PID_ManuInc.clicked.connect(self.uiAction.Set_PID_ManuInc)
-        self.UIControlProf.PID_ByPC.clicked.connect(self.uiAction.Set_PID_ControlByPC)
+        self.thirdUIControl.Exit.clicked.connect(self.Exit)
         
-        self.UIControlProf.PID_Kp.valueChanged.connect(self.uiAction.PID_Kp_valueChanged ) 
-        self.UIControlProf.PID_Ki.valueChanged.connect(self.uiAction.PID_Ki_valueChanged ) 
-        self.UIControlProf.PID_Kd.valueChanged.connect(self.uiAction.PID_Kd_valueChanged ) 
-
-        self.UIControlProf.PID_Inteval.valueChanged.connect(self.uiAction.PID_Inteval_valueChanged ) 
-        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.PID_SetPoint_valueChanged )
-        self.UIControlProf.PID_ThredHold.valueChanged.connect(self.uiAction.PID_ThredHold_valueChanged )
-        self.UIControlProf.PID_VotageChanel.valueChanged.connect(self.uiAction.PID_VotageChanel_valueChanged ) 
+    
+   
+        self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
+       
+        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam) 
+        self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam)        
         
-        self.UIControlProf.SmoothWindow.valueChanged.connect(self.uiAction.SmoothWindow_valueChanged ) 
-        self.UIControlProf.Prescaler.valueChanged.connect(self.uiAction.Prescaler_valueChanged ) 
-        self.UIControlProf.PWMValue.valueChanged.connect(self.uiAction.PWMValue_valueChanged ) 
-        self.UIControlProf.PWMRate.valueChanged.connect(self.uiAction.PWMRate_valueChanged ) 
-        self.UIControlProf.Slope.valueChanged.connect(self.uiAction.Slope_valueChanged ) 
-        self.UIControlProf.Interception.valueChanged.connect(self.uiAction.Interception_valueChanged ) 
+        self.firstUIComm.connect.clicked.connect(self.uiAction.Connect)
+        self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
-        self.UIControlProf.savePVFDtoMCU.clicked.connect(self.uiAction.savePVFDtoMCU) 
-        self.UIControlProf.getVoltageVsPWMCurse.clicked.connect(self.uiAction.getPWMVSVotage) 
-        self.UIControlProf.StopVoltageVsPWMCurse.clicked.connect(self.uiAction.stopVoltageVsPWMCurse) 
-              
-        self.firstUIComm.connectTest.clicked.connect(self.uiAction.ConnectTest)
         self.fourUIOther.ProfControl.clicked.connect(self.showProfControlDlg)
- 
-    def Debug(self):
-        return self.uiAction.ConnectTest()
-        #self.showProfControlDlg()
-        
-    def PIDControlDataInit(self):
-        self.UIControlProf.PID_Kp.value(200)
+    def Start(self):
+        return self.uiAction.Connect()
+    def Exit(self):
+        self.thirdUIControl.mplCanvas.releasePlot()
+        #exit()
+        sys.exit("goodbye!");
     def Clear(self):
         self.showProfControlDlg()
-        #self.uiAction.getPWMVSVotage()
         pass
      
     def showProfControlDlg(self):
@@ -124,8 +110,8 @@ time.sleep(0.1)
 tipLabel.setText( "程序正在启动...")
 time.sleep(1)
 tipLabel.setText( "正在尝试连接下位机...")
-dialog=UIMainWindow(app) 
-conectRes = dialog.Debug()
+mainApp=UIMainWindow(app) 
+conectRes = mainApp.Start()
 progressBar.setValue(50)
 app.processEvents()
 tipLabel.setText( conectRes)
@@ -134,6 +120,6 @@ progressBar.setValue(99)
 app.processEvents()
 time.sleep(0.5)
 
-dialog.show()  
-splash.finish(dialog)  
+mainApp.show()  
+splash.finish(mainApp)  
 app.exec_()
