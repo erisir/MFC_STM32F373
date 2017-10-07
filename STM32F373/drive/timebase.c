@@ -18,7 +18,7 @@
 #include "timebase.h" 
 
 uint8_t Count_1ms,Count_2ms,Count_4ms;
-uint32_t Timer4_Count = 0;//记录Timer3中断次数
+uint32_t  Timer4_Count;//记录Timer3中断次数
 extern uint8_t Bsp_Int_Ok;
 void TIM4_Init(void){
 	/* TIM4 定时配置 */	

@@ -27,6 +27,7 @@ void PrintU8(uint8_t num);
 void PrintS16( int16_t num);
 void PrintU16(uint16_t num);
 void PrintString(uint8_t *s);
+void PrintString(uint8_t *s);
 
 uint8_t Get_Checksum(u8 *buf);
 #endif /* __USART1_H */

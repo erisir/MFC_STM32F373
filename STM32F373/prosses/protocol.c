@@ -25,7 +25,7 @@ void parseData(u8 *buf,u8 rxlen){
 	//$ N > len-5 FLAG 【DATA】 Xlen(checksum)
 	uint8_t len = buf[3];
   
-	if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
+	//if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
 	if( buf[0] != '$' )	return;	//数据校验
 	if( buf[1] != 'N' )	return;	//数据校验
 	if( buf[2] != '<' )	return;	//上位机下发
@@ -48,12 +48,12 @@ void parseData(u8 *buf,u8 rxlen){
 	 
 	case _CMD_GetRunParam:
 		Get_Running_Param(RS485_TX_BUF);
-		RS485_PrintString(RS485_TX_BUF);
+		RS485_Send_Data(RS485_TX_BUF,RS485_TX_BUF[3]);
 	 break;//8
 	 
 	case _CMD_GetPIDParam:
 		Get_PID_Param(RS485_TX_BUF);
-		RS485_PrintString(RS485_TX_BUF);
+		RS485_Send_Data(RS485_TX_BUF,RS485_TX_BUF[3]);
 	 break;//8
 
 	case _CMD_SetVClose:

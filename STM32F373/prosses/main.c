@@ -55,21 +55,21 @@ int main(void)
 	while(1)
 	{	
 		
-		if(Count_1ms>=5)//200Hz
+		if(Count_1ms>=2)//500Hz-250Hz[240]
 		{	
 			Count_1ms = 0;		
-			Task_1000HZ();
-		}
-		if(Count_2ms>=10)//100Hz
-		{
-			Count_2ms = 0;
 			Task_500HZ();
 		}
-		if(Count_4ms>=20)//50Hz
+		if(Count_2ms>=5)//200Hz-100Hz[88]
+		{
+			Count_2ms = 0;
+			Task_200HZ();
+		}
+		if(Count_4ms>=100)//10Hz-5Hz[5]
 		{
 			Count_4ms = 0;
-			Task_250HZ();
-			
+			Task_10HZ();		
 		}
+		 
 	}
 }

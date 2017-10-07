@@ -134,6 +134,7 @@ void RS485_PrintString(u8 *buf)
 	RS485_RX_CNT=0;	  
 	RS485_Mode_Rx();				//设置为接收模式	
 }
+ 
 //RS485查询接收到的数据
 //buf:接收缓存首地址
 //len:读到的数据长度

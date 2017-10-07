@@ -5,6 +5,7 @@
 #include "pwm.h"
 #include "eeprom.h"
 #include "rs485.h"
+#include "tasks.h"
 #include "string.h"
 #include "math.h"
 #include "protocol.h"
@@ -12,16 +13,40 @@
 
 //xdata struct PID spid; // PID Control Structure
 struct _PID spid;
-
+ 
 uint16_t data_x,data_y,data_z;
-
+float  responce_time=0.5f;
+float  freq_Cutoff=0.5f;
 uint16_t PWM_Output;
 uint16_t Voltage_Set_Point;
+uint16_t Voltage_Set_Point_temp;
 
 unsigned int PID_Votage_Chanel = 0;
 
 unsigned char isRunning=0;
 
+void PID_Setpoint_Change(){
+  static  int16_t counter=0;
+	static char setPointIncreasing=0;
+	static int16_t voltageStart = 0;
+	int16_t currVoltage = GetADCVoltage(PID_Votage_Chanel);
+	int16_t error = Voltage_Set_Point-currVoltage;
+	
+	if(abs(error)>spid.error_Low_Threadhold && setPointIncreasing==0){//从头计时
+		setPointIncreasing = 1;
+		counter = 0;
+		voltageStart = currVoltage;
+	}
+	if(setPointIncreasing == 1){
+		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.005f/responce_time));	 
+		counter++;
+	}
+	if(setPointIncreasing == 1 && abs(error)<spid.deadzone){
+		Voltage_Set_Point_temp = Voltage_Set_Point;	 
+		counter=0;
+		setPointIncreasing = 0;
+	}
+}
 uint16_t VirtAddVarTab[NumbOfVar] = {
 	0x9A00,0x9A01,0x9A02,0x9A03,0x9A04,0x9A05,0x9A06,0x9A07,0x9A08,0x9A09,
 	0x9A10,0x9A12,0x9A13,0x9A14,0x9A15
@@ -73,6 +98,18 @@ void Set_PID_Param(uint8_t *buf)
 	spid.error_Low_Threadhold=data_y;
 	spid.PWM_Change_Threadhold=data_z;
 	
+	offset+=2;
+	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
+	offset+=2;
+	data_y = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
+	offset+=2;
+	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];	
+	
+	spid.deadzone = data_x;		
+	responce_time = (float)(data_y/1000.f);
+	freq_Cutoff = (float)(data_z/1000.f);
+	Calculate_FilteringCoefficient(0.005f, freq_Cutoff);
+	 
 	EEPROM_SAVE_PID();
 }
 void Get_PID_Param(uint8_t *buf){
@@ -139,6 +176,21 @@ void Get_PID_Param(uint8_t *buf){
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
+	
+	data_x = (int16_t)spid.deadzone;
+	data_y = (int16_t)(responce_time*1000);
+	data_z = (int16_t)(freq_Cutoff*1000);		
+	
+	buf[offset] =  data_x & 0xFF ;
+	buf[offset+1] = (data_x >> 8) & 0xFF;
+	offset+=2;	
+	buf[offset] =  data_x & 0xFF ;
+	buf[offset+1] = (data_y >> 8) & 0xFF;
+	offset+=2;
+	buf[offset] =  data_y & 0xFF ;
+	buf[offset+1] = (data_z >> 8) & 0xFF;
+	offset+=2;
+	
 	buf[offset+1] = Get_Checksum(buf);
 	buf[3] = offset;
 } 
@@ -146,28 +198,28 @@ void Get_PID_Param(uint8_t *buf){
 void Set_Running_Param(uint8_t *buf)
 {
 	int offset = 5;
-	int Cut_Off;
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 	offset+=2;
 	data_y = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
-	offset+=2;
-	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];	
+ 
+	
 	if(isRunning==0){
 		PWM_Output=data_x; 
 		LoadPWM(PWM_Output);
 	}
+	
 	Voltage_Set_Point=data_y; 
-	Cut_Off = data_z;
-	Calculate_FilteringCoefficient(0.005f, Cut_Off);
+	
 }
 void Get_Running_Param(uint8_t *buf)
 {
 	int offset = 5;
+ 
 	buf[0] = '$';
 	buf[1] = 'N';
 	buf[2] = '>';//发给上位机
 	
-	buf[4] = _CMD_GetPIDParam;
+	buf[4] = _CMD_GetRunParam;
 	
 	data_x = (int16_t)(Voltage_Set_Point);
 	data_y = (int16_t)(PWM_Output);
@@ -196,6 +248,22 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
+		
+	data_x = (int16_t)(GetADCVoltage(0));
+	data_y = (int16_t)(GetADCVoltage(1));		 
+	data_z = Voltage_Set_Point_temp;
+	 
+	
+ 	buf[offset] =  data_x & 0xFF ;
+	buf[offset+1] = (data_x >> 8) & 0xFF;
+	offset+=2;
+	buf[offset] =  data_y & 0xFF ;
+	buf[offset+1] = (data_y >> 8) & 0xFF;
+	offset+=2;
+	buf[offset] =  data_z & 0xFF ;
+	buf[offset+1] = (data_z >> 8) & 0xFF;
+	offset+=2;
+ 	
 	buf[offset+1] = Get_Checksum(buf);
 	buf[3] = offset;
 }
@@ -220,7 +288,7 @@ void Inc_PID_Calc(void)
 	register int iError, iIncpid;
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
-	iError = Voltage_Set_Point - NextPoint;
+	iError = Voltage_Set_Point_temp - NextPoint;
 
 	if(abs(iError) >spid.error_High_Threadhold){
 	 //增量计算
@@ -287,12 +355,19 @@ void EEPROM_SAVE_PID(void)
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_IL], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_DL], data_z);
 	
-	data_x = (int16_t) (spid.error_High_Threadhold*1000);
-	data_y = (int16_t) (spid.error_Low_Threadhold*1000);
+	data_x = (int16_t) (spid.error_High_Threadhold);
+	data_y = (int16_t) (spid.error_Low_Threadhold);
 	data_z = (int16_t) (spid.PWM_Change_Threadhold);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_THD_H], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_THD_L], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_THD_PWM], data_z);
+	
+	data_x = (int16_t) (spid.deadzone);
+	data_y = (int16_t) (responce_time*1000);
+	data_z = (int16_t) (freq_Cutoff*1000);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_DEADZONE], data_x);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_RUN_RES_TIME], data_y);
+	EE_WriteVariable(VirtAddVarTab[EEPROM_RUN_FREQ_CUTOFF], data_z);
  
 
 	__set_PRIMASK(0); 
@@ -323,10 +398,17 @@ void EEPROM_READ_PID(void)	//
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_THD_H], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_THD_L], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_THD_PWM], &data_z);
-	spid.error_High_Threadhold = (float) data_x/1000.0f;
-	spid.error_Low_Threadhold = (float) data_y/1000.0f;
+	spid.error_High_Threadhold =   data_x;
+	spid.error_Low_Threadhold =   data_y;
 	spid.PWM_Change_Threadhold =   data_z;
-  
+	
+	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_DEADZONE], &data_x);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_RUN_RES_TIME], &data_y);
+	EE_ReadVariable(VirtAddVarTab[EEPROM_RUN_FREQ_CUTOFF], &data_z);
+	spid.deadzone =   data_x;
+	responce_time =   data_y/1000.f;
+	freq_Cutoff =   data_z/1000.f;
+	  
 }
 /************************************************
 				PID函数初始化
@@ -356,6 +438,8 @@ void PID_Param_Reset(void)
 	spid.error_High_Threadhold=3000;
 	spid.error_Low_Threadhold=500;
 	spid.PWM_Change_Threadhold=1000;
+	
+	spid.deadzone=50;
 
  
 	EEPROM_SAVE_PID();

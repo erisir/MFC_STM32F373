@@ -31,6 +31,13 @@ Copyright(C) bg8wj
 #define EEPROM_PID_THD_H		9
 #define EEPROM_PID_THD_L		10
 #define EEPROM_PID_THD_PWM		11
+#define EEPROM_PID_DEADZONE		12
+
+
+#define EEPROM_RUN_RES_TIME		13
+#define EEPROM_RUN_FREQ_CUTOFF		14
+ 
+
  
 #define EEPROM_SUM				15
 /************************************************
@@ -54,10 +61,11 @@ struct _PID {
 	float error_High_Threadhold;
 	float error_Low_Threadhold;
 	int16_t  PWM_Change_Threadhold;
+	int16_t  deadzone;
 
-	int LastError; // Error[-1]
-	int PrevError; // Error[-2]
-	int SumError;
+	int16_t LastError; // Error[-1]
+	int16_t PrevError; // Error[-2]
+	int32_t SumError;
 	
 };
 extern struct _PID spid;
@@ -86,6 +94,7 @@ unsigned char is_PID_Running(void);
 unsigned int abs( int val);
  
 void Inc_PID_Calc(void);
+void PID_Setpoint_Change(void);
 
 #endif
 /*********************************************END OF FILE**********************/

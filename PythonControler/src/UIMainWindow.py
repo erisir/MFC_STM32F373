@@ -39,8 +39,11 @@ class UIMainWindow(QDialog):
         tabWidget.addTab(w4,"其他项目")  
         tabWidget.resize(520,560)
         
-        self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther)
+        self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
         self.ConnectEvent()
+        self.uiAction.Connect()
+        self.uiAction.RecaculatePIDParam()
+        #self.uiAction.SetPIDParam()
         #QThread.sleep(3)
         
     def ConnectEvent(self):
@@ -62,24 +65,16 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.pausePlot.clicked.connect(self.thirdUIControl.mplCanvas.pausePlot)
         self.thirdUIControl.Clear.clicked.connect(self.Clear)
         
-        self.UIControlProf.PID_AutoInc.clicked.connect(self.uiAction.Set_PID_AutoInc)
-        self.UIControlProf.PID_ManuInc.clicked.connect(self.uiAction.Set_PID_ManuInc)
+    
+   
+        self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
+       
+        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam) 
+        self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam)        
         
-        self.UIControlProf.PID_Kp.valueChanged.connect(self.uiAction.PID_Kp_valueChanged ) 
-        self.UIControlProf.PID_Ki.valueChanged.connect(self.uiAction.PID_Ki_valueChanged ) 
-        self.UIControlProf.PID_Kd.valueChanged.connect(self.uiAction.PID_Kd_valueChanged ) 
-        self.UIControlProf.PID_Kd.valueChanged.connect(self.uiAction.PID_Kd_valueChanged ) 
-        self.UIControlProf.PID_Inteval.valueChanged.connect(self.uiAction.PID_Inteval_valueChanged ) 
-        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.PID_SetPoint_valueChanged ) 
-        self.UIControlProf.SmoothWindow.valueChanged.connect(self.uiAction.SmoothWindow_valueChanged ) 
-        self.UIControlProf.Prescaler.valueChanged.connect(self.uiAction.Prescaler_valueChanged ) 
-        self.UIControlProf.PWMValue.valueChanged.connect(self.uiAction.PWMValue_valueChanged ) 
-        self.UIControlProf.PWMRate.valueChanged.connect(self.uiAction.PWMRate_valueChanged ) 
-        self.UIControlProf.Slope.valueChanged.connect(self.uiAction.Slope_valueChanged ) 
-        self.UIControlProf.Interception.valueChanged.connect(self.uiAction.Interception_valueChanged ) 
-
+        self.firstUIComm.connect.clicked.connect(self.uiAction.Connect)
+        self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
-        self.firstUIComm.connectTest.clicked.connect(self.uiAction.ConnectTest)
         self.fourUIOther.ProfControl.clicked.connect(self.showProfControlDlg)
  
     def Clear(self):

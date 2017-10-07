@@ -6,7 +6,7 @@
 // SDADC转换的电压值通过inject方式传到SRAM
 int16_t InjectedConvData[2]={0};
 
-uint16_t ADC_ConvertedSumWindow=100;
+uint16_t ADC_ConvertedSumWindow=1000;
 
 static float VOL_IIR_FACTOR;
 struct _Voltage voltage;
@@ -30,7 +30,7 @@ void VOL_IIR_Filter()
 	voltage.ch1 = 2* (((ADC_Mean(1) + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL));
 	
 	filter_voltage.ch0 = filter_voltage.ch0 + VOL_IIR_FACTOR*(voltage.ch0 - filter_voltage.ch0); 
-	filter_voltage.ch1 = voltage.ch1;//= vol_out->ch1 + VOL_IIR_FACTOR*(vol_in->ch1 - vol_out->ch1); 
+	filter_voltage.ch1 = filter_voltage.ch1 + VOL_IIR_FACTOR*(voltage.ch1 - filter_voltage.ch1); 
 }
 
 float  GetADCVoltage(unsigned char ch){//PID调用
@@ -46,7 +46,7 @@ int ADC_Mean(unsigned char ch) {
 	for(i=0;i<ADC_ConvertedSumWindow;i++){
 		sum+=InjectedConvData[ch];	
 	}
-	return (int)(sum/(ADC_ConvertedSumWindow)); 
+	return  (int)(sum/(ADC_ConvertedSumWindow)); 
 }
  
 uint32_t SDADC1_Config(void)

@@ -12,50 +12,47 @@
 
 extern u8 RS485_RX_BUF[64]; 
 extern u8 RS485_TX_BUF[64];
-extern uint32_t Timer4_Count;
-/******************************************************************************
-函数原型：	void Task_1000HZ(void)
-功    能：	主循环中运行频率为1000HZ任务
-*******************************************************************************/ 
+ 
+ 
+ 
 void OnResetFlowDown(void)
 {
 	RS485_PrintString("0:\tOnResetFlowDown\n");
 }
-void Task_1000HZ(void)
-{
-		u8 len;		
-	  Debug4_H;		
+void Task_500HZ(void)
+{	
+ 	  u8 len;
+		Debug1_H;
 		VOL_IIR_Filter();		
 		RS485_Receive_Data(RS485_RX_BUF,&len);
 		if(len)
 		{
 			 parseData(RS485_RX_BUF,len);
  		}
-	 Debug4_L;
+		if (is_PID_Running()){
+		PID_Setpoint_Change();
+		}
+		delay_ms(1);
+		Debug1_L; 
 }
 
-/******************************************************************************
-函数原型：	void Task_500HZ(void)
-功    能：	主循环中运行频率为500HZ任务
-*******************************************************************************/ 
-void Task_500HZ(void)
+ 
+void Task_200HZ(void)
 {
 	Debug2_H;
 	if (is_PID_Running()) PID_Start();
+	delay_ms(1);
 	Debug2_L;
 }
-
-/******************************************************************************
-函数原型：	void Task_250HZ(void)
-功    能：	主循环中运行频率为250HZ任务
-*******************************************************************************/ 
-void Task_250HZ(void)
+ 
+void Task_10HZ(void)
 {
 	Debug3_H;
 	if(IsFlowReset()){
 			//LED_ON_OFF();
 			OnResetFlowDown();
 	  }
+	delay_ms(1);
 	Debug3_L;
 }
 			
