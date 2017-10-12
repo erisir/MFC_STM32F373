@@ -29,8 +29,8 @@ void VOL_IIR_Filter()
   voltage.ch0 = 2* (((ADC_Mean(0) + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL));
 	voltage.ch1 = 2* (((ADC_Mean(1) + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL));
 	
-	filter_voltage.ch0 = filter_voltage.ch0 + VOL_IIR_FACTOR*(voltage.ch0 - filter_voltage.ch0); 
-	filter_voltage.ch1 = filter_voltage.ch1 + VOL_IIR_FACTOR*(voltage.ch1 - filter_voltage.ch1); 
+	filter_voltage.ch0 = (float)(filter_voltage.ch0 + VOL_IIR_FACTOR*(voltage.ch0 - filter_voltage.ch0)); 
+	filter_voltage.ch1 = (float)(filter_voltage.ch1 + VOL_IIR_FACTOR*(voltage.ch1 - filter_voltage.ch1)); 
 }
 
 float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ

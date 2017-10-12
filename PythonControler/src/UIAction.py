@@ -22,6 +22,7 @@ class UIAction():
     comm = None
     commBusy = False
     lastError = 'no error'
+    stopVoltageVsPWMCurse = False
     
     _CMD_SetRunParam = '0';
     _CMD_SetPIDParam = '1';
@@ -293,14 +294,11 @@ class UIAction():
             vsetpoint_temp = self.GetShowValue(ret[8])
             PWM_Output = ret[1]
             Voltage_Set_Point=self.GetShowValue(ret[0])                            
-            return [Voltage_Set_Point,PWM_Output,vCh0,vsetpoint_temp]
+            return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,vsetpoint_temp]
         except:
             self.errorMessage("GetPlotData error")
             print(self.lastError)
             return None
-         
-    def stopVoltageVsPWMCurse(self):
-        self.stopVoltageVsPWMCurse = True                  
          
     def getRandom(self):
             mid=1084
@@ -311,7 +309,7 @@ class UIAction():
         
     def Connect(self):
         commName = 'com5'#self.firstUIComm.CommName.currentText()
-        Baudrate = self.firstUIComm.Baudrate.currentText()   
+        Baudrate = 194000#self.firstUIComm.Baudrate.currentText()   
         try:   
             self.comm = serial.Serial(commName,int(Baudrate),timeout=2)              
         except:
@@ -516,7 +514,7 @@ class UIAction():
         buf[3]= 6
         buf[4]= ord(self._CMD_GetRunParam )
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,23)
+        res = self.SendCommandWitAnswer(buf,39)#23 old
         if res is  None:
             return None      
         if res[0] != ord('$') :
@@ -530,8 +528,8 @@ class UIAction():
         offset = 5
         Voltage_Set_Point = res[offset+1]*256+res[offset]
         offset  =offset+2
-        PWM_Output = res[offset+1]*256+res[offset]
-        offset  =offset+2
+        PWM_Output = res[offset+3]*256*256*256+res[offset+2]*256*256+res[offset+1]*256+res[offset]
+        offset  =offset+4
         lastVoltage = res[offset+1]*256+res[offset]
         
         offset  =offset+2
@@ -549,7 +547,8 @@ class UIAction():
         currentVol1 = (res[offset+1]*256+res[offset])
         offset  =offset+2
         Voltage_Set_Point_temp = (res[offset+1]*256+res[offset])
-
+        offset  =offset+2
+      
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1,Voltage_Set_Point_temp]
         #print(ret)
         return ret
@@ -563,5 +562,72 @@ class UIAction():
     def warnningMessage(self,str):
         print('?'*10+str)
     def logMessage(self,str):
-        print('-'*10+str)       
+        pass
+        #print('-'*10+str)       
          
+    def getPWMVSVotage(self):
+        self.stopVoltageVsPWMCurse = False
+ 
+        pwmForward = []
+        votageForward = []
+        pwmBackward = []
+        votageBackward = []
+        if True:
+            pl.cla()
+            pl.grid() #开启网格
+            ax = pl.gca()
+            pl.xlabel("PWM")
+            pl.ylabel("Votage")
+            pl.title("PWM => Votage")
+            pl.legend()
+            pl.show()
+
+        start = int(self.proControl.BackForward_Start.value())
+        end = int(self.proControl.BackForward_End.value())
+        stepsize = int(self.proControl.BackForward_StepSize.value())
+        self.proControl.PWM_SET.setProperty("value", 0)
+        self.SetRuningParam()
+        time.sleep(0.2)
+        for x in range(start,end,stepsize):
+            if self.stopVoltageVsPWMCurse :
+                return   
+            self.proControl.PWM_SET.setProperty("value", x)
+             
+            self.SetRuningParam()
+ 
+            time.sleep(0.1)
+        
+            ret = self.GetPlotData()
+            time.sleep(0.1)
+            if ret is None:
+                continue
+            
+            pwmForward.append(x)
+            votageForward.append(ret[3])
+            print([x,ret[3]])
+        
+          
+        
+        pl.plot(pwmForward, votageForward, 'ro')
+        pl.plot(pwmForward, votageForward, 'b-')
+         
+        for x in range(end,start,-1*stepsize):
+            if self.stopVoltageVsPWMCurse :
+                return 
+            self.proControl.PWM_SET.setProperty("value", x)
+            self.SetRuningParam()
+            time.sleep(0.1)
+            ret = self.GetPlotData()
+            time.sleep(0.1)
+            if ret is None:
+                continue
+ 
+            pwmBackward.append(x)
+            votageBackward.append(ret[3])
+            print([x,ret[3]])
+      
+            pl.plot(pwmBackward, votageBackward, 'b*')
+             
+            
+    def stopVolVsPWMCurse(self):
+        self.stopVoltageVsPWMCurse = True   

@@ -157,7 +157,7 @@ void ADC1_IRQHandler(void)
 /*  file (startup_stm32f37x.s).                                               */
 /******************************************************************************/
  
-void TIM2_IRQHandler(void)
+void TIM2_IRQHandler(void)//use for PWM interrupt everytime counter reach ARR the max duty cycle
 {	
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)	//TIM_IT_Update
  	{					
@@ -172,7 +172,6 @@ void TIM3_IRQHandler(void)
 		TIM_ClearITPendingBit (TIM3, TIM_IT_Update);	 
 	}
 }
-
 
 
 /**

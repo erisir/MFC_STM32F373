@@ -10,7 +10,7 @@
 #include "timebase.h" 
 #include "eeprom.h" 
 #include <stdio.h>
-
+#include "protocol.h"
 #include "pid.h" 
 
 uint8_t Bsp_Int_Ok=0;
@@ -27,7 +27,7 @@ void Bsp_Int(void ){
 	
 	LED_Init();		  
 	
-	RS485_Init(115200);
+	RS485_Init(194000);
 	RS485_PrintString("1:\tRS485_Init\n");
 	KEY_Init();
 	RS485_PrintString("2:\tKEY_Init\n");
@@ -38,7 +38,7 @@ void Bsp_Int(void ){
 	PID_Init() ;
 	RS485_PrintString("5:\tPID_Init\n");
 	SDADC1_Config();
-	Calculate_FilteringCoefficient(0.005f, 10.f);//sampel time,unit second,F_cutoff
+	Calculate_FilteringCoefficient(0.004f, 10.f);//sampel time,unit second,F_cutoff
 	RS485_PrintString("6:\tSDADC1_Config\n");
  
 	
@@ -54,18 +54,23 @@ int main(void)
 	 
 	while(1)
 	{	
-		
-		if(Count_1ms>=2)//500Hz-250Hz[240]
+		u8 len;
+		RS485_Receive_Data(RS485_RX_BUF,&len);
+		if(len)
+		{
+			 parseData(RS485_RX_BUF,len);
+ 		}
+		if(Count_1ms>=5)//500Hz-250Hz[240]
 		{	
 			Count_1ms = 0;		
 			Task_500HZ();
 		}
-		if(Count_2ms>=5)//200Hz-100Hz[88]
+		if(Count_2ms>=10)//200Hz-100Hz[88]
 		{
 			Count_2ms = 0;
 			Task_200HZ();
 		}
-		if(Count_4ms>=100)//10Hz-5Hz[5]
+		if(Count_4ms>=200)//10Hz-5Hz[5]
 		{
 			Count_4ms = 0;
 			Task_10HZ();		

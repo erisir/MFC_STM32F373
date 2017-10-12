@@ -62,8 +62,8 @@ struct _PID {
 	int16_t  PWM_Change_Threadhold;
 	int16_t  deadzone;
 
-	int16_t LastError; // Error[-1]
-	int16_t PrevError; // Error[-2]
+	float LastError; // Error[-1]
+	float PrevError; // Error[-2]
 	int32_t SumError;
 	
 };

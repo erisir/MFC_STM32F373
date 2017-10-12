@@ -19,31 +19,31 @@ uint16_t data_x,data_y,data_z;
 float  responce_time=0.5;
 float  freq_Cutoff=0.5;
 
-uint16_t PWM_Output;
+uint32_t PWM_Output;
 uint16_t Voltage_Set_Point;
 uint16_t Voltage_Set_Point_temp;
 
 unsigned int PID_Votage_Chanel = 0;
 
 unsigned char isRunning=0;
-
+uint8_t set_point_changed= 0;
 void PID_Setpoint_Change(){
   static  int16_t counter=0;
 	static char setPointIncreasing=0;
 	static int16_t voltageStart = 0;
 	int16_t currVoltage = GetADCVoltage(PID_Votage_Chanel);
 	int16_t error = Voltage_Set_Point-currVoltage;
-	
+ 
 	if(abs(error)>spid.error_Low_Threadhold && setPointIncreasing==0){//从头计时
 		setPointIncreasing = 1;
 		counter = 0;
-		voltageStart = currVoltage;
+		voltageStart = currVoltage+error/3;//从三分之一开始走起
 	}
 	if(setPointIncreasing == 1){
 		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.005f/responce_time));	 
 		counter++;
 	}
-	if(setPointIncreasing == 1 && abs(error)<spid.deadzone){
+	if(setPointIncreasing == 1 && abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
 		Voltage_Set_Point_temp = Voltage_Set_Point;	 
 		counter=0;
 		setPointIncreasing = 0;
@@ -111,7 +111,7 @@ void Set_PID_Param(uint8_t *buf)
 	responce_time = (float)(data_y/1000.f);
 	freq_Cutoff = (float)(data_z/1000.f);
 	
-	Calculate_FilteringCoefficient(0.005f, freq_Cutoff);
+	Calculate_FilteringCoefficient(0.004f, freq_Cutoff);
 	 
 	EEPROM_SAVE_PID();
 }
@@ -212,12 +212,13 @@ void Set_Running_Param(uint8_t *buf)
 	}
 	
 	Voltage_Set_Point=data_y; 
+ 
 	
 }
 void Get_Running_Param(uint8_t *buf)
 {
 	int offset = 5;
- 
+  uint32_t pwm ;
 	buf[0] = '$';
 	buf[1] = 'N';
 	buf[2] = '>';//发给上位机
@@ -225,15 +226,19 @@ void Get_Running_Param(uint8_t *buf)
 	buf[4] = _CMD_GetRunParam;
 	
 	data_x = (int16_t)(Voltage_Set_Point);
-	data_y = (int16_t)(PWM_Output);
+	pwm = (uint32_t)(PWM_Output);
 	data_z = (int16_t)(Voltage_Set_Point-spid.LastError);//lastVoltage
 	
 	buf[offset] =  data_x & 0xFF ;
 	buf[offset+1] = (data_x >> 8) & 0xFF;
 	offset+=2;
-	buf[offset] =  data_y & 0xFF ;
-	buf[offset+1] = (data_y >> 8) & 0xFF;
-	offset+=2;
+	
+	buf[offset] =  pwm & 0xFF ;
+	buf[offset+1] = (pwm >> 8) & 0xFF;
+	buf[offset+2] = (pwm >> 16)  & 0xFF ;
+	buf[offset+3] = (pwm >> 24) & 0xFF;
+	
+	offset+=4;
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
@@ -266,7 +271,8 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
- 	
+ 	addSomeParam(buf,offset);
+	offset+=14;
 	buf[offset+1] = Get_Checksum(buf);
 	buf[3] = offset;
 }
@@ -288,7 +294,8 @@ void PID_Start()
 //增量式PID控制设计
 void Inc_PID_Calc(void)
 {
-	register int iError, iIncpid;
+	register float iError;
+ 	register int iIncpid;
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
 	iError = Voltage_Set_Point_temp - NextPoint;
@@ -297,17 +304,17 @@ void Inc_PID_Calc(void)
 	}else if(abs(iError) >spid.error_High_Threadhold){
 	 //增量计算
 	iIncpid = spid.kpH * iError //E[k]项
-			- spid.kiH * spid.LastError //E[k－1]项
-			+ spid.kdH * spid.PrevError; //E[k－2]项
+					- spid.kiH * spid.LastError //E[k－1]项
+					+ spid.kdH * spid.PrevError; //E[k－2]项
 	
 	}else if(abs(iError) <spid.error_High_Threadhold){
 	 	iIncpid = spid.kpL * iError //E[k]项
-			- spid.kiL * spid.LastError //E[k－1]项
-			+ spid.kdL * spid.PrevError; //E[k－2]项
+						- spid.kiL * spid.LastError //E[k－1]项
+						+ spid.kdL * spid.PrevError; //E[k－2]项
 	}else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
 	 	iIncpid = spid.kpM * iError //E[k]项
-			- spid.kiM * spid.LastError //E[k－1]项
-			+ spid.kdM * spid.PrevError; //E[k－2]项
+						- spid.kiM * spid.LastError //E[k－1]项
+						+ spid.kdM * spid.PrevError; //E[k－2]项
 	}
 	//存储误差，用于下次计算
 	spid.PrevError = spid.LastError;

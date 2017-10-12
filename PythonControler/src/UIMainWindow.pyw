@@ -75,8 +75,13 @@ class UIMainWindow(QDialog):
         self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
         self.fourUIOther.ProfControl.clicked.connect(self.showProfControlDlg)
+        
+        self.UIControlProf.getVoltageVsPWMCurse.clicked.connect(self.uiAction.getPWMVSVotage) 
+        self.UIControlProf.StopVoltageVsPWMCurse.clicked.connect(self.uiAction.stopVolVsPWMCurse) 
     def Start(self):
-        return self.uiAction.Connect()
+    
+        self.uiAction.Connect()
+        #self.uiAction.getPWMVSVotage();
     def Exit(self):
         self.thirdUIControl.mplCanvas.releasePlot()
         #exit()

@@ -98,7 +98,7 @@ class MplCanvas(FigureCanvas):
             #yend = 6000
             
             #ystart1 = 0
-            #yend1 = 60000
+            #yend1 = 141072
             self.ax.set_ylim(ystart,yend)
             self.ax1.set_ylim(ystart1,yend1)
             
@@ -170,7 +170,7 @@ class  MyDynamicMplCanvas(QWidget):
                 break
             if self.__generating:
                 newTime= date2num(datetime.now())
-                #return [Voltage_Set_Point,PWM_Output,vCh0,vCh1]
+                #return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,setpoint_temp]
                 newData = self.UIAction.GetPlotData()
                 if newData is None :
                     continue
@@ -181,6 +181,7 @@ class  MyDynamicMplCanvas(QWidget):
                     self.ydataVSetPoint.append(newData[0])
                     self.ydataVCh1.append(newData[3])
                     self.ydataPWMOut.append(newData[1])
+                    print(newData)
                     
                     #self.getpoint.setProperty("value", newData[2])
                     self.getpoint.display(str(newData[2]))

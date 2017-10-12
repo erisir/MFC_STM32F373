@@ -62,7 +62,7 @@ void TIM4_Configuration(unsigned int Prescaler)
     //TIM_DeInit(TIM4);
 	
 	/* 自动重装载寄存器周期的值(计数值) */
-    TIM_TimeBaseStructure.TIM_Period=1000;
+    TIM_TimeBaseStructure.TIM_Period=500;
 	
     /* 累计 TIM_Period个频率后产生一个更新或者中断 */
 	  /* 时钟预分频数为72 */
