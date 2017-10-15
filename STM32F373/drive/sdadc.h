@@ -29,9 +29,11 @@ extern struct _Voltage voltage;
 extern struct _Voltage filter_voltage;
 
 uint32_t SDADC1_Config(void);
+void DMA_Config(void);
 void Calculate_FilteringCoefficient(float Time, float Cut_Off);
 void VOL_IIR_Filter(void);
+ 
 float GetADCVoltage(unsigned char ch);
-int ADC_Mean(unsigned char ch);
+void ADC_Mean(void);
 #endif /* __ADC_H */
 

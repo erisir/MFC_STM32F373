@@ -10,24 +10,6 @@ uint8_t Dither_Index;//余数
 uint8_t PWM_Value_FirstPart_Changed=0;
 uint8_t PWM_Value_SecondPart_Changed=0;
  
-void addSomeParam(uint8_t *buf,int8_t offset){
-	uint8_t i;
-	uint16_t data_x = (int16_t)(duty_Cycle);
-	uint16_t data_y = (int16_t)(Dither_Index);		 
- 
-	 
-	
- 	buf[offset] =  data_x & 0xFF ;
-	buf[offset+1] = (data_x >> 8) & 0xFF;
-	offset+=2;
-	buf[offset] =  data_y & 0xFF ;
-	buf[offset+1] = (data_y >> 8) & 0xFF;
-	offset+=2;
-	
-	for(i=0;i<8;i++){
-			buf[offset+i] =  vDither[i] & 0xFF ;
-	}
-}
 void TIM2_GPIO_Config(void) 
 {
  
@@ -41,9 +23,6 @@ void TIM2_GPIO_Config(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
-}
-void getStr(uint8_t *buf){
-	sprintf((char*)buf,"[%d],[%d],[%d],[%d],[%d],[%d],[%d],[%d]\r\n",vDither[0],vDither[1],vDither[2],vDither[3],vDither[4],vDither[5],vDither[6],vDither[7]);
 }
 
 /**

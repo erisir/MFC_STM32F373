@@ -242,21 +242,7 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
-	
-	data_x = (int16_t)(spid.LastError);
-	data_y = (int16_t)(spid.PrevError);
-	data_z = (int16_t)(spid.SumError);
-	
-	buf[offset] =  data_x & 0xFF ;
-	buf[offset+1] = (data_x >> 8) & 0xFF;
-	offset+=2;
-	buf[offset] =  data_y & 0xFF ;
-	buf[offset+1] = (data_y >> 8) & 0xFF;
-	offset+=2;
-	buf[offset] =  data_z & 0xFF ;
-	buf[offset+1] = (data_z >> 8) & 0xFF;
-	offset+=2;
-		
+			
 	data_x = (int16_t)(GetADCVoltage(0));
 	data_y = (int16_t)(GetADCVoltage(1));		 
 	data_z = Voltage_Set_Point_temp;
@@ -271,8 +257,6 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
- 	addSomeParam(buf,offset);
-	offset+=14;
 	buf[offset+1] = Get_Checksum(buf);
 	buf[3] = offset;
 }

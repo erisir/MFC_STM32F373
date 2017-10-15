@@ -183,6 +183,8 @@ class UIAction():
             return None
         if(len(res) !=expectLen):
             self.lastError ='com return buffer len not equal'
+            print(len(res))
+            print(res)
             return None
         return res 
     def clearComPort(self):
@@ -282,19 +284,19 @@ class UIAction():
    
    
     def GetPlotData(self):
-        #return int(Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1)
+        #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
         ret = self.readRunningParam()
         if ret == None:
             print(self.lastError)
             return None
         try:
-                       
-            vCh0 = self.GetShowValue(ret[6])
-            vCh1 = self.GetShowValue(ret[7])
-            vsetpoint_temp = self.GetShowValue(ret[8])
-            PWM_Output = ret[1]
-            Voltage_Set_Point=self.GetShowValue(ret[0])                            
-            return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,vsetpoint_temp]
+            Voltage_Set_Point=self.GetShowValue(ret[0])  
+            PWM_Output = ret[1]          
+            vCh0 = self.GetShowValue(ret[3])
+            vCh1 = self.GetShowValue(ret[4])
+            Voltage_Set_PointTemp = self.GetShowValue(ret[5])
+                                      
+            return [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output]
         except:
             self.errorMessage("GetPlotData error")
             print(self.lastError)
@@ -514,7 +516,7 @@ class UIAction():
         buf[3]= 6
         buf[4]= ord(self._CMD_GetRunParam )
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,39)#23 old
+        res = self.SendCommandWitAnswer(buf,19)#23 old
         if res is  None:
             return None      
         if res[0] != ord('$') :
@@ -532,13 +534,7 @@ class UIAction():
         offset  =offset+4
         lastVoltage = res[offset+1]*256+res[offset]
         
-        offset  =offset+2
-        LastError = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        PrevError = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        SumError = res[offset+1]*256+res[offset]
-        
+ 
   
         
         offset  =offset+2
@@ -549,8 +545,8 @@ class UIAction():
         Voltage_Set_Point_temp = (res[offset+1]*256+res[offset])
         offset  =offset+2
       
-        ret = [Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1,Voltage_Set_Point_temp]
-        #print(ret)
+        ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,Voltage_Set_Point_temp]
+
         return ret
            
 

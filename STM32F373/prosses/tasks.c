@@ -12,7 +12,6 @@ void OnResetFlowDown(void)
 }
 void Task_500HZ(void)
 {	
- 	  u8 len;
 		//Debug1_H;
 		VOL_IIR_Filter();		 
 		if (is_PID_Running()){

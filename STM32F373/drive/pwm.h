@@ -16,10 +16,10 @@
 #define     PWM_DUTY        12000            //定义PWM的周期，数值为时钟周期数，假如使用24.576MHZ的主频，则PWM频率为6000HZ。
 
 
-#define     PWM_HIGH_MAX    5050000l				//限制PWM输出的最大占空比。用户请勿修改。
-#define     PWM_HIGH_MIN    12000  //限制PWM输出的最小占空比。用户请勿修改。
+#define     PWM_HIGH_MAX    192000l				//限制PWM输出的最大占空比。用户请勿修改。50%PWM 全开
+#define     PWM_HIGH_MIN    57600  //限制PWM输出的最小占空比。用户请勿修改。15%
 
-void getStr(uint8_t *buf);
+ 
 void TIM2_GPIO_Config(void) ;
 void NVIC_Config_PWM(void);
 void TIM2_Mode_Config(unsigned int Prescaler);
@@ -29,6 +29,6 @@ void LoadPWM(uint32_t high);
 void TIM2_Set_Prescaler(unsigned int Prescaler);
 void DMA_Total_Transfer_interrupt(void);
 void DMA_Half_Transfer_interrupt(void);
-void addSomeParam(uint8_t *buf,int8_t offset);
+ 
  
 #endif

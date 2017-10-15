@@ -20,7 +20,7 @@ X_MINUTES = 0.15
 Y_MAX = 3200
 Y_MIN = 1
 INTERVAL = 0.05
-MAXCOUNTER = 50
+MAXCOUNTER = 20
 
 class MplCanvas(FigureCanvas):
     def __init__(self):
@@ -31,9 +31,9 @@ class MplCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        self.curveVRef = None # draw object
+        self.curveVCh1 = None # draw object
         self.curveVSetpoint= None # draw object
-        self.curveVSensor= None # draw object
+        self.curveVCh0= None # draw object
         self.curvePWMOut= None # draw object
             
         self.initFigureUI(self.ax,"time (sec)",'Voltage(mv)')
@@ -50,12 +50,14 @@ class MplCanvas(FigureCanvas):
         ax.xaxis.set_major_formatter( DateFormatter('%M:%S') ) #tick label formatter
         
     
-    def plot(self,dataX,ydataVCh0,ydataVSetPoint,ydataVCh1,ydataPWMOut):
-        if self.curveVRef is None:
+    def plot(self,dataX,ydataVCh0,ydataVCh1,ydataVSetPoint,ydataVSetPointTemp,ydataPWMOut):
+        if self.curveVCh1 is None:
             #create draw object once
-            self.curveVRef, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'b-',label=u"VRef")
+            self.curveVCh0, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'r-',label=u"VSensor")
+            self.curveVCh1, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'b-',label=u"VRef")
             self.curveVSetpoint, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'k-',label=u"VSetpoint")
-            self.curveVSensor, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'r-',label=u"VSensor")
+            self.curveVSetpointTemp, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'y-',label=u"VSetpoint")
+           
             self.curvePWMOut, = self.ax1.plot_date(np.array(dataX), np.array(ydataVCh0),'g-',label=u"PWM")
             #self.ax.legend()
             self.ax.grid()
@@ -63,12 +65,10 @@ class MplCanvas(FigureCanvas):
         else:
             #update data of draw object
             npx = np.array(dataX)
-            npy =  np.array(ydataVCh0)
-            npy0 =  np.array(ydataVSetPoint)
-            npy1 =  np.array(ydataVCh1)
-            npy2 =  np.array(ydataPWMOut)
+             
             meany = int(np.mean(ydataVCh0))
             std = np.std(ydataVCh0)*10
+            
             if std <5:
                 std =5
             if std >2500:
@@ -77,19 +77,23 @@ class MplCanvas(FigureCanvas):
             if ystart <0:
                 ystart = 0
             yend = meany+std
+            
             meany = int(np.mean(ydataPWMOut))
             std = np.std(ydataPWMOut)*10
+            
             if std <5:
                 std =5
             ystart1 = meany-std
             if ystart1 <0:
                 ystart1 = 0
             yend1 = meany+std
-
-            self.curveVRef.set_data(npx,npy)
-            self.curveVSetpoint.set_data(npx,npy0)
-            self.curveVSensor.set_data(npx, npy1)
-            self.curvePWMOut.set_data(npx, npy2)
+            
+            self.curveVCh0.set_data(npx, np.array(ydataVCh0))
+            self.curveVCh1.set_data(npx,np.array(ydataVCh1))
+            self.curveVSetpoint.set_data(npx,np.array(ydataVSetPoint))
+            self.curveVSetpointTemp.set_data(npx,np.array(ydataVSetPointTemp))
+            
+            self.curvePWMOut.set_data(npx, np.array(ydataPWMOut))
             #update limit of X axis,to make sure it can move
             
             self.ax.set_xlim(dataX[0],dataX[-1]+(dataX[-1]-dataX[0])/10)
@@ -116,6 +120,7 @@ class  MyDynamicMplCanvas(QWidget):
     def on_close(self):
         print("close")
         self.tData.Close()
+        
     def __init__(self , parent =None):
         QWidget.__init__(self, parent)
         self.canvas = MplCanvas()
@@ -125,10 +130,14 @@ class  MyDynamicMplCanvas(QWidget):
         self.vbl.addWidget(self.canvas)
         self.setLayout(self.vbl)
         self.dataX= []
+        
         self.ydataVCh0= []
-        self.ydataVSetPoint = []
         self.ydataVCh1 = []
+        self.ydataVSetPoint = []
+        self.ydataVSetPointTemp = []
+        
         self.ydataPWMOut = []
+        
         self.initDataGenerator()
         win32api.SetConsoleCtrlHandler(self.on_close, True)
 
@@ -177,22 +186,29 @@ class  MyDynamicMplCanvas(QWidget):
                 try:                            
                     self.dataX.append(newTime)
                     
-                    self.ydataVCh0.append(newData[2])
-                    self.ydataVSetPoint.append(newData[0])
-                    self.ydataVCh1.append(newData[3])
-                    self.ydataPWMOut.append(newData[1])
+                    self.ydataVCh0.append(newData[0])                    
+                    self.ydataVCh1.append(newData[1])
+                    
+                    self.ydataVSetPoint.append(newData[2])
+                    self.ydataVSetPointTemp.append(newData[3])
+                    
+                    self.ydataPWMOut.append(newData[4])
                     print(newData)
                     
                     #self.getpoint.setProperty("value", newData[2])
                     self.getpoint.display(str(newData[2]))
                     #self.getpointbar.setValue(int(newData[2]/2500))
-                    self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVSetPoint,self.ydataVCh1,self.ydataPWMOut)   
+                    self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)   
                     self.app.processEvents()
                     if counter >= MAXCOUNTER:
                         self.dataX.pop(0)
+                        
                         self.ydataVCh0.pop(0) 
-                        self.ydataVSetPoint.pop(0) 
                         self.ydataVCh1.pop(0) 
+                        
+                        self.ydataVSetPoint.pop(0) 
+                        self.ydataVSetPointTemp.pop(0) 
+                        
                         self.ydataPWMOut.pop(0) 
                     else:
                         counter+=1
