@@ -17,30 +17,47 @@ struct _PID spid;
 uint16_t data_x,data_y,data_z;
 
 float  responce_time=0.5;
-float  freq_Cutoff=0.5;
+float  freq_Cutoff=50;
 
 uint32_t PWM_Output;
+
 uint16_t Voltage_Set_Point;
 uint16_t Voltage_Set_Point_temp;
+uint16_t feedbackTime = 20;
 
-unsigned int PID_Votage_Chanel = 0;
-
-unsigned char isRunning=0;
+uint8_t PID_Votage_Chanel = 0;
+uint8_t PID_Ctrl_Votage_Chanel = 1;
+uint8_t isRunning=0;
 uint8_t set_point_changed= 0;
+
+uint8_t PID_Ctrl_Mode = 0;//0 soft 1:Ext FlowSet
+
+uint16_t getFeedBackTime(void){
+	return feedbackTime;
+}
 void PID_Setpoint_Change(){
   static  int16_t counter=0;
 	static char setPointIncreasing=0;
 	static int16_t voltageStart = 0;
+	int16_t error = 0;
 	int16_t currVoltage = GetADCVoltage(PID_Votage_Chanel);
-	int16_t error = Voltage_Set_Point-currVoltage;
- 
+	int16_t CtrlVoltage = GetADCVoltage(PID_Ctrl_Votage_Chanel);
+	
+	if(PID_Ctrl_Mode ==0){
+		error=Voltage_Set_Point-currVoltage;
+	}
+	if(PID_Ctrl_Mode ==1){
+		error=CtrlVoltage-currVoltage;
+		Voltage_Set_Point = CtrlVoltage;
+	}
+	
 	if(abs(error)>spid.error_Low_Threadhold && setPointIncreasing==0){//从头计时
 		setPointIncreasing = 1;
 		counter = 0;
-		voltageStart = currVoltage+error/3;//从三分之一开始走起
+		voltageStart = currVoltage+error/2;//从三分之一开始走起
 	}
 	if(setPointIncreasing == 1){
-		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.005f/responce_time));	 
+		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.05f/responce_time));	 
 		counter++;
 	}
 	if(setPointIncreasing == 1 && abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
@@ -111,7 +128,12 @@ void Set_PID_Param(uint8_t *buf)
 	responce_time = (float)(data_y/1000.f);
 	freq_Cutoff = (float)(data_z/1000.f);
 	
-	Calculate_FilteringCoefficient(0.004f, freq_Cutoff);
+	offset+=2;
+	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
+
+	PID_Ctrl_Mode = data_x;
+	
+	Calculate_FilteringCoefficient(freq_Cutoff);
 	 
 	EEPROM_SAVE_PID();
 }
@@ -204,16 +226,17 @@ void Set_Running_Param(uint8_t *buf)
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 	offset+=2;
 	data_y = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
- 
 	
+ 
+	feedbackTime = data_x; 
 	if(isRunning==0){
 		PWM_Output=data_x; 
 		LoadPWM(PWM_Output);
 	}
-	
-	Voltage_Set_Point=data_y; 
- 
-	
+
+	if(PID_Ctrl_Mode==0){
+		Voltage_Set_Point=data_y; 	
+	}
 }
 void Get_Running_Param(uint8_t *buf)
 {
@@ -243,8 +266,8 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
 			
-	data_x = (int16_t)(GetADCVoltage(0));
-	data_y = (int16_t)(GetADCVoltage(1));		 
+	data_x = (int16_t)(GetADCVoltage(0)*10);
+	data_y = (int16_t)(GetADCVoltage(1)*10);		 
 	data_z = Voltage_Set_Point_temp;
 	 
 	
@@ -257,7 +280,8 @@ void Get_Running_Param(uint8_t *buf)
 	buf[offset] =  data_z & 0xFF ;
 	buf[offset+1] = (data_z >> 8) & 0xFF;
 	offset+=2;
-	buf[offset+1] = Get_Checksum(buf);
+	
+	//buf[offset+1] = Get_Checksum(buf);
 	buf[3] = offset;
 }
 /*********************************************************** 
@@ -441,8 +465,7 @@ void PID_Param_Reset(void)
 void  Valve_Close(void)
 {
 	isRunning = 0;
-	PWM_Output = 0;
-	Voltage_Set_Point = 0;
+	PWM_Output = PWM_HIGH_MIN;
 	LoadPWM(PWM_Output) ;
 }
 void Valve_Open(void)

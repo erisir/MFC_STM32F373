@@ -14,7 +14,7 @@
 #include "pid.h" 
 
 uint8_t Bsp_Int_Ok=0;
-extern uint8_t Count_1ms,Count_2ms,Count_4ms;
+extern uint8_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
  
 
 extern u8 RS485_RX_BUF[64]; 
@@ -37,9 +37,9 @@ void Bsp_Int(void ){
 	RS485_PrintString("4:\tPWM_Init\n");
 	PID_Init() ;
 	RS485_PrintString("5:\tPID_Init\n");
-	SDADC1_Config();
-	Calculate_FilteringCoefficient(0.004f, 10.f);//sampel time,unit second,F_cutoff
-	RS485_PrintString("6:\tSDADC1_Config\n");
+	ADC1_Init();
+	Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
+	RS485_PrintString("6:\tADC_Init\n");
  
 	
 	RCC_GetClocksFreq(&RCC_Clocks);
@@ -50,29 +50,36 @@ void Bsp_Int(void ){
 }
 int main(void)
 { 
+
 	Bsp_Int();	
 	 
 	while(1)
-	{	
-		u8 len;
-		RS485_Receive_Data(RS485_RX_BUF,&len);
-		if(len)
-		{
-			 parseData(RS485_RX_BUF,len);
- 		}
-		if(Count_1ms>=5)//500Hz-250Hz[240]
-		{	
+	{					
+		if(Count_1ms>=1)//1000Hz
+		{			
 			Count_1ms = 0;		
+			Task_1000HZ();			
+		}
+		if(Count_2ms>=getFeedBackTime())//500Hz
+		{	
+			
+			Count_2ms = 0;		
 			Task_500HZ();
 		}
-		if(Count_2ms>=10)//200Hz-100Hz[88]
+		
+		if(Count_5ms>=5)//200Hz
 		{
-			Count_2ms = 0;
+			Count_5ms = 0;
 			Task_200HZ();
 		}
-		if(Count_4ms>=200)//10Hz-5Hz[5]
+		if(Count_10ms>=10)//100Hz
 		{
-			Count_4ms = 0;
+			Count_10ms = 0;
+			Task_100HZ();		
+		}
+		if(Count_100ms>=100)//10Hz
+		{
+			Count_100ms = 0;
 			Task_10HZ();		
 		}
 		 

@@ -17,7 +17,7 @@
 
 #include "timebase.h" 
 
-uint8_t Count_1ms,Count_2ms,Count_4ms;
+uint8_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
 uint32_t  Timer4_Count;//记录Timer3中断次数
 extern uint8_t Bsp_Int_Ok;
 void TIM4_Init(void){
@@ -39,10 +39,10 @@ void TIM4_NVIC_Configuration(void)
 {
     NVIC_InitTypeDef NVIC_InitStructure; 
     
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);  													
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //2bit 抢占，2bit响应 抢占优先，值小则优先 													
     NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;	  
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;	
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }
@@ -62,7 +62,7 @@ void TIM4_Configuration(unsigned int Prescaler)
     //TIM_DeInit(TIM4);
 	
 	/* 自动重装载寄存器周期的值(计数值) */
-    TIM_TimeBaseStructure.TIM_Period=500;
+    TIM_TimeBaseStructure.TIM_Period=1000;
 	
     /* 累计 TIM_Period个频率后产生一个更新或者中断 */
 	  /* 时钟预分频数为72 */
@@ -97,7 +97,9 @@ void TIM4_IRQHandler(void)//Timer4中断
 			GPIO_ResetBits(GPIOA, GPIO_Pin_15);*/
 		Count_1ms++;
 		Count_2ms++;
-		Count_4ms++;
+		Count_5ms++;
+		Count_10ms++;
+		Count_100ms++;
 	}
 }
 /*********************************************END OF FILE**********************/

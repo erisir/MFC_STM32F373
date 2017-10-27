@@ -1,14 +1,16 @@
 #ifndef __ADC_H
 #define	__ADC_H
 #include "stm32f37x.h"
-/* A potentiometer (POT) is connected to PB1 which corresponds to SDADC1 channel 5P */
+ 
+
+//#define __ADC_INJECTED_MODE_
+#define  __ADC_DMA_MODE_
+//#define __ADC_ADC1_MODE_
 #define POT_GPIO_PORT        GPIOB
-#define POT_GPIO_PIN         GPIO_Pin_1|GPIO_Pin_0
-#define POT_GPIO_CLK         RCC_AHBPeriph_GPIOB
+   
+      
 #define POT_SDADC            SDADC1
-#define POT_SDADC_CLK        RCC_APB2Periph_SDADC1
-#define POT_SDADC_PWR        PWR_SDADCAnalog_1
-#define POT_SDADC_VREF       SDADC_VREF_Ext /* External reference is selected */
+ 
 #define POT_SDADC_GAIN       SDADC_Gain_1   /* Internal gain 1 is seleted: 
                                                SDADC_GAIN must be updated according to
                                                POT_SDADC_GAIN */
@@ -28,12 +30,23 @@ float ch1;
 extern struct _Voltage voltage;
 extern struct _Voltage filter_voltage;
 
+void ADC1_Init(void);
+
 uint32_t SDADC1_Config(void);
-void DMA_Config(void);
-void Calculate_FilteringCoefficient(float Time, float Cut_Off);
+void ADC_GPIO_Config(void);
+void SDADC_DMA_Config(void);
+
+void SDADC_NVIC_Config(void);
+void ADC1_Mode_Config(void);
+void Calculate_FilteringCoefficient(float Cut_Off);
 void VOL_IIR_Filter(void);
  
 float GetADCVoltage(unsigned char ch);
+void updateVoltageWindowBuf(void);
+
+
+void updateRawData(void);
 void ADC_Mean(void);
+ 
 #endif /* __ADC_H */
 

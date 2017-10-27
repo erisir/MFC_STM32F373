@@ -63,7 +63,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -89,7 +89,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -98,7 +98,7 @@
           <double>0.001000000000000</double>
          </property>
          <property name="value">
-          <double>6.454500000000000</double>
+          <double>6.455000000000000</double>
          </property>
         </widget>
        </item>
@@ -115,7 +115,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -152,7 +152,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -161,7 +161,7 @@
           <double>0.001000000000000</double>
          </property>
          <property name="value">
-          <double>6.454500000000000</double>
+          <double>6.455000000000000</double>
          </property>
         </widget>
        </item>
@@ -178,7 +178,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -197,7 +197,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -227,7 +227,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -253,7 +253,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -262,7 +262,7 @@
           <double>0.001000000000000</double>
          </property>
          <property name="value">
-          <double>6.454500000000000</double>
+          <double>6.455000000000000</double>
          </property>
         </widget>
        </item>
@@ -279,7 +279,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>4</number>
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -400,17 +400,20 @@
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
        <property name="minimum">
-        <double>-32556.000000000000000</double>
+        <double>0.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>5.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>0.200000000000000</double>
+        <double>0.500000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>0.500000000000000</double>
        </property>
       </widget>
      </item>
@@ -429,11 +432,14 @@
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>5.000000000000000</double>
        </property>
        <property name="value">
-        <double>3.000000000000000</double>
+        <double>1.500000000000000</double>
        </property>
       </widget>
      </item>
@@ -456,13 +462,13 @@
         <number>2</number>
        </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>100.000000000000000</double>
        </property>
        <property name="singleStep">
         <double>5.000000000000000</double>
        </property>
        <property name="value">
-        <double>5.000000000000000</double>
+        <double>50.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -491,20 +497,20 @@
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>20.000000000000000</double>
        </property>
        <property name="value">
-        <double>25.000000000000000</double>
+        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_22">
        <property name="text">
-        <string>PID_Factor</string>
+        <string>Ctrl_Mode</string>
        </property>
       </widget>
      </item>
@@ -520,10 +526,10 @@
         <number>0</number>
        </property>
        <property name="maximum">
-        <double>4.000000000000000</double>
+        <double>1.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -557,7 +563,7 @@
          <string>自动增量</string>
         </property>
         <property name="checked">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -567,7 +573,7 @@
          <string>自动增量</string>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -636,10 +642,10 @@
         <double>65535.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>100.000000000000000</double>
+        <double>50.000000000000000</double>
        </property>
        <property name="value">
-        <double>2000.000000000000000</double>
+        <double>20.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -655,14 +661,17 @@
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
        <property name="maximum">
-        <double>65535.000000000000000</double>
+        <double>6000.000000000000000</double>
        </property>
        <property name="singleStep">
         <double>1000.000000000000000</double>
        </property>
        <property name="value">
-        <double>3000.000000000000000</double>
+        <double>5000.000000000000000</double>
        </property>
       </widget>
      </item>

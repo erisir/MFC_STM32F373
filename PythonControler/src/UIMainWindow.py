@@ -57,7 +57,7 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.ShowUnit_slm.clicked.connect(self.uiAction.ShowUnit_slm)
         self.thirdUIControl.ShowUnit_V.clicked.connect(self.uiAction.ShowUnit_V)
         self.thirdUIControl.ShowUnit_mv.clicked.connect(self.uiAction.ShowUnit_mv)
-        self.thirdUIControl.mplCanvas.InitGUI(self.uiAction,self.thirdUIControl.GetPoint,self.thirdUIControl.GetPointBar,self.app)
+        self.thirdUIControl.mplCanvas.InitGUI(self.uiAction,self.thirdUIControl.GetPoint,self.thirdUIControl.GetPointBar,self.thirdUIControl.SetPointBar,self.app)
         self.thirdUIControl.startPlot.clicked.connect(self.thirdUIControl.mplCanvas.startPlot)
         self.thirdUIControl.pausePlot.setEnabled(False)
         self.thirdUIControl.pausePlot.clicked.connect(self.thirdUIControl.mplCanvas.pausePlot)
@@ -81,7 +81,7 @@ class UIMainWindow(QDialog):
     def Start(self):
     
         self.uiAction.Connect()
-        #self.uiAction.getPWMVSVotage();
+        self.thirdUIControl.mplCanvas.startPlot();
     def Exit(self):
         self.thirdUIControl.mplCanvas.releasePlot()
         #exit()
@@ -110,7 +110,7 @@ tipLabel = QtWidgets.QLabel(splash)
 tipLabel.setGeometry(QtCore.QRect(60, height-30, width, 20))
 tipLabel.setObjectName("label")
 splash.setMask(splash_pix.mask())
-splash.show()
+#splash.show()
 time.sleep(0.1)
 tipLabel.setText( "程序正在启动...")
 time.sleep(1)

@@ -2,22 +2,6 @@
 #include "rs485.h"	
 #include "delay.h"
 
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK战舰STM32开发板
-//RS485驱动 代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//修改日期:2012/9/9
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
-//All rights reserved									  
-//////////////////////////////////////////////////////////////////////////////////
-
-
- 
-
 //接收缓存区 	
 u8 RS485_RX_BUF[64];  	//接收缓冲,最大64个字节.
 u8 RS485_TX_BUF[64];	  //串口发送缓冲区
@@ -27,7 +11,6 @@ u8 RS485_RX_CNT=0;
 void USART1_IRQHandler(void)
 {
 	u8 res;	    
- 
  	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) //接收到数据
 	{	 
 	 			 
@@ -89,14 +72,12 @@ void RS485_Init(u32 bound)
 
 	USART_Cmd(USART1, ENABLE);
 	
-	
-	/* Configure the NVIC Preemption Priority Bits */  
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+ 
 
 	/* Enable the USARTy Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;	 
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
@@ -162,31 +143,7 @@ void RS485_Mode_Tx(void)
 {
 	GPIO_SetBits(GPIOD, GPIO_Pin_8 );
 }
-void RS485_ON_OFF(void)
-{
-	uint8_t i ;
-	for(i=0;i<3;i++)
-	{
-		RS485_Mode_Tx();
 
-		delay_ms(200);
-		RS485_Mode_Rx();
-
-		delay_ms(200);	
-	}
-	for(i=0;i<3;i++)
-	{
-		RS485_Mode_Tx();
-
-		delay_ms(100);
-		RS485_Mode_Rx();
-
-		delay_ms(100);	
-	}	
-	RS485_Mode_Rx();
-
-	delay_ms(100);
-}
 
  
 

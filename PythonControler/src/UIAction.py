@@ -33,7 +33,7 @@ class UIAction():
     _CMD_SetVPID    = '6'
     
     showUnit = "mv"
-    
+ 
     Interception = 0
     Slope = 1
     
@@ -45,9 +45,12 @@ class UIAction():
         self.thirdUIControl = thirdUIControl
         self.fourUIOther = fourUIOther
         self.proControl = proControl
+        
+         
+       
  
     def RecaculatePIDParam(self):           
-        if self.proControl.PID_AutoIncMode1.isChecked():#根据Kp获得Ki,Kd
+        if self.proControl.PID_AutoIncMode1.isChecked() or self.proControl.PID_AutoIncMode2.isChecked():#根据Kp获得Ki,Kd
             KpH = self.proControl.PID_KpH.value()
             KpM = self.proControl.PID_KpM.value()
             KpL = self.proControl.PID_KpL.value()
@@ -76,7 +79,7 @@ class UIAction():
                 temp = 65.535
             self.proControl.PID_KdL.setProperty("value", float(temp))
              
-        if self.proControl.PID_AutoIncMode2.isChecked():  
+        if False:#self.proControl.PID_AutoIncMode2.isChecked():  
             response_time = self.proControl.Responce_Time.value() 
             delay_time = self.proControl.Delay_Time.value()  
             PID_factor = int(self.proControl.PID_Factor.value()) 
@@ -131,7 +134,7 @@ class UIAction():
     def CheckSumCalc(self,buf):
         checkSum = 0;
         return checkSum;
-    def SendToComAndRead(self,buf,timeout):
+    def SendToComAndRead(self,buf,timeout,expectLen):
         if self.isDeviceReady == False  :
             self.lastError = 'Device not ready'
             return None
@@ -139,14 +142,15 @@ class UIAction():
             while self.commBusy and timeout>0:
                 time.sleep(0.001)  
                 timeout -=1
+                print('wait')
             if timeout<=0:
                 self.lastError = 'SendToComAndRead timeout,com is busy'
                 return None 
             
             self.commBusy = True     
-            self.clearComPort()
+            #self.clearComPort()
             self.comm.write(bytes(buf))
-            res=self.readAnswer(timeout)  
+            res=self.readAnswer(timeout,expectLen)  
             self.commBusy = False
             self.log(str(res))
             return res
@@ -162,7 +166,7 @@ class UIAction():
         buf[3]= 6
         buf[4]= ord(cmd)
         buf[5]= self.CheckSumCalc(buf)  
-        ret = self.SendToComAndRead(buf,10)
+        ret = self.SendToComAndRead(buf,10,0)
         if ret is None:
             self.errorMessage(self.lastError)
             return False
@@ -170,7 +174,7 @@ class UIAction():
         return True
  
     def SendCommandWithData(self,buf):       
-        ret = self.SendToComAndRead(buf,20)
+        ret = self.SendToComAndRead(buf,20,0)
         if ret is None:
             self.errorMessage(self.lastError)
             return False
@@ -178,7 +182,7 @@ class UIAction():
         return True
     
     def SendCommandWitAnswer(self,buf,expectLen): 
-        res= self.SendToComAndRead(buf,20)
+        res= self.SendToComAndRead(buf,50,expectLen)
         if res is None:
             return None
         if(len(res) !=expectLen):
@@ -196,19 +200,22 @@ class UIAction():
             self.lastError ='clearComPort error,exception occurs' 
             return False
         
-    def readAnswer(self,timeout):        
+    def readAnswer(self,timeout,expDataLen):        
         data = bytearray(64)
+        if expDataLen ==0:
+            expDataLen = 2
         readLen = 0
         try:   
-            while(readLen ==0 and timeout>0):        
+            while(readLen <expDataLen-1 and timeout>0):        
                 while self.comm.inWaiting() > 0:
                     res = bytes(self.comm.read(1))
                     data[readLen] = res[0]
                     readLen +=1
-                timeout = timeout-1       
+                timeout = timeout-1  
+                #print(str(timeout)+'---'+str(readLen))                
                 time.sleep(0.001)
             if timeout<=0:
-                self.lastError = 'readAnswer timeout'
+                self.lastError = 'readAnswer timeout,read'+ str(readLen)
                 return None
             if  readLen != 0:
                 ret = bytearray(readLen)
@@ -282,21 +289,51 @@ class UIAction():
         if self.showUnit == "mv":
             return votage
    
-   
+    def readVoltage(self):
+        counter = 0;
+        flag = False
+        readOk = False
+        data = bytearray(60)
+        vol = 0
+        try:
+            while not readOk :
+                while self.comm.inWaiting() > 0:
+                    res = bytes(self.comm.read(1))
+                    
+                    if res == b'$':
+                        flag = True
+                    if flag:                               
+                        data[counter] =res[0]
+                        counter+=1   
+                    if counter==6:
+                        readOk = True
+            vol = data[1]+data[2]*256
+            vol1 = data[3]+data[4]*256
+        except:
+            print('error')
+            return None
+        return [0,0,0,vol,vol1,0,0,0]
+
+ 
+        
     def GetPlotData(self):
+        
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
-        ret = self.readRunningParam()
+ 
+        ret = self.readRunningParam()#self.readVoltage()#
         if ret == None:
             print(self.lastError)
             return None
         try:
             Voltage_Set_Point=self.GetShowValue(ret[0])  
             PWM_Output = ret[1]          
-            vCh0 = self.GetShowValue(ret[3])
-            vCh1 = self.GetShowValue(ret[4])
+            vCh0 = self.GetShowValue(ret[3])/10
+            vCh1 = self.GetShowValue(ret[4])/10
             Voltage_Set_PointTemp = self.GetShowValue(ret[5])
-                                      
-            return [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output]
+                
+            res = [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output] 
+                            
+            return res
         except:
             self.errorMessage("GetPlotData error")
             print(self.lastError)
@@ -310,7 +347,7 @@ class UIAction():
     
         
     def Connect(self):
-        commName = 'com5'#self.firstUIComm.CommName.currentText()
+        commName = 'com4'#self.firstUIComm.CommName.currentText()
         Baudrate = 194000#self.firstUIComm.Baudrate.currentText()   
         try:   
             self.comm = serial.Serial(commName,int(Baudrate),timeout=2)              
@@ -318,9 +355,9 @@ class UIAction():
             self.lastError = "串口"+commName+"被其他程序占用"
             return self.lastError
         self.isDeviceReady = True
-        ret = self.readPIDParam()
+        ret =  self.readPIDParam()
         
-        if ret:
+        if True:
             self.isDeviceReady = True
             self.lastError ="连接成功"
         else:
@@ -334,11 +371,11 @@ class UIAction():
         self.isDeviceReady = False  
     def SetPIDParam(self):
         
-        buf = bytearray( 35 )
+        buf = bytearray( 37 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 35
+        buf[3]= 37
         buf[4]= ord(self._CMD_SetPIDParam )
         buf[5]= ord('X' )
         offset = 5
@@ -410,7 +447,12 @@ class UIAction():
         offset = offset+ 2
         buf[offset+1] = int(z/256)
         buf[offset] = int(z%256)
-                                                  
+        offset = offset+ 2  
+        
+        x = int(self.proControl.PID_Factor.value()) 
+        buf[offset+1] = int(x/256)
+        buf[offset] = int(x%256)
+                                                
         return self.SendCommandWithData(bytes(buf))
     
    
@@ -533,9 +575,7 @@ class UIAction():
         PWM_Output = res[offset+3]*256*256*256+res[offset+2]*256*256+res[offset+1]*256+res[offset]
         offset  =offset+4
         lastVoltage = res[offset+1]*256+res[offset]
-        
- 
-  
+         
         
         offset  =offset+2
         currentVol0 = (res[offset+1]*256+res[offset])
@@ -544,7 +584,8 @@ class UIAction():
         offset  =offset+2
         Voltage_Set_Point_temp = (res[offset+1]*256+res[offset])
         offset  =offset+2
-      
+                    
+              
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,Voltage_Set_Point_temp]
 
         return ret

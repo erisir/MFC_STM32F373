@@ -23,7 +23,7 @@ float Byte2Float(unsigned char* buf,int offset)
 } 
 void parseData(u8 *buf,u8 rxlen){
 	//$ N > len-5 FLAG 【DATA】 Xlen(checksum)
-	uint8_t len = buf[3];
+	//uint8_t len = buf[3];
   
 	//if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
 	if( buf[0] != '$' )	return;	//数据校验

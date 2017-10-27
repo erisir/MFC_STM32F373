@@ -68,7 +68,7 @@ struct _PID {
 	
 };
 extern struct _PID spid;
-
+uint16_t getFeedBackTime(void);
 
 void PID_Init (void);  
 void EEPROM_INIT(void);

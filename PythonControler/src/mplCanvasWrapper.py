@@ -16,96 +16,99 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  * 
 
-X_MINUTES = 0.15
-Y_MAX = 3200
+X_SECOND = 10
+Y_MAX = 6000
+Y1_MAX = 120000
 Y_MIN = 1
-INTERVAL = 0.05
-MAXCOUNTER = 20
 
+PlotThreadInterval = 0.02
+getDataThreadInterval = 0.02
+timerInterval = 0.1;
+MAXCOUNTER = X_SECOND/(PlotThreadInterval+0.25)
+
+AutoRange =True
+Debug = True
+DrawFigure = True
 class MplCanvas(FigureCanvas):
+    curveVCh0= None # draw object
+    curveVCh1 = None # draw object
+    curveVSetpoint= None # draw object     
+    curveVSetpointTemp= None # draw object        
+    curvePWMOut= None # draw object
+    
     def __init__(self):
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
         self.ax1 =  self.ax .twinx()
-        #self.ax1 = self.fig.add_subplot(212)
+
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        self.curveVCh1 = None # draw object
-        self.curveVSetpoint= None # draw object
-        self.curveVCh0= None # draw object
-        self.curvePWMOut= None # draw object
-            
-        self.initFigureUI(self.ax,"time (sec)",'Voltage(mv)')
-        self.initFigureUI(self.ax1,"time (sec)",'OutPut(pwm)')
+                    
+        self.initFigureUI(self.ax,"time/s",'Vol(mv)')
+        self.initFigureUI(self.ax1,"time/s",'PWM')
+        self.ax.set_ylim(Y_MIN,Y_MAX)
+        self.ax.set_ylim(Y_MIN,Y1_MAX)
         
     def initFigureUI(self,ax,xlabel,ylabel):   
         ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_ylim(Y_MIN,Y_MAX)
-        #self.ax.xaxis.set_major_locator(MinuteLocator())  # every minute is a major locator
-        ax.xaxis.set_major_locator(SecondLocator([0,5,10,15,20,25,30,35,40,45,50,55]))
-        ax.xaxis.set_minor_locator(SecondLocator())
-        #self.ax.xaxis.set_minor_locator(SecondLocator([10,20,30,40,50])) # every 10 second is a minor locator
-        ax.xaxis.set_major_formatter( DateFormatter('%M:%S') ) #tick label formatter
+        ax.set_ylabel(ylabel)       
         
-    
+        ax.xaxis.set_major_locator(SecondLocator(range(0,59,2)))
+        ax.xaxis.set_minor_locator(SecondLocator(range(0,59,1)))
+        ax.xaxis.set_major_formatter( DateFormatter('%M:%S') )  
+        
+    def getPlotRange(self,data,stdFactor,stdMin,stdMax):
+        mean = int(np.mean(data))
+        std = np.std(data)*stdFactor
+        if std <stdMin:
+            std =stdMin
+        if std >stdMax:
+            std =stdMax
+            
+        ystart = mean-std
+        if ystart <0:
+            ystart = 0
+        yend = mean+std*2
+        return [ystart,yend]
+        
     def plot(self,dataX,ydataVCh0,ydataVCh1,ydataVSetPoint,ydataVSetPointTemp,ydataPWMOut):
-        if self.curveVCh1 is None:
+        if  not DrawFigure:
+            return
+        if self.curveVCh0 is None:
             #create draw object once
-            self.curveVCh0, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'r-',label=u"VSensor")
-            self.curveVCh1, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'b-',label=u"VRef")
-            self.curveVSetpoint, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'k-',label=u"VSetpoint")
-            self.curveVSetpointTemp, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'y-',label=u"VSetpoint")
+            self.curveVCh0, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'r-',label=u"Ch0")
+            self.curveVCh1, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'b-',label=u"Ch1")
+                   
+            self.curveVSetpoint, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'k-')#,label=u"Set"
+            self.curveVSetpointTemp, = self.ax.plot_date(np.array(dataX), np.array(ydataVCh0),'y-')#,label=u"SetT"
            
-            self.curvePWMOut, = self.ax1.plot_date(np.array(dataX), np.array(ydataVCh0),'g-',label=u"PWM")
-            #self.ax.legend()
+            self.curvePWMOut, = self.ax1.plot_date(np.array(dataX), np.array(ydataVCh0),'g-')#label=u"PWM"
+            
+            self.ax.legend()
             self.ax.grid()
              
         else:
             #update data of draw object
             npx = np.array(dataX)
              
-            meany = int(np.mean(ydataVCh0))
-            std = np.std(ydataVCh0)*10
-            
-            if std <5:
-                std =5
-            if std >2500:
-                std =2500
-            ystart = meany-std
-            if ystart <0:
-                ystart = 0
-            yend = meany+std
-            
-            meany = int(np.mean(ydataPWMOut))
-            std = np.std(ydataPWMOut)*10
-            
-            if std <5:
-                std =5
-            ystart1 = meany-std
-            if ystart1 <0:
-                ystart1 = 0
-            yend1 = meany+std
-            
             self.curveVCh0.set_data(npx, np.array(ydataVCh0))
             self.curveVCh1.set_data(npx,np.array(ydataVCh1))
-            self.curveVSetpoint.set_data(npx,np.array(ydataVSetPoint))
-            self.curveVSetpointTemp.set_data(npx,np.array(ydataVSetPointTemp))
-            
-            self.curvePWMOut.set_data(npx, np.array(ydataPWMOut))
-            #update limit of X axis,to make sure it can move
-            
+            if Debug:
+                self.curveVSetpoint.set_data(npx,np.array(ydataVSetPoint))
+                self.curveVSetpointTemp.set_data(npx,np.array(ydataVSetPointTemp))
+                
+                self.curvePWMOut.set_data(npx, np.array(ydataPWMOut))
+                
+                ret1 = self.getPlotRange(ydataPWMOut,20,5,3000)  
+                self.ax1.set_ylim(ret1[0],ret1[1])
+            #update limit of X axis,to make sure it can move           
             self.ax.set_xlim(dataX[0],dataX[-1]+(dataX[-1]-dataX[0])/10)
             
-            #ystart = 0
-            #yend = 6000
-            
-            #ystart1 = 0
-            #yend1 = 141072
-            self.ax.set_ylim(ystart,yend)
-            self.ax1.set_ylim(ystart1,yend1)
-            
+            if AutoRange:
+                ret = self.getPlotRange(ydataVCh0,5,5,3000)                                         
+                self.ax.set_ylim(ret[0],ret[1])
+                            
         ticklabels = self.ax.xaxis.get_ticklabels()
         for tick in ticklabels:
             tick.set_rotation(5)
@@ -117,9 +120,21 @@ class  MyDynamicMplCanvas(QWidget):
     Slope=25
     startTime =0
     app = None
+    fileHandle = None
+ 
+    UI_getpoint=None
+    UI_getpointbar = None
+    UI_setpointbar = None
+    getpoint_Value = 0
+    setpoint_Value = 0
+    getDataTimer = None
+    PlotCounter=0;
+ 
+    
+        
     def on_close(self):
         print("close")
-        self.tData.Close()
+        self.tPlot.join()
         
     def __init__(self , parent =None):
         QWidget.__init__(self, parent)
@@ -137,70 +152,117 @@ class  MyDynamicMplCanvas(QWidget):
         self.ydataVSetPointTemp = []
         
         self.ydataPWMOut = []
-        
         self.initDataGenerator()
         win32api.SetConsoleCtrlHandler(self.on_close, True)
 
         #self.startTime = date2num(datetime.now())
         
-    def InitGUI(self,action,getpoint,getpointbar,appHandle):
+    def InitGUI(self,action,getpoint,getpointbar,setpointbar,appHandle):
         self.app = appHandle
         self.UIAction = action
-        self.getpoint=getpoint
-        self.getpointbar = getpointbar
+        self.UI_getpoint=getpoint
+        self.UI_getpointbar = getpointbar
+        self.UI_setpointbar = setpointbar
         
+    def getDataTimerEvent(self): 
+        self.__generating = True 
+        if self.__plotRunning:
+            self.getDataTimer = threading.Timer(timerInterval ,self.getDataTimerEvent )
+            self.getDataTimer.start()
+      
     def startPlot(self):
         self.UIAction.thirdUIControl.startPlot.setEnabled(False)
         self.UIAction.thirdUIControl.pausePlot.setEnabled(True)
-        #self.startTime = date2num(datetime.now())
+        self.clearData()
+                          
+        if self.fileHandle is  None:
+            self.fileHandle=open('data.txt', 'a')
+        self.startTime = date2num(datetime.now())
         self.__generating = True
+        self.__plotRunning =  True
+        self.getDataTimer = threading.Timer(timerInterval ,self.getDataTimerEvent )
+        self.getDataTimer.start()
 
     def pausePlot(self):
         self.UIAction.thirdUIControl.startPlot.setEnabled(True)
         self.UIAction.thirdUIControl.pausePlot.setEnabled(False)
+   
         self.__generating = False
+        self.__plotRunning =  False
+        
+        if self.fileHandle is not None:
+            self.fileHandle.close()
+            self.fileHandle = None
         #self.UIAction.CloseComm()
+    def releasePlot(self):
+        self.__exit  = True
+        self.tPlot.join()
+        self.tData.join()
+        if self.getDataTimer.isAlive():  
+            self.getDataTimer.cancel()
+        if self.fileHandle is not None:
+            self.fileHandle.close()
     def isPlotRunning(self):
         return self.__generating;
     def initDataGenerator(self):
         self.__generating=False
+        self.__plotRunning =  False
+        
         self.__exit = False
-        self.tData = threading.Thread(name = "dataGenerator",target = self.generateData)
+        self.tData = threading.Thread(name = "dataGenerator",target = self.DataGenerateThread)
         self.tData.start()
         
-    def releasePlot(self):
-        self.__exit  = True
-        self.tData.join()
+        self.tPlot = threading.Thread(name = "dataPlotor",target = self.plotThread)
+        self.tPlot.start()
+        self.getDataTimer = threading.Timer(timerInterval ,self.getDataTimerEvent )
+         
+        
+
     
-    def generateData(self):
-        counter=0
-        while(True):
+    def clearData(self):
+        if self.dataX==None:
+            return
+        self.PlotCounter = 0
+        self.dataX.clear()                    
+        self.ydataVCh0.clear()                   
+        self.ydataVCh1.clear()  
+        self.ydataVSetPoint.clear()  
+        self.ydataVSetPointTemp.clear()         
+        self.ydataPWMOut.clear()  
+
+    def DataGenerateThread(self):
+        while(True):           
             if self.__exit:
                 break
             if self.__generating:
+ 
                 newTime= date2num(datetime.now())
+                timeString = time.strftime("%M,%S",time.localtime())
                 #return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,setpoint_temp]
-                newData = self.UIAction.GetPlotData()
-                if newData is None :
-                    continue
-                try:                            
-                    self.dataX.append(newTime)
-                    
-                    self.ydataVCh0.append(newData[0])                    
-                    self.ydataVCh1.append(newData[1])
-                    
+                try:
+                    newData = self.UIAction.GetPlotData()
+                    if newData is None :
+                        time.sleep(getDataThreadInterval)
+                        continue
+                    delta = newTime - self.startTime
+                    delta = delta*100000
+                    resStr =timeString+','+ str(delta)+','+str(newData)+'\r\n'
+                    resStr = resStr.replace('[', '')
+                    resStr = resStr.replace(']', '')
+                    if self.fileHandle is not None:
+                        self.fileHandle.write(resStr )     
+                    print(resStr)
+                    self.dataX.append(newTime)                        
+                    self.ydataVCh0.append(newData[0])                   
+                    self.ydataVCh1.append(newData[1])       
                     self.ydataVSetPoint.append(newData[2])
-                    self.ydataVSetPointTemp.append(newData[3])
-                    
+                    self.ydataVSetPointTemp.append(newData[3])            
                     self.ydataPWMOut.append(newData[4])
-                    print(newData)
                     
-                    #self.getpoint.setProperty("value", newData[2])
-                    self.getpoint.display(str(newData[2]))
-                    #self.getpointbar.setValue(int(newData[2]/2500))
-                    self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)   
-                    self.app.processEvents()
-                    if counter >= MAXCOUNTER:
+                    self.getpoint_Value = newData[0]
+                    self.setpoint_Value = newData[2]
+                    
+                    if self.PlotCounter >= MAXCOUNTER:
                         self.dataX.pop(0)
                         
                         self.ydataVCh0.pop(0) 
@@ -211,10 +273,42 @@ class  MyDynamicMplCanvas(QWidget):
                         
                         self.ydataPWMOut.pop(0) 
                     else:
-                        counter+=1
+                        self.PlotCounter+=1
+                    
+                except:
+                    print('getDataErrror')
+                    time.sleep(getDataThreadInterval)
+                    continue
+ 
+                self.__generating = False
+            time.sleep(getDataThreadInterval)
+    
+    def plotThread(self):        
+      
+        while(True):
+            if self.__exit:
+                break
+            if self.__plotRunning:
+                try:                     
+                    self.UI_getpoint.display(str(self.getpoint_Value))
+                    #self.setpoint.display(str(newData[2]))
+                    getpoint =int(self.getpoint_Value/50)
+                    if getpoint<0:
+                        getpoint = 0
+                    if getpoint >90:
+                        getpoint = 90
+                    setpoint = int(self.setpoint_Value/50)
+                    if setpoint <0:
+                        setpoint =0;
+                    if setpoint >90:
+                        setpoint = 90
+                    #self.UI_getpointbar.setValue(getpoint)# )
+                    #self.UI_setpointbar.setValue(setpoint)#)
+                    #self.app.processEvents()   
+                    if self.PlotCounter >= 3:                                                             
+                        self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)                                       
                 except:
                     self.UIAction.errorMessage("绘图出错")
-                    continue 
-            time.sleep(INTERVAL)
-
+ 
+            time.sleep(PlotThreadInterval)
     # do something here
