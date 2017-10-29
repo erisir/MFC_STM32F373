@@ -100,13 +100,13 @@ class MplCanvas(FigureCanvas):
                 
                 self.curvePWMOut.set_data(npx, np.array(ydataPWMOut))
                 
-                ret1 = self.getPlotRange(ydataPWMOut,20,5,3000)  
+                ret1 = self.getPlotRange(ydataPWMOut,10,5,3000)  
                 self.ax1.set_ylim(ret1[0],ret1[1])
             #update limit of X axis,to make sure it can move           
             self.ax.set_xlim(dataX[0],dataX[-1]+(dataX[-1]-dataX[0])/10)
             
             if AutoRange:
-                ret = self.getPlotRange(ydataVCh0,5,5,3000)                                         
+                ret = self.getPlotRange(ydataVCh0,10,10,3000)                                         
                 self.ax.set_ylim(ret[0],ret[1])
                             
         ticklabels = self.ax.xaxis.get_ticklabels()

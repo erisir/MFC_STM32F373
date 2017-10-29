@@ -4,8 +4,8 @@
 
 #define     PWM_DUTY        12000          
 
-#define     PWM_HIGH_MAX    PWM_DUTY*32	 
-#define     PWM_HIGH_MIN    10   
+#define     PWM_HIGH_MAX    140000 
+#define     PWM_HIGH_MIN    80000   
 #define __PWM_DITHER_MODE_
 //#define __PWM_NONMAL_MODE_
  

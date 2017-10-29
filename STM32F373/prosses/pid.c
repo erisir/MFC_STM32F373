@@ -54,13 +54,15 @@ void PID_Setpoint_Change(){
 	if(abs(error)>spid.error_Low_Threadhold && setPointIncreasing==0){//从头计时
 		setPointIncreasing = 1;
 		counter = 0;
-		voltageStart = currVoltage+error/2;//从三分之一开始走起
+		voltageStart = currVoltage+error/4;//从三分之一开始走起
+	}else{
+		
 	}
 	if(setPointIncreasing == 1){
-		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.05f/responce_time));	 
+		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.01f/responce_time));	 
 		counter++;
 	}
-	if(setPointIncreasing == 1 && abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
+	if(setPointIncreasing == 1 && counter==400)//abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
 		Voltage_Set_Point_temp = Voltage_Set_Point;	 
 		counter=0;
 		setPointIncreasing = 0;
