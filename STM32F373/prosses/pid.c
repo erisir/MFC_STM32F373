@@ -23,9 +23,9 @@ uint32_t PWM_Output;
 
 uint16_t Voltage_Set_Point;
 uint16_t Voltage_Set_Point_temp;
-uint16_t feedbackTime = 20;
+uint16_t feedbackTime = 50;
 
-uint8_t PID_Votage_Chanel = 0;
+uint8_t PID_Votage_Chanel = 1;
 uint8_t PID_Ctrl_Votage_Chanel = 1;
 uint8_t isRunning=0;
 uint8_t set_point_changed= 0;
@@ -55,14 +55,15 @@ void PID_Setpoint_Change(){
 		setPointIncreasing = 1;
 		counter = 0;
 		voltageStart = currVoltage+error/4;//从三分之一开始走起
-	}else{
-		
+	}else{//差值小
+		Voltage_Set_Point_temp= Voltage_Set_Point;
 	}
 	if(setPointIncreasing == 1){
 		Voltage_Set_Point_temp = voltageStart+(Voltage_Set_Point-voltageStart)*(1-exp(-1*counter*0.01f/responce_time));	 
 		counter++;
 	}
-	if(setPointIncreasing == 1 && counter==400)//abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
+	if(setPointIncreasing == 1 && counter==500)//abs(error)<spid.error_Low_Threadhold-spid.error_Low_Threadhold/2){
+	{
 		Voltage_Set_Point_temp = Voltage_Set_Point;	 
 		counter=0;
 		setPointIncreasing = 0;

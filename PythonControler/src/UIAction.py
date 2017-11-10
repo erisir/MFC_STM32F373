@@ -328,7 +328,7 @@ class UIAction():
             Voltage_Set_Point=self.GetShowValue(ret[0])  
             PWM_Output = ret[1]          
             vCh0 = self.GetShowValue(ret[3])/10
-            vCh1 = self.GetShowValue(ret[4])/10+200
+            vCh1 = self.GetShowValue(ret[4])/10
             Voltage_Set_PointTemp = self.GetShowValue(ret[5])
                 
             res = [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output] 

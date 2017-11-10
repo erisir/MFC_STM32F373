@@ -11,7 +11,7 @@ LED:
 
 
 PWM:
-	TIM2cH2 PA1=>tim2CH4 pA3
+	TIM2cH2 PA1=>tim2CH4 pA3//// pcbv2 pb3 TIM2 CH2
 	
 SDADC:
 	PB0 PB1
