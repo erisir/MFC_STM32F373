@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'UIComm.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(520, 440)
+        Dialog.resize(520, 528)
         self.horizontalLayoutWidget = QtWidgets.QWidget(Dialog)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(30, 390, 471, 25))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
@@ -23,6 +23,8 @@ class Ui_Dialog(object):
         self.horizontalLayout.addWidget(self.label)
         self.CommName = QtWidgets.QComboBox(self.horizontalLayoutWidget)
         self.CommName.setObjectName("CommName")
+        self.CommName.addItem("")
+        self.CommName.addItem("")
         self.CommName.addItem("")
         self.CommName.addItem("")
         self.CommName.addItem("")
@@ -45,6 +47,7 @@ class Ui_Dialog(object):
         self.Baudrate.addItem("")
         self.Baudrate.addItem("")
         self.Baudrate.addItem("")
+        self.Baudrate.addItem("")
         self.horizontalLayout.addWidget(self.Baudrate)
         self.connect = QtWidgets.QPushButton(self.horizontalLayoutWidget)
         self.connect.setObjectName("connect")
@@ -56,10 +59,13 @@ class Ui_Dialog(object):
         self.graphicsView.setGeometry(QtCore.QRect(30, 20, 471, 361))
         self.graphicsView.setStyleSheet("background-color: rgb(85, 255, 0);")
         self.graphicsView.setObjectName("graphicsView")
+        self.horizontalLayoutWidget.raise_()
+        self.graphicsView.raise_()
+        self.Disconnect.raise_()
 
         self.retranslateUi(Dialog)
         self.CommName.setCurrentIndex(3)
-        self.Baudrate.setCurrentIndex(7)
+        self.Baudrate.setCurrentIndex(8)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -74,6 +80,8 @@ class Ui_Dialog(object):
         self.CommName.setItemText(5, _translate("Dialog", "COM6"))
         self.CommName.setItemText(6, _translate("Dialog", "COM7"))
         self.CommName.setItemText(7, _translate("Dialog", "COM8"))
+        self.CommName.setItemText(8, _translate("Dialog", "COM9"))
+        self.CommName.setItemText(9, _translate("Dialog", "COM10"))
         self.label_2.setText(_translate("Dialog", "波特率"))
         self.Baudrate.setItemText(0, _translate("Dialog", "4800"))
         self.Baudrate.setItemText(1, _translate("Dialog", "9600"))
@@ -83,6 +91,7 @@ class Ui_Dialog(object):
         self.Baudrate.setItemText(5, _translate("Dialog", "38400"))
         self.Baudrate.setItemText(6, _translate("Dialog", "57600"))
         self.Baudrate.setItemText(7, _translate("Dialog", "115200"))
+        self.Baudrate.setItemText(8, _translate("Dialog", "194000"))
         self.connect.setText(_translate("Dialog", "连接"))
         self.Disconnect.setText(_translate("Dialog", "断开"))
 

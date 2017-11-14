@@ -106,8 +106,12 @@ class MplCanvas(FigureCanvas):
             self.ax.set_xlim(dataX[0],dataX[-1]+(dataX[-1]-dataX[0])/10)
             
             if AutoRange:
-                ret = self.getPlotRange(ydataVCh1,5,5,3000)                                         
-                self.ax.set_ylim(ret[0],ret[1])
+                ret = self.getPlotRange(ydataVCh0,5,5,3000) 
+                ret1 = self.getPlotRange(ydataVCh1,5,5,3000)  
+                if ret[1]>ret1[1]:                                                           
+                    self.ax.set_ylim(ret[0],ret[1])
+                else:
+                    self.ax.set_ylim(ret1[0],ret1[1])
                             
         ticklabels = self.ax.xaxis.get_ticklabels()
         for tick in ticklabels:
@@ -241,7 +245,8 @@ class  MyDynamicMplCanvas(QWidget):
                 #return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,setpoint_temp]
                 try:
                     newData = self.UIAction.GetPlotData()
-                    if newData is None :
+                    print(newData)
+                    if newData == None :
                         time.sleep(getDataThreadInterval)
                         continue
                     delta = newTime - self.startTime
@@ -275,8 +280,8 @@ class  MyDynamicMplCanvas(QWidget):
                     else:
                         self.PlotCounter+=1
                     
-                except:
-                    print('getDataErrror')
+                except Exception as e:
+                    print('DataGenerateThread'+str(e.args))
                     time.sleep(getDataThreadInterval)
                     continue
  

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>520</width>
-    <height>440</height>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,6 +75,16 @@
         <string>COM8</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>COM9</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>COM10</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item>
@@ -87,7 +97,7 @@
     <item>
      <widget class="QComboBox" name="Baudrate">
       <property name="currentIndex">
-       <number>7</number>
+       <number>8</number>
       </property>
       <item>
        <property name="text">
@@ -129,6 +139,11 @@
         <string>115200</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>194000</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item>
@@ -160,6 +175,9 @@
     <string notr="true">background-color: rgb(85, 255, 0);</string>
    </property>
   </widget>
+  <zorder>horizontalLayoutWidget</zorder>
+  <zorder>graphicsView</zorder>
+  <zorder>Disconnect</zorder>
  </widget>
  <resources/>
  <connections/>

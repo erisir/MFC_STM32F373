@@ -28,9 +28,9 @@ class UIMainWindow(QDialog):
         self.secondUIDetail.setupUi(w2)  
         w3=QWidget()  
         self.thirdUIControl.setupUi(w3)  
-        w4=QWidget()  
+        w4=QWidget()    
         self.fourUIOther.setupUi(w4)  
-      
+        
         self.ProfControldlg = QDialog()  
         self.UIControlProf.setupUi(self.ProfControldlg )  
   
@@ -38,11 +38,11 @@ class UIMainWindow(QDialog):
         tabWidget.addTab(w2,"产品信息")  
         tabWidget.addTab(w1,"控制信息")  
         tabWidget.addTab(w4,"其他项目")  
-        tabWidget.resize(520,560)
+        tabWidget.resize(520,570)
         
         self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
         self.ConnectEvent()
-              
+     
         
     def ConnectEvent(self):
         self.thirdUIControl.PWMOpen.clicked.connect(self.uiAction.PWMOpen)
@@ -74,16 +74,17 @@ class UIMainWindow(QDialog):
         self.firstUIComm.connect.clicked.connect(self.uiAction.Connect)
         self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
-        self.fourUIOther.ProfControl.clicked.connect(self.showProfControlDlg)
-        
+         
         self.UIControlProf.getVoltageVsPWMCurse.clicked.connect(self.uiAction.getPWMVSVotage) 
         self.UIControlProf.StopVoltageVsPWMCurse.clicked.connect(self.uiAction.stopVolVsPWMCurse) 
-    def Start(self):
-    
-        self.uiAction.Connect()
-        self.thirdUIControl.mplCanvas.startPlot();
+    def Start(self):       
+        #self.thirdUIControl.mplCanvas.startPlot();
+        #self.uiAction.AutoConnect('COM5',194000)
+        #self.uiAction.Connect()
+        pass
     def Exit(self):
         self.thirdUIControl.mplCanvas.releasePlot()
+        self.uiAction.Disconnect()
         #exit()
         sys.exit("goodbye!");
     def Clear(self):
@@ -96,35 +97,44 @@ class UIMainWindow(QDialog):
           
 app=QApplication (sys.argv)
 # Create and display the splash screen
-splash_pix = QPixmap('../image/logo.png')
+splash_pix = QPixmap('image/logo.png')
 splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
 # adding progress bar
 height= splash_pix.height()*0.85
-width = splash_pix.width()*0.8
+width = splash_pix.width()*0.95
 progressBar = QProgressBar(splash)
 progressBar.setGeometry(QtCore.QRect(60, height, width, 10))
-progressBar.setProperty("value", 24)
+progressBar.setProperty("value", 10)
 progressBar.setObjectName("progressBar")
 
 tipLabel = QtWidgets.QLabel(splash)
-tipLabel.setGeometry(QtCore.QRect(60, height-30, width, 20))
+tipLabel.setGeometry(QtCore.QRect(60, height-50, width, 40))
 tipLabel.setObjectName("label")
+tipLabel.setScaledContents(True)
+tipLabel.setWordWrap(True)
 splash.setMask(splash_pix.mask())
-#splash.show()
-time.sleep(0.1)
+splash.show()
+time.sleep(0.2)
 tipLabel.setText( "程序正在启动...")
-time.sleep(1)
+time.sleep(0.2)
 tipLabel.setText( "正在尝试连接下位机...")
 mainApp=UIMainWindow(app) 
-conectRes = mainApp.Start()
-progressBar.setValue(50)
-app.processEvents()
-tipLabel.setText( conectRes)
-time.sleep(0.5)
-progressBar.setValue(99)
-app.processEvents()
-time.sleep(0.5)
+ret = False
 
+for i in range(1,10):
+    for x in(['9600','14400','19200','38400','56000','57600','115200','194000']):
+        comm = 'COM'+str(i)   
+        ret = mainApp.uiAction.AutoConnect(comm,x)
+        progressBar.setValue(i*5+10)
+        
+        app.processEvents()
+        if ret[0]:
+            break
+        tipLabel.setText('搜索串口  '+comm+'  Baudrate  '+x +'\r\n'+ret[1]._what+'\r\n'+ret[1]._why)  
+        time.sleep(0.3)
+    if ret[0]:
+            break
+progressBar.setValue(99)
 mainApp.show()  
 splash.finish(mainApp)  
 app.exec_()

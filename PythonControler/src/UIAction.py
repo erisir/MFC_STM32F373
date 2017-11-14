@@ -10,8 +10,10 @@ import binascii,encodings;
 import numpy as np
 from sympy.strategies.core import switch
 from struct import pack,unpack
- 
-
+class ErrorMsg():
+    _what = ""
+    _why  = ""
+    _when = ""
 class UIAction():     
     firstUIComm = None
     secondUIDetail= None
@@ -21,7 +23,8 @@ class UIAction():
     isDeviceReady = False
     comm = None
     commBusy = False
-    lastError = 'no error'
+    error = ErrorMsg()
+    
     stopVoltageVsPWMCurse = False
     
     _CMD_SetRunParam = '0';
@@ -32,12 +35,14 @@ class UIAction():
     _CMD_SetVOpen    = '5';
     _CMD_SetVPID    = '6'
     
+    _DEBUG = 0
+    _MSG = 1
+    _ERROR = 2
+    
     showUnit = "mv"
  
     Interception = 0
     Slope = 1
-    
- 
     
     def __init__(self,  firstUIComm, secondUIDetail, thirdUIControl, fourUIOther,proControl):
         self.firstUIComm = firstUIComm
@@ -46,9 +51,6 @@ class UIAction():
         self.fourUIOther = fourUIOther
         self.proControl = proControl
         
-         
-       
- 
     def RecaculatePIDParam(self):           
         if self.proControl.PID_AutoIncMode1.isChecked() or self.proControl.PID_AutoIncMode2.isChecked():#根据Kp获得Ki,Kd
             KpH = self.proControl.PID_KpH.value()
@@ -134,31 +136,30 @@ class UIAction():
     def CheckSumCalc(self,buf):
         checkSum = 0;
         return checkSum;
-    def SendToComAndRead(self,buf,timeout,expectLen):
+    def SendToComAndRead(self,buf,timeout=10,expectLen=1):
+        self.error._what += '\t->SendToComAndRead'
         if self.isDeviceReady == False  :
-            self.lastError = 'Device not ready'
+            self.error._why='Device not ready'
             return None
         try:    
             while self.commBusy and timeout>0:
                 time.sleep(0.001)  
                 timeout -=1
-                print('wait')
             if timeout<=0:
-                self.lastError = 'SendToComAndRead timeout,com is busy'
+                self.error._why= 'SendToComAndRead timeout,com is busy'
                 return None 
             
             self.commBusy = True     
-            #self.clearComPort()
+            if not self.clearComPort():
+                return None
             self.comm.write(bytes(buf))
             res=self.readAnswer(timeout,expectLen)  
             self.commBusy = False
-            self.log(str(res))
             return res
-        except:
-            self.errorMessage("发送命令失败\t"+self.lastError)
+        except  Exception as e:
+            self.error._why ='SendToComAndRead\t'+str(e.args)
             return None
     def SendCommand(self,cmd):
-        
         buf = bytearray( 6 )
         buf[0] = ord('$') 
         buf[1]= ord('N' )
@@ -166,89 +167,73 @@ class UIAction():
         buf[3]= 6
         buf[4]= ord(cmd)
         buf[5]= self.CheckSumCalc(buf)  
-        ret = self.SendToComAndRead(buf,10,0)
-        if ret is None:
-            self.errorMessage(self.lastError)
-            return False
-        self.logMessage(ret.decode('utf-8'))
-        return True
- 
+        return self.SendToComAndRead(buf) 
     def SendCommandWithData(self,buf):       
-        ret = self.SendToComAndRead(buf,20,0)
-        if ret is None:
-            self.errorMessage(self.lastError)
-            return False
-        self.logMessage(ret.decode('utf-8'))
-        return True
-    
+        return self.SendToComAndRead(buf,20)
     def SendCommandWitAnswer(self,buf,expectLen): 
-        res= self.SendToComAndRead(buf,50,expectLen)
-        if res is None:
-            return None
-        if(len(res) !=expectLen):
-            self.lastError ='com return buffer len not equal'
-            print(len(res))
-            print(res)
-            return None
-        return res 
+        return self.SendToComAndRead(buf,50,expectLen)
     def clearComPort(self):
+        self.error._what += '\t->clearComPort'
         try:         
             while self.comm.inWaiting() > 0:
-                    res = bytes(self.comm.read(1))
+                    bytes(self.comm.read(1))
             return True
-        except:
-            self.lastError ='clearComPort error,exception occurs' 
+        except  Exception as e:
+            self.error._why ='clearComPort\t'+str(e.args)
             return False
         
-    def readAnswer(self,timeout,expDataLen):        
+    def readAnswer(self,timeout,expDataLen):     
+        self.error._what+='\t->readAnswer'   
         data = bytearray(64)
-        if expDataLen ==0:
-            expDataLen = 2
         readLen = 0
         try:   
-            while(readLen <expDataLen-1 and timeout>0):        
-                while self.comm.inWaiting() > 0:
+            while(readLen <expDataLen and timeout>0):        
+                while (readLen <expDataLen and self.comm.inWaiting() > 0):
                     res = bytes(self.comm.read(1))
                     data[readLen] = res[0]
                     readLen +=1
                 timeout = timeout-1  
-                #print(str(timeout)+'---'+str(readLen))                
                 time.sleep(0.001)
             if timeout<=0:
-                self.lastError = 'readAnswer timeout,read'+ str(readLen)
+                self.error._why = 'readAnswer timeout,read'+ str(readLen)+'bit'
                 return None
-            if  readLen != 0:
-                ret = bytearray(readLen)
-                for index in range(readLen):
-                    ret[index] = data[index]
-                return bytes(ret)
-            else:
-                self.lastError = 'readAnswer with nothing'
-                return None                
-        except:
-            self.lastError ='readAnswer error,exception occurs' 
+            ret = bytearray(readLen)
+            for index in range(readLen):
+                ret[index] = data[index]
+            return bytes(ret)
+        except  Exception as e:
+            self.error._why ='readAnswer\t'+str(e.args)
             return None
    
     def PWMOpen (self):
-        self.SendCommand(self._CMD_SetVOpen)
-        
+        ret = self.SendCommand(self._CMD_SetVOpen)
+        if ret is None:
+            self.logMessage(self._ERROR, 'Open False')
+        else:
+            self.logMessage(self._MSG, 'Open OK')
     def PWMClose (self):
-        self.SendCommand(self._CMD_SetVClose)
-        
+        ret=self.SendCommand(self._CMD_SetVClose)
+        if ret is None:
+            self.logMessage(self._ERROR, 'Close False')
+        else:
+            self.logMessage(self._MSG, 'Close OK')
     def PWMPID (self):
-        self.SendCommand(self._CMD_SetVPID)
+        ret=self.SendCommand(self._CMD_SetVPID)
+        if ret is None:
+            self.logMessage(self._ERROR, 'PID False')
+        else:
+            self.logMessage(self._MSG, 'PID OK')
          
     def CtrlMode_Dig (self):
-        self.log("CtrlMode_Dig")
+        pass
     def CtrlMode_Vot (self):
-        self.log("CtrlMode_Vot")
+        pass
     def CtrlMode_Cur (self):
-        self.log("CtrlMode_Cur")
+        pass
     def CtrlMode_Der (self):
-        self.log("CtrlMode_Der")
+        pass
     def ShowUnit_FS (self):
         self.showUnit = "FS"
-        self.log("ShowUnit_FS")
     def ShowUnit_sccm (self):
         self.showUnit = "sccm"
     def ShowUnit_slm (self):
@@ -260,11 +245,8 @@ class UIAction():
     
     def Set_PID_AutoInc(self):
         pass
-        #self.SendDataCommand(self._U_SetPIDMode,0)
-    
     def Set_PID_ManuInc(self):
         pass
-        #self.SendDataCommand(self._U_SetPIDMode,1)    
         
     def VotageToFlow(self,votage):
         Flow = (votage-self.Interception)/self.Slope
@@ -288,57 +270,26 @@ class UIAction():
             return votage/1000
         if self.showUnit == "mv":
             return votage
-   
-    def readVoltage(self):
-        counter = 0;
-        flag = False
-        readOk = False
-        data = bytearray(60)
-        vol = 0
-        try:
-            while not readOk :
-                while self.comm.inWaiting() > 0:
-                    res = bytes(self.comm.read(1))
-                    
-                    if res == b'$':
-                        flag = True
-                    if flag:                               
-                        data[counter] =res[0]
-                        counter+=1   
-                    if counter==6:
-                        readOk = True
-            vol = data[1]+data[2]*256
-            vol1 = data[3]+data[4]*256
-        except:
-            print('error')
-            return None
-        return [0,0,0,vol,vol1,0,0,0]
 
- 
-        
     def GetPlotData(self):
         
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
- 
+        self.error._what = 'GetPlotData'
         ret = self.readRunningParam()#self.readVoltage()#
         if ret == None:
-            print(self.lastError)
+            self.logMessage(self._DEBUG)
             return None
-        try:
-            Voltage_Set_Point=self.GetShowValue(ret[0])  
-            PWM_Output = ret[1]          
-            vCh0 = self.GetShowValue(ret[3])/10
-            vCh1 = self.GetShowValue(ret[4])/10
-            Voltage_Set_PointTemp = self.GetShowValue(ret[5])
-                
-            res = [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output] 
-                            
-            return res
-        except:
-            self.errorMessage("GetPlotData error")
-            print(self.lastError)
-            return None
-         
+        print(ret)
+        Voltage_Set_Point=self.GetShowValue(ret[0])  
+        PWM_Output = ret[1]          
+        vCh0 = self.GetShowValue(ret[3])/10
+        vCh1 = self.GetShowValue(ret[4])/10
+        Voltage_Set_PointTemp = self.GetShowValue(ret[5])
+            
+        res = [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output] 
+                        
+        return res
+
     def getRandom(self):
             mid=1084
             start = 1
@@ -347,30 +298,62 @@ class UIAction():
     
         
     def Connect(self):
-        commName = 'com8'#self.firstUIComm.CommName.currentText()
-        Baudrate = 194000#self.firstUIComm.Baudrate.currentText()   
+        commName =self.firstUIComm.CommName.currentText()
+        Baudrate = self.firstUIComm.Baudrate.currentText()   
+        self.error._what='open\t'+commName+'\tbaudrate\t'+Baudrate
         try:   
-            self.comm = serial.Serial(commName,int(Baudrate),timeout=2)              
-        except:
-            self.lastError = "串口"+commName+"被其他程序占用"
-            return self.lastError
+            self.comm = serial.Serial(commName,int(Baudrate))                          
+        except Exception as e:
+            self.error._why = str(e.args)
+            self.logMessage(self._DEBUG)
+            return False
+        try:  
+            self.isDeviceReady = True
+            ret =  self.readPIDParam()
+            
+            if ret:
+                self.isDeviceReady = True
+                self.error._why ="连接成功"
+                
+            else:
+                self.isDeviceReady = False
+    
+            self.logMessage(self._MSG,self.error._what+'\r\n'+self.error._why);  
+            if ret:
+                pass  
+        except Exception as e:
+            self.error._why = 'readPIDParam\t'+str(e.args)
+            self.logMessage(self._DEBUG)
+            return False       
+ 
+    def AutoConnect(self,comm,Baud):
+        commName =comm 
+        Baudrate = Baud#self.firstUIComm.Baudrate.currentText()   
+        self.error._what='open\t'+commName+'\tbaudrate\t'+Baudrate
+        try:   
+            self.comm = serial.Serial(str(commName),int(Baudrate))    
+        except Exception as e:
+            self.error._why = str(e.args)
+            return [False,self.error]
+        
         self.isDeviceReady = True
         ret =  self.readPIDParam()
-        
-        if True:
+        if ret:
             self.isDeviceReady = True
-            self.lastError ="连接成功"
+            self.error._why ="连接成功"
         else:
             self.isDeviceReady = False
-            self.errorMessage(self.lastError)
-                   
-        return self.lastError
+            if  self.comm is not None:
+                self.comm.close()
+        return [ret,self.error]
+    
     def Disconnect(self):
         if  self.comm is not None:
             self.comm.close()
         self.isDeviceReady = False  
-    def SetPIDParam(self):
         
+    def SetPIDParam(self):
+        self.error._what = 'SetPIDParam'
         buf = bytearray( 37 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
@@ -453,11 +436,14 @@ class UIAction():
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
                                                 
-        return self.SendCommandWithData(bytes(buf))
-    
-   
+        ret= self.SendCommandWithData(bytes(buf))
+        if ret is None:
+            self.logMessage(self._ERROR)
+        else:
+            self.logMessage(self._MSG, 'Set Paramater OK')
         
     def readPIDParam(self):
+        self.error._what+='\t->readPIDParam'
         buf = bytearray( 6 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
@@ -466,16 +452,18 @@ class UIAction():
         buf[4]= ord(self._CMD_GetPIDParam )
         buf[5]= ord('X' )
         res = self.SendCommandWitAnswer(buf,35)
+        
         if res is  None:
             return False
-        if res[0] != ord('$') :
-            return False
-        if res[1] != ord('N' ):
-            return False
-        if res[2] != ord('>' ):
-            return False
-        if res[4] != ord(self._CMD_GetPIDParam ):
-            return False
+        if False:
+            if res[0] != ord('$') :
+                return False
+            if res[1] != ord('N' ):
+                return False
+            if res[2] != ord('>' ):
+                return False
+            if res[4] != ord(self._CMD_GetPIDParam ):
+                return False
         offset = 5
         x = res[offset+1]*256+res[offset]
         offset  =offset+2
@@ -526,9 +514,9 @@ class UIAction():
         self.proControl.Responce_Time.setProperty("value", float(y/1000))
         self.proControl.F_Cutoff.setProperty("value", float(z/1000))
         return True
-
-    
+   
     def SetRuningParam(self):
+        self.error._what = 'SetRuningParam'
         buf = bytearray( 9 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
@@ -541,14 +529,18 @@ class UIAction():
         x=self.proControl.PWM_SET.value()
         y=self.proControl.PID_SetPoint.value()
        
-       
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
         offset = offset+ 2
         buf[offset+1] = int(y/256)
         buf[offset] = int(y%256)
  
-        return self.SendCommandWithData(bytes(buf))
+        ret= self.SendCommandWithData(bytes(buf))
+        if ret is None:
+            self.logMessage(self._ERROR)
+        else:
+            self.logMessage(self._MSG, 'Set Paramater OK')
+    
     def readRunningParam(self):
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1)
         buf = bytearray( 6 )
@@ -559,23 +551,24 @@ class UIAction():
         buf[4]= ord(self._CMD_GetRunParam )
         buf[5]= ord('X' )
         res = self.SendCommandWitAnswer(buf,19)#23 old
+        
         if res is  None:
-            return None      
-        if res[0] != ord('$') :
-            return None
-        if res[1] != ord('N' ):
-            return None
-        if res[2] != ord('>' ):
-            return None
-        if res[4] != ord(self._CMD_GetRunParam ):
             return None    
+        if False:  
+            if res[0] != ord('$') :
+                return None
+            if res[1] != ord('N' ):
+                return None
+            if res[2] != ord('>' ):
+                return None
+            if res[4] != ord(self._CMD_GetRunParam ):
+                return None    
         offset = 5
         Voltage_Set_Point = res[offset+1]*256+res[offset]
         offset  =offset+2
         PWM_Output = res[offset+3]*256*256*256+res[offset+2]*256*256+res[offset+1]*256+res[offset]
         offset  =offset+4
         lastVoltage = res[offset+1]*256+res[offset]
-         
         
         offset  =offset+2
         currentVol0 = (res[offset+1]*256+res[offset])
@@ -584,24 +577,9 @@ class UIAction():
         offset  =offset+2
         Voltage_Set_Point_temp = (res[offset+1]*256+res[offset])
         offset  =offset+2
-                    
               
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,Voltage_Set_Point_temp]
-
         return ret
-           
-
-    def log(self,str):
-        pass
-        #print('-'*10+str)
-    def errorMessage(self,str):
-        print('!'*10+str)
-    def warnningMessage(self,str):
-        print('?'*10+str)
-    def logMessage(self,str):
-        pass
-        #print('-'*10+str)       
-         
     def getPWMVSVotage(self):
         self.stopVoltageVsPWMCurse = False
  
@@ -618,7 +596,6 @@ class UIAction():
             pl.title("PWM => Votage")
             pl.legend()
             pl.show()
-
         start = int(self.proControl.BackForward_Start.value())
         end = int(self.proControl.BackForward_End.value())
         stepsize = int(self.proControl.BackForward_StepSize.value())
@@ -664,7 +641,19 @@ class UIAction():
             print([x,ret[3]])
       
             pl.plot(pwmBackward, votageBackward, 'b*')
-             
-            
     def stopVolVsPWMCurse(self):
         self.stopVoltageVsPWMCurse = True   
+ 
+    def logMessage(self,flag,msg=None):# debug
+        if msg is None:
+            msg = self.error._what+'\r\n'+self.error._why
+        print(msg)
+        if flag ==self._DEBUG:
+            self.fourUIOther.LogMsg.setText(msg)
+        if flag ==self._ERROR:
+            self.thirdUIControl.DebugMsg.setText(msg)
+            self.fourUIOther.LogMsg.setText(msg)
+        if flag == self._MSG:
+            self.thirdUIControl.DebugMsg.setText(msg)
+            self.fourUIOther.LogMsg.setText(msg)
+        

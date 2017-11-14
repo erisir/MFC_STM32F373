@@ -25,7 +25,7 @@ uint16_t Voltage_Set_Point;
 uint16_t Voltage_Set_Point_temp;
 uint16_t feedbackTime = 50;
 
-uint8_t PID_Votage_Chanel = 1;
+uint8_t PID_Votage_Chanel = 0;
 uint8_t PID_Ctrl_Votage_Chanel = 1;
 uint8_t isRunning=0;
 uint8_t set_point_changed= 0;
@@ -134,7 +134,7 @@ void Set_PID_Param(uint8_t *buf)
 	offset+=2;
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 
-	PID_Ctrl_Mode = data_x;
+	PID_Votage_Chanel = data_x;
 	
 	Calculate_FilteringCoefficient(freq_Cutoff);
 	 

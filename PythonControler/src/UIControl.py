@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(520, 560)
+        Dialog.resize(531, 568)
         self.BoxCtrl = QtWidgets.QGroupBox(Dialog)
         self.BoxCtrl.setGeometry(QtCore.QRect(13, 10, 111, 80))
         self.BoxCtrl.setObjectName("BoxCtrl")
@@ -169,13 +169,19 @@ class Ui_Dialog(object):
 "   text-align: top;\n"
 "    color:#FF0000\n"
 "}")
-        self.GetPointBar.setProperty("value", 0)
+        self.GetPointBar.setProperty("value", 50)
         self.GetPointBar.setOrientation(QtCore.Qt.Vertical)
         self.GetPointBar.setObjectName("GetPointBar")
         self.gridLayout.addWidget(self.GetPointBar, 0, 1, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget)
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 1, 1, 1, 1)
+        self.DebugMsg = QtWidgets.QLabel(self.groupBox_3)
+        self.DebugMsg.setGeometry(QtCore.QRect(10, 170, 331, 16))
+        self.DebugMsg.setText("")
+        self.DebugMsg.setScaledContents(True)
+        self.DebugMsg.setWordWrap(True)
+        self.DebugMsg.setObjectName("DebugMsg")
         self.mplCanvas = MyDynamicMplCanvas(Dialog)
         self.mplCanvas.setGeometry(QtCore.QRect(10, 209, 491, 341))
         self.mplCanvas.setObjectName("mplCanvas")

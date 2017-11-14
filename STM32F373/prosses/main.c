@@ -26,7 +26,7 @@ void Bsp_Int(void ){
 	delay_init();
 	
 	LED_Init();		  
-	
+	LED_ON_OFF();
 	RS485_Init(194000);
 	RS485_PrintString("1:\tRS485_Init\n");
 	KEY_Init();
@@ -45,7 +45,7 @@ void Bsp_Int(void ){
 	RCC_GetClocksFreq(&RCC_Clocks);
 	sprintf((char *)RS485_TX_BUF,"\n***ClocksFreq***[%d]\n",RCC_Clocks.HCLK_Frequency);
 	RS485_PrintString(RS485_TX_BUF);
-	LED_ON_OFF();
+	
 	Bsp_Int_Ok = 1;
 }
 int main(void)

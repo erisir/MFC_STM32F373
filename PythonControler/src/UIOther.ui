@@ -6,24 +6,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>476</width>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="ProfControl">
+  <widget class="QLabel" name="LogMsg">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>220</y>
-     <width>75</width>
-     <height>23</height>
+     <x>10</x>
+     <y>10</y>
+     <width>451</width>
+     <height>461</height>
     </rect>
    </property>
    <property name="text">
-    <string>高级控制</string>
+    <string/>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
