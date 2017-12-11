@@ -213,7 +213,7 @@ class Ui_Dialog(object):
         self.ShowUnit_mv.setText(_translate("Dialog", "mV"))
         self.startPlot.setText(_translate("Dialog", "开始"))
         self.pausePlot.setText(_translate("Dialog", "暂停"))
-        self.Clear.setText(_translate("Dialog", "清零"))
+        self.Clear.setText(_translate("Dialog", "设置"))
         self.Exit.setText(_translate("Dialog", "exit"))
         self.label.setText(_translate("Dialog", "SP."))
         self.label_2.setText(_translate("Dialog", "RO."))

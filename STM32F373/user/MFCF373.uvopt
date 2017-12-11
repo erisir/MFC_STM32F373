@@ -261,10 +261,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>15</ColumnNumber>
+      <ColumnNumber>13</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>25</TopLine>
-      <CurrentLine>29</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>17</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\prosses\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -277,10 +277,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>37</ColumnNumber>
+      <ColumnNumber>47</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>131</TopLine>
-      <CurrentLine>135</CurrentLine>
+      <TopLine>75</TopLine>
+      <CurrentLine>334</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\prosses\pid.c</PathWithFileName>
       <FilenameWithoutPath>pid.c</FilenameWithoutPath>
@@ -311,7 +311,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>21</TopLine>
+      <TopLine>23</TopLine>
       <CurrentLine>26</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\prosses\protocol.c</PathWithFileName>
@@ -325,10 +325,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>21</ColumnNumber>
+      <ColumnNumber>3</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>19</TopLine>
-      <CurrentLine>33</CurrentLine>
+      <TopLine>8</TopLine>
+      <CurrentLine>19</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\prosses\tasks.c</PathWithFileName>
       <FilenameWithoutPath>tasks.c</FilenameWithoutPath>
@@ -397,9 +397,9 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>74</ColumnNumber>
+      <ColumnNumber>76</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>23</TopLine>
+      <TopLine>25</TopLine>
       <CurrentLine>34</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\drive\sdadc.c</PathWithFileName>
@@ -413,10 +413,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>8</ColumnNumber>
+      <ColumnNumber>4</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>124</TopLine>
-      <CurrentLine>133</CurrentLine>
+      <TopLine>125</TopLine>
+      <CurrentLine>134</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\drive\rs485.c</PathWithFileName>
       <FilenameWithoutPath>rs485.c</FilenameWithoutPath>
@@ -445,10 +445,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>40</ColumnNumber>
+      <ColumnNumber>8</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>47</TopLine>
-      <CurrentLine>65</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>22</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\drive\timebase.c</PathWithFileName>
       <FilenameWithoutPath>timebase.c</FilenameWithoutPath>

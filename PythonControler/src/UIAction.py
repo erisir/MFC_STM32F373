@@ -57,28 +57,28 @@ class UIAction():
             KpM = self.proControl.PID_KpM.value()
             KpL = self.proControl.PID_KpL.value()
             temp = KpH*3.5/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KiH.setProperty("value", float(temp))
             temp = KpH*1.25/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KdH.setProperty("value", float(temp))
             temp =KpM*3.5/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KiM.setProperty("value", float(temp))
             temp = KpM*1.25/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KdM.setProperty("value", float(temp))
             temp = KpL*3.5/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KiL.setProperty("value", float(temp))
             temp = KpL*1.25/2.45
-            if temp>65.535:
-                temp = 65.535
+            if temp>6553.5:
+                temp = 6553.5
             self.proControl.PID_KdL.setProperty("value", float(temp))
              
         if False:#self.proControl.PID_AutoIncMode2.isChecked():  
@@ -364,9 +364,9 @@ class UIAction():
         offset = 5
         
         self.RecaculatePIDParam()
-        x=self.proControl.PID_KpH.value()*1000
-        y=self.proControl.PID_KiH.value()*1000
-        z=self.proControl.PID_KdH.value()*1000
+        x=self.proControl.PID_KpH.value()*10
+        y=self.proControl.PID_KiH.value()*10
+        z=self.proControl.PID_KdH.value()*10
        
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
@@ -377,9 +377,9 @@ class UIAction():
         buf[offset+1] = int(z/256)
         buf[offset] = int(z%256)
         offset = offset+ 2
-        x=self.proControl.PID_KpM.value()*1000
-        y=self.proControl.PID_KiM.value()*1000
-        z=self.proControl.PID_KdM.value()*1000
+        x=self.proControl.PID_KpM.value()*10
+        y=self.proControl.PID_KiM.value()*10
+        z=self.proControl.PID_KdM.value()*10
        
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
@@ -390,9 +390,9 @@ class UIAction():
         buf[offset+1] = int(z/256)
         buf[offset] = int(z%256)
         offset = offset+ 2
-        x=self.proControl.PID_KpL.value()*1000
-        y=self.proControl.PID_KiL.value()*1000
-        z=self.proControl.PID_KdL.value()*1000
+        x=self.proControl.PID_KpL.value()*10
+        y=self.proControl.PID_KiL.value()*10
+        z=self.proControl.PID_KdL.value()*10
        
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
@@ -455,7 +455,7 @@ class UIAction():
         
         if res is  None:
             return False
-        if False:
+        if True:
             if res[0] != ord('$') :
                 return False
             if res[1] != ord('N' ):
@@ -470,9 +470,9 @@ class UIAction():
         y = res[offset+1]*256+res[offset]
         offset  =offset+2
         z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpH.setProperty("value", float(x/1000))
-        self.proControl.PID_KiH.setProperty("value", float(y/1000))
-        self.proControl.PID_KdH.setProperty("value", float(z/1000))
+        self.proControl.PID_KpH.setProperty("value", float(x/10))
+        self.proControl.PID_KiH.setProperty("value", float(y/10))
+        self.proControl.PID_KdH.setProperty("value", float(z/10))
         
         offset  =offset+2
         x = res[offset+1]*256+res[offset]
@@ -480,18 +480,18 @@ class UIAction():
         y = res[offset+1]*256+res[offset]
         offset  =offset+2
         z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpM.setProperty("value", float(x/1000))
-        self.proControl.PID_KiM.setProperty("value", float(y/1000))
-        self.proControl.PID_KdM.setProperty("value", float(z/1000))
+        self.proControl.PID_KpM.setProperty("value", float(x/10))
+        self.proControl.PID_KiM.setProperty("value", float(y/10))
+        self.proControl.PID_KdM.setProperty("value", float(z/10))
         offset  =offset+2
         x = res[offset+1]*256+res[offset]
         offset  =offset+2
         y = res[offset+1]*256+res[offset]
         offset  =offset+2
         z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpL.setProperty("value", float(x/1000))
-        self.proControl.PID_KiL.setProperty("value", float(y/1000))
-        self.proControl.PID_KdL.setProperty("value", float(z/1000))
+        self.proControl.PID_KpL.setProperty("value", float(x/10))
+        self.proControl.PID_KiL.setProperty("value", float(y/10))
+        self.proControl.PID_KdL.setProperty("value", float(z/10))
         offset  =offset+2
         x = res[offset+1]*256+res[offset]
         offset  =offset+2
@@ -528,6 +528,7 @@ class UIAction():
         
         x=self.proControl.PWM_SET.value()
         y=self.proControl.PID_SetPoint.value()
+        #y = self.thirdUIControl.SetPoint.value()*50
        
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
@@ -554,7 +555,7 @@ class UIAction():
         
         if res is  None:
             return None    
-        if False:  
+        if True:
             if res[0] != ord('$') :
                 return None
             if res[1] != ord('N' ):
@@ -590,7 +591,6 @@ class UIAction():
         if True:
             pl.cla()
             pl.grid() #开启网格
-            ax = pl.gca()
             pl.xlabel("PWM")
             pl.ylabel("Votage")
             pl.title("PWM => Votage")

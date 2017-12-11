@@ -303,7 +303,7 @@ background-color: rgb(170, 255, 0);</string>
      <item>
       <widget class="QPushButton" name="Clear">
        <property name="text">
-        <string>清零</string>
+        <string>设置</string>
        </property>
       </widget>
      </item>

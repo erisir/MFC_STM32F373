@@ -14,7 +14,7 @@
 #include "pid.h" 
 
 uint8_t Bsp_Int_Ok=0;
-extern uint8_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
+extern uint16_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
  
 
 extern u8 RS485_RX_BUF[64]; 

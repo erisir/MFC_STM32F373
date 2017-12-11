@@ -61,7 +61,7 @@ void LED_ON_OFF(void)
 
 		delay_ms(100);	
 	}	
-	LED_Open();
+	LED_Close();
 
 	delay_ms(100);
 }

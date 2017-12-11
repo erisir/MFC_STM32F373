@@ -136,12 +136,12 @@ void ADC_GPIO_Config(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	  /* POT_SDADC channel 5P (PB1) */
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOE, ENABLE);
 	
   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_0;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9|GPIO_Pin_8;
+  GPIO_Init(GPIOE, &GPIO_InitStructure);
 }
 void ADC1_Mode_Config(void)
 {
@@ -256,12 +256,12 @@ uint32_t SDADC1_Config(void)
   //////////////////////////////////////
   /* select POT_SDADC channel 5 to use conf0 only one channel each time*/
 	
-  SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_5, SDADC_Conf_0);
-	SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_6, SDADC_Conf_0);
+  SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_7, SDADC_Conf_0);
+	SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_8, SDADC_Conf_0);
 
 
   /* select channel(*) 5 */
-	SDADC_InjectedChannelSelect(POT_SDADC, SDADC_Channel_5|SDADC_Channel_6);
+	SDADC_InjectedChannelSelect(POT_SDADC, SDADC_Channel_7|SDADC_Channel_8);
 
 
   /* Enable continuous mode */

@@ -18,14 +18,14 @@ void PWM_GPIO_Config(void)
 {
  
 	GPIO_InitTypeDef GPIO_InitStructure;
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 
  
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
  
@@ -70,11 +70,11 @@ void PWM_Mode_Config()
 	TIM_OCInitStructure.TIM_Pulse = PWM_HIGH_MIN;					  			//设置初始PWM脉冲宽度为0	
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  	  //当定时器计数值小于CCR1_Val时为低电平
 
-	TIM_OC4Init(TIM2, &TIM_OCInitStructure);	 									 //使能通道 -CH4
-	TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);						 //使能预装载 	-CH4
+	TIM_OC2Init(TIM2, &TIM_OCInitStructure);	 									 //使能通道 -CH2
+	TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);						 //使能预装载 	-CH2
 
 	TIM_ARRPreloadConfig(TIM2, ENABLE);			 										 //使能TIM2重载寄存器ARR
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_1);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_1);
 	/* TIM2 enable counter */
 	TIM_Cmd(TIM2, ENABLE);                   										 //使能定时器2	
 
@@ -84,7 +84,7 @@ void PWM_Mode_Config()
 	
 	#ifdef __PWM_DITHER_MODE_
 	TIM_DMACmd( TIM2, TIM_DMA_Update, ENABLE );    							 //产生DMA请求信号  
-  TIM_DMACmd(TIM2, TIM_DMA_CC4, ENABLE);  	
+  TIM_DMACmd(TIM2, TIM_DMA_CC2, ENABLE);  	
 	#endif
 	
   TIM_CtrlPWMOutputs(TIM2, ENABLE );  
@@ -111,7 +111,7 @@ void PWW_DMA_Init(void){
   DMA_DeInit( DMA1_Channel7 );   // DMA复位
   DMA_StructInit( &DMA_InitStructure );   // DMA缺省的参数
     
-  DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &TIM2->CCR4; //外设地址0x40000040;//
+  DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &TIM2->CCR2; //外设地址0x40000040;//
   DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) &vDither;
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST; //dma传输方向,单向
   DMA_InitStructure.DMA_BufferSize = BufferSize; //设置DMA在传输时缓冲区的长度
@@ -151,7 +151,7 @@ void    LoadPWM(uint32_t pwmval)
 	#endif
 	
 	#ifdef __PWM_NONMAL_MODE_
-	TIM_SetCompare4(TIM2,pwmval);	
+	TIM_SetCompare2(TIM2,pwmval);	
 	#endif
 }
 void DMA_Half_Transfer_interrupt(void){

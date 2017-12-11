@@ -17,7 +17,7 @@
 
 #include "timebase.h" 
 
-uint8_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
+uint16_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
 uint32_t  Timer4_Count;//记录Timer3中断次数
 extern uint8_t Bsp_Int_Ok;
 void TIM4_Init(void){

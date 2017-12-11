@@ -69,7 +69,8 @@ class UIMainWindow(QDialog):
         self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
        
         self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam) 
-        self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam)        
+        self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam) 
+        self.thirdUIControl.SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)        
         
         self.firstUIComm.connect.clicked.connect(self.uiAction.Connect)
         self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
@@ -121,7 +122,7 @@ tipLabel.setText( "正在尝试连接下位机...")
 mainApp=UIMainWindow(app) 
 ret = False
 
-for i in range(1,10):
+for i in range(4,10):
     for x in(['9600','14400','19200','38400','56000','57600','115200','194000']):
         comm = 'COM'+str(i)   
         ret = mainApp.uiAction.AutoConnect(comm,x)

@@ -6,7 +6,7 @@
 //#define __ADC_INJECTED_MODE_
 #define  __ADC_DMA_MODE_
 //#define __ADC_ADC1_MODE_
-#define POT_GPIO_PORT        GPIOB
+#define POT_GPIO_PORT        GPIOE
    
       
 #define POT_SDADC            SDADC1

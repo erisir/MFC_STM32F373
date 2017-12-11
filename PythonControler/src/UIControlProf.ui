@@ -63,16 +63,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.257000000000000</double>
+          <double>6.300000000000000</double>
          </property>
         </widget>
        </item>
@@ -89,16 +89,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.455000000000000</double>
+          <double>6.500000000000000</double>
          </property>
         </widget>
        </item>
@@ -115,16 +115,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>2.230000000000000</double>
+          <double>2.200000000000000</double>
          </property>
         </widget>
        </item>
@@ -152,16 +152,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.455000000000000</double>
+          <double>6.500000000000000</double>
          </property>
         </widget>
        </item>
@@ -178,16 +178,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>2.230000000000000</double>
+          <double>2.200000000000000</double>
          </property>
         </widget>
        </item>
@@ -197,16 +197,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.257000000000000</double>
+          <double>6.300000000000000</double>
          </property>
         </widget>
        </item>
@@ -227,16 +227,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.257000000000000</double>
+          <double>6.300000000000000</double>
          </property>
         </widget>
        </item>
@@ -253,16 +253,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.455000000000000</double>
+          <double>6.500000000000000</double>
          </property>
         </widget>
        </item>
@@ -279,16 +279,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>3</number>
+          <number>1</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.001000000000000</double>
+          <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>2.230000000000000</double>
+          <double>2.200000000000000</double>
          </property>
         </widget>
        </item>
@@ -354,7 +354,7 @@
           <number>0</number>
          </property>
          <property name="minimum">
-          <double>10.000000000000000</double>
+          <double>0.000000000000000</double>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -413,7 +413,7 @@
         <double>0.500000000000000</double>
        </property>
        <property name="value">
-        <double>0.500000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -439,7 +439,7 @@
         <double>5.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.500000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -468,7 +468,7 @@
         <double>5.000000000000000</double>
        </property>
        <property name="value">
-        <double>50.000000000000000</double>
+        <double>5.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -645,7 +645,7 @@
         <double>50.000000000000000</double>
        </property>
        <property name="value">
-        <double>20.000000000000000</double>
+        <double>50.000000000000000</double>
        </property>
       </widget>
      </item>

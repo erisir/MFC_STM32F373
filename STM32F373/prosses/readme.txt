@@ -1,20 +1,17 @@
 硬件使用说明：
-RS485:
-
-	PD8 485控制
-	PA9 485_TX
-	PA10 485_RX
+RS485:	 
+	PIN 30 PA9  485_TX
+	PIN 31 PA10 485_RX
 
 LED:
-	PA8 LED
-
-
+	PIN 29 PA8 LED
 
 PWM:
-	TIM2cH2 PA1=>tim2CH4 pA3//// pcbv2 pb3 TIM2 CH2
+	PIN39 PB3 TIM2 CH2
 	
 SDADC:
-	PB0 PB1
+	(sensor)PIN 21 PE8
+	(setPoint)PIN 22 PE9
 	
 主循环控制时钟:
 	TIM4
@@ -24,8 +21,7 @@ SDADC:
 	systick
 	
 FlowReset:
-
-	PA13
+	PIN 34 PA13 TIM4 CH3
 	
 DEBUG
 

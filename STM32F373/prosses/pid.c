@@ -83,9 +83,9 @@ void Set_PID_Param(uint8_t *buf)
 	data_y = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 	offset+=2;
 	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];	
-	spid.kpH=data_x/1000.0f; 
-	spid.kiH=data_y/1000.0f; 
-	spid.kdH=data_z/1000.0f; 
+	spid.kpH=data_x/10.0f; 
+	spid.kiH=data_y/10.0f; 
+	spid.kdH=data_z/10.0f; 
 	
 	offset+=2;
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
@@ -94,9 +94,9 @@ void Set_PID_Param(uint8_t *buf)
 	offset+=2;
 	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];	
  	
-	spid.kpM=data_x/1000.0f; 
-	spid.kiM=data_y/1000.0f; 
-	spid.kdM=data_z/1000.0f; 
+	spid.kpM=data_x/10.0f; 
+	spid.kiM=data_y/10.0f; 
+	spid.kdM=data_z/10.0f; 
 	
 	offset+=2;
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
@@ -105,9 +105,9 @@ void Set_PID_Param(uint8_t *buf)
 	offset+=2;
 	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];	
  	
-	spid.kpL=data_x/1000.0f; 
-	spid.kiL=data_y/1000.0f; 
-	spid.kdL=data_z/1000.0f; 
+	spid.kpL=data_x/10.0f; 
+	spid.kiL=data_y/10.0f; 
+	spid.kdL=data_z/10.0f; 
 	
 	offset+=2;
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];

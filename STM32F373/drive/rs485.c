@@ -137,11 +137,11 @@ void RS485_Receive_Data(u8 *buf,u8 *len)
 }
 void RS485_Mode_Rx(void)  
 { 
-	GPIO_ResetBits(GPIOD, GPIO_Pin_8 );
+	//GPIO_ResetBits(GPIOD, GPIO_Pin_8 );
 }
 void RS485_Mode_Tx(void) 
 {
-	GPIO_SetBits(GPIOD, GPIO_Pin_8 );
+	//GPIO_SetBits(GPIOD, GPIO_Pin_8 );
 }
 
 
