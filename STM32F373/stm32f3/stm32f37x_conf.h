@@ -49,7 +49,7 @@
 #include "stm32f37x_rcc.h"
 //#include "stm32f37x_rtc.h"
 #include "stm32f37x_sdadc.h"
-//#include "stm32f37x_spi.h"
+#include "stm32f37x_spi.h"
 #include "stm32f37x_tim.h"
 #include "stm32f37x_usart.h"
 //#include "stm32f37x_wwdg.h"

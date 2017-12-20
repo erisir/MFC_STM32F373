@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "protocol.h"
 #include "pid.h" 
+#include "spi.h" 
 
 uint8_t Bsp_Int_Ok=0;
 extern uint16_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
@@ -40,6 +41,8 @@ void Bsp_Int(void ){
 	ADC1_Init();
 	Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
 	RS485_PrintString("6:\tADC_Init\n");
+	AD5761_Init() ;
+	RS485_PrintString("7:\tAD5761_Init\n");
  
 	
 	RCC_GetClocksFreq(&RCC_Clocks);
