@@ -24,7 +24,7 @@ float Byte2Float(unsigned char* buf,int offset)
 void parseData(u8 *buf,u8 rxlen){
 	//$ N > len-5 FLAG 【DATA】 Xlen(checksum)
 	//uint8_t len = buf[3];
-  
+  uint16_t  data = 0;
 	//if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
 	if( buf[0] != '$' )	return;	//数据校验
 	if( buf[1] != 'N' )	return;	//数据校验
@@ -38,7 +38,13 @@ void parseData(u8 *buf,u8 rxlen){
 		sprintf((char*)RS485_TX_BUF,"Set_Running_Param:OK\n");
 		RS485_PrintString(RS485_TX_BUF);
 		break;//8
-		
+	case _U_SetVOut:
+		data = buf[5]*256+buf[6];
+		sprintf((char*)RS485_TX_BUF,"_U_SetVOut[%d]:OK\n",data);
+		RS485_PrintString(RS485_TX_BUF);
+		AD5761_SetVotage(data);
+		break;//8
+	
 	case _CMD_SetPIDParam:
 		Set_PID_Param(buf);
 		sprintf((char*)RS485_TX_BUF,"Set_PID_Param:OK\n");

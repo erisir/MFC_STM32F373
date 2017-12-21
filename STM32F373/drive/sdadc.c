@@ -105,10 +105,11 @@ void VOL_IIR_Filter()
 	
 	filter_voltage.ch0 = (float)(filter_voltage.ch0 + VOL_IIR_FACTOR*(voltage.ch0 - filter_voltage.ch0)); 
 	filter_voltage.ch1 =(float)(filter_voltage.ch1 + VOL_IIR_FACTOR*(voltage.ch1 - filter_voltage.ch1)); 
-	AD5761_SetVotage(65536.0f*(filter_voltage.ch0/5000.0f));
+	
 }
 
 float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ
+	AD5761_SetVotage(65536.0f*(filter_voltage.ch0/5000.0f));
 	if(ch == 0)
 		 return filter_voltage.ch0;
 	 else

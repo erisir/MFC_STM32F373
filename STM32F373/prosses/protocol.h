@@ -14,6 +14,7 @@
 #define _CMD_SetVClose		 '4'
 #define _U_SetVOpen				 '5'
 #define _U_SetVPID				 '6'
+#define _U_SetVOut				 '7'
 
 
 #define RS485_TX_EN		PDout(8)	//485模式控制.0,接收;1,发送.

@@ -1,4 +1,5 @@
 #python
 *.pyc
 *.htm
-*.hex
+/STM32F373/bin
+PythonControler\src\__pycache__

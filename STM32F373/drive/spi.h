@@ -25,7 +25,7 @@
 #define CMD_SW_FULL_RESET					0xF
 
  
-void SPI3_Init();  
+void SPI3_Init(void);  
 void AD5761_Init(void); 			
 void AD5761_Config(void);
 void AD5761_ReadConfig(void);
