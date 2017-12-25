@@ -102,13 +102,6 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QRadioButton" name="CtrlMode_Der">
-       <property name="text">
-        <string>直接控制</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
   </widget>
@@ -310,7 +303,7 @@ background-color: rgb(170, 255, 0);</string>
      <item>
       <widget class="QPushButton" name="Exit">
        <property name="text">
-        <string>exit</string>
+        <string>退出</string>
        </property>
       </widget>
      </item>

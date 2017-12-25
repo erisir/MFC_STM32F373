@@ -2,7 +2,7 @@
 from PyQt5.QtGui import *  
 from PyQt5.QtCore import *  
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import  *
+from PyQt5.QtWidgets import  *  
 import UIComm,UIControl,UIDetail,UIOther,UIControlProf
 import time
 import sys  
@@ -51,7 +51,6 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.CtrlMode_Dig.clicked.connect(self.uiAction.CtrlMode_Dig)
         self.thirdUIControl.CtrlMode_Vot.clicked.connect(self.uiAction.CtrlMode_Vot)
         self.thirdUIControl.CtrlMode_Cur.clicked.connect(self.uiAction.CtrlMode_Cur)
-        self.thirdUIControl.CtrlMode_Der.clicked.connect(self.uiAction.CtrlMode_Der)
         self.thirdUIControl.ShowUnit_FS.clicked.connect(self.uiAction.ShowUnit_FS)
         self.thirdUIControl.ShowUnit_sccm.clicked.connect(self.uiAction.ShowUnit_sccm)
         self.thirdUIControl.ShowUnit_slm.clicked.connect(self.uiAction.ShowUnit_slm)
@@ -67,7 +66,7 @@ class UIMainWindow(QDialog):
     
    
         self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
-       
+        
         self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam) 
         self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam) 
         self.thirdUIControl.SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)        
@@ -120,21 +119,22 @@ tipLabel.setText( "程序正在启动...")
 time.sleep(0.2)
 tipLabel.setText( "正在尝试连接下位机...")
 mainApp=UIMainWindow(app) 
-ret = False
 
-for i in range(4,10):
-    for x in(['9600','14400','19200','38400','56000','57600','115200','194000']):
-        comm = 'COM'+str(i)   
-        ret = mainApp.uiAction.AutoConnect(comm,x)
-        progressBar.setValue(i*5+10)
-        
-        app.processEvents()
+ret = True#mainApp.uiAction.TryConnect()
+if ret == False:
+    ret = []
+    for i in range(2,10):
+        for x in(['9600','14400','19200','38400','56000','57600','115200','194000']):
+            comm = 'COM'+str(i)   
+            ret = mainApp.uiAction.AutoConnect(comm,x)
+            progressBar.setValue(i*5+10)            
+            app.processEvents()
+            if ret[0]:
+                break
+            tipLabel.setText('搜索串口  '+comm+'  Baudrate  '+x +'\r\n'+ret[1]._what+'\r\n'+ret[1]._why)  
+            time.sleep(0.3)
         if ret[0]:
-            break
-        tipLabel.setText('搜索串口  '+comm+'  Baudrate  '+x +'\r\n'+ret[1]._what+'\r\n'+ret[1]._why)  
-        time.sleep(0.3)
-    if ret[0]:
-            break
+                break
 progressBar.setValue(99)
 mainApp.show()  
 splash.finish(mainApp)  

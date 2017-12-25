@@ -93,6 +93,7 @@ unsigned char is_PID_Running(void);
 unsigned int abs( int val);
  
 void Inc_PID_Calc(void);
+void Inc_PID_Calc1(void);
 void PID_Setpoint_Change(void);
 
 #endif

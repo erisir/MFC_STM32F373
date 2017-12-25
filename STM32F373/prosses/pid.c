@@ -31,7 +31,7 @@ uint8_t isRunning=0;
 uint8_t set_point_changed= 0;
 
 uint8_t PID_Ctrl_Mode = 0;//0 soft 1:Ext FlowSet
-
+uint8_t PID_Calc_Mode = 0;
 uint16_t getFeedBackTime(void){
 	return feedbackTime;
 }
@@ -229,17 +229,21 @@ void Set_Running_Param(uint8_t *buf)
 	data_x = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 	offset+=2;
 	data_y = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
+	offset+=2;
+	data_z = ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
 	
  
 	feedbackTime = data_x; 
 	if(isRunning==0){
 		PWM_Output=data_x; 
+		
 		LoadPWM(PWM_Output);
 	}
 
 	if(PID_Ctrl_Mode==0){
 		Voltage_Set_Point=data_y; 	
 	}
+	PID_Calc_Mode = data_z;
 }
 void Get_Running_Param(uint8_t *buf)
 {
@@ -292,7 +296,14 @@ void Get_Running_Param(uint8_t *buf)
  ***********************************************************/ 
 void PID_Start() 		 
 { 
-  Inc_PID_Calc();
+	switch(PID_Calc_Mode){
+		case 0:
+			Inc_PID_Calc();
+		break;
+		case 1:
+			Inc_PID_Calc1();
+		break;
+	}
 	
 	if(PWM_Output >PWM_HIGH_MAX)
 		PWM_Output = PWM_HIGH_MAX; 
@@ -326,6 +337,40 @@ void Inc_PID_Calc(void)
 	 	iIncpid = spid.kpM * iError //E[k]项
 						- spid.kiM * spid.LastError //E[k－1]项
 						+ spid.kdM * spid.PrevError; //E[k－2]项
+	}
+	//存储误差，用于下次计算
+	spid.PrevError = spid.LastError;
+	spid.LastError = iError;
+	//返回增量值
+		if(abs(iIncpid) >spid.PWM_Change_Threadhold){
+		iIncpid = iIncpid>0?spid.PWM_Change_Threadhold:(-1*spid.PWM_Change_Threadhold);
+	}
+	PWM_Output += iIncpid;
+}
+//增量式PID控制设计
+void Inc_PID_Calc1(void)
+{
+	register float iError;
+ 	register int iIncpid;
+	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
+	//当前误差
+	iError = Voltage_Set_Point_temp - NextPoint;
+	if(abs(iError)<spid.deadzone){
+	iIncpid = 0;
+	}else if(abs(iError) >spid.error_High_Threadhold){
+	 //增量计算系数与pid参数对应 Kp[e(k)-e(k-1)]+Kie(k)+Kd[e(k)-2e(k-1)+e(k-2)]
+	iIncpid = spid.kpH * (iError-spid.LastError) //E[k]项
+					+ spid.kiH * iError //E[k－1]项
+					+ spid.kdH * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+	
+	}else if(abs(iError) <spid.error_High_Threadhold){
+	 	iIncpid = spid.kpL * (iError-spid.LastError) //E[k]项
+						- spid.kiL * iError //E[k－1]项
+						+ spid.kdL * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+	}else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
+	 	iIncpid = spid.kpM * (iError-spid.LastError) //E[k]项
+						- spid.kiM * iError //E[k－1]项
+						+ spid.kdM * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
 	}
 	//存储误差，用于下次计算
 	spid.PrevError = spid.LastError;

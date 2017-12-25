@@ -3,13 +3,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  *
 import matplotlib.pyplot as pl
 import serial  #pip install pyserial
-import sys
+import sys,os,json
 import time
 import random #pip install random
 import binascii,encodings; 
 import numpy as np
 from sympy.strategies.core import switch
 from struct import pack,unpack
+
 class ErrorMsg():
     _what = ""
     _why  = ""
@@ -24,9 +25,9 @@ class UIAction():
     comm = None
     commBusy = False
     error = ErrorMsg()
-    
+    config = {}
     stopVoltageVsPWMCurse = False
-    
+    getRandomMid = 1000
     _CMD_SetRunParam = '0';
     _CMD_SetPIDParam = '1';
     _CMD_GetRunParam = '2';
@@ -81,7 +82,7 @@ class UIAction():
                 temp = 6553.5
             self.proControl.PID_KdL.setProperty("value", float(temp))
              
-        if False:#self.proControl.PID_AutoIncMode2.isChecked():  
+        if self.proControl.PID_AutoIncMode2.isChecked():  
             response_time = self.proControl.Responce_Time.value() 
             delay_time = self.proControl.Delay_Time.value()  
             PID_factor = int(self.proControl.PID_Factor.value()) 
@@ -112,15 +113,22 @@ class UIAction():
             Ki = Kp*T/Ti
             Kd = Kp*Td/T
             
-            A = Kp+Ki+Kd
-            B = Kp+2*Kd
+            #A = Kp+Ki+Kd
+            #B = Kp+2*Kd
+            #C = Kd    
+            A = Kp
+            B = Ki
             C = Kd    
-            if A>65.535:
-                A = 65.535
-            if B>65.535:
-                B=65.535
-            if C>65.535:
-                C = 65.535
+            if T>6.5535:
+                T = 6.5535
+            if A>6553.5:
+                A = 6553.5
+            if B>6553.5:
+                B=6553.5
+            if C>6553.5:
+                C = 6553.5
+                
+            self.proControl.SampleCycle.setProperty("value", float(T*1000))
             
             self.proControl.PID_KpH.setProperty("value", float(A))
             self.proControl.PID_KiH.setProperty("value", float(B))
@@ -275,6 +283,8 @@ class UIAction():
         
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
         self.error._what = 'GetPlotData'
+        ret = self.getRandom();
+        return [ret[0],ret[1],ret[2],ret[0],ret[1],ret[2]]
         ret = self.readRunningParam()#self.readVoltage()#
         if ret == None:
             self.logMessage(self._DEBUG)
@@ -291,12 +301,24 @@ class UIAction():
         return res
 
     def getRandom(self):
-            mid=1084
+            mid=self.getRandomMid
             start = 1
             end = 100
             return [mid+random.randint(start, end)/100,mid+random.randint(start, end)/100,mid+random.randint(start, end)/100] 
     
-        
+    def TryConnect(self):
+        os.chdir(sys.path[0])  # 设置脚本所在目录为当前工作目录
+        configFile = os.path.join(sys.path[0],"config.txt")
+        if os.path.exists(configFile):
+            with open(configFile, "r") as f:
+                self.config = json.load(f)
+            try:
+                ret=self.AutoConnect(self.config['COMM'],self.config['Baudrate'])
+                return ret[0]
+            except:
+                return False
+        else:
+            return False
     def Connect(self):
         commName =self.firstUIComm.CommName.currentText()
         Baudrate = self.firstUIComm.Baudrate.currentText()   
@@ -334,12 +356,18 @@ class UIAction():
             self.comm = serial.Serial(str(commName),int(Baudrate))    
         except Exception as e:
             self.error._why = str(e.args)
+
             return [False,self.error]
-        
         self.isDeviceReady = True
         ret =  self.readPIDParam()
-        if ret:
+        if ret:       
             self.isDeviceReady = True
+            #os.chdir(sys.path[0])  # 设置脚本所在目录为当前工作目录
+            #configFile = os.path.join(sys.path[0],"config.txt")
+            #self.config['COMM']=comm
+            #self.config['Baudrate']=Baud
+            #with open(configFile, "w") as output:
+            #    json.dump(self.config, output)
             self.error._why ="连接成功"
         else:
             self.isDeviceReady = False
@@ -432,7 +460,7 @@ class UIAction():
         buf[offset] = int(z%256)
         offset = offset+ 2  
         
-        x = int(self.proControl.PID_Factor.value()) 
+        x = 0#int(self.proControl.PID_Factor.value()) 
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
                                                 
@@ -517,24 +545,28 @@ class UIAction():
    
     def SetRuningParam(self):
         self.error._what = 'SetRuningParam'
-        buf = bytearray( 9 )
+        buf = bytearray( 11 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 9
+        buf[3]= 11
         buf[4]= ord(self._CMD_SetRunParam )
         buf[5]= ord('X' )
         offset = 5
         
         x=self.proControl.PWM_SET.value()
         y=self.proControl.PID_SetPoint.value()
-        #y = self.thirdUIControl.SetPoint.value()*50
+        self.getRandomMid = y
+        z=self.proControl.PID_Calc_Mode.value()
        
         buf[offset+1] = int(x/256)
         buf[offset] = int(x%256)
         offset = offset+ 2
         buf[offset+1] = int(y/256)
         buf[offset] = int(y%256)
+        offset = offset+ 2
+        buf[offset+1] = int(z/256)
+        buf[offset] = int(z%256)
  
         ret= self.SendCommandWithData(bytes(buf))
         if ret is None:

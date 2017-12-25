@@ -245,7 +245,6 @@ class  MyDynamicMplCanvas(QWidget):
                 #return [Voltage_Set_Point,PWM_Output,vCh0,vCh1,setpoint_temp]
                 try:
                     newData = self.UIAction.GetPlotData()
-                    print(newData)
                     if newData == None :
                         time.sleep(getDataThreadInterval)
                         continue

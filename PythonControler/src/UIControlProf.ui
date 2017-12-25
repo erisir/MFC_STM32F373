@@ -28,7 +28,7 @@
    <widget class="QPushButton" name="SetPIDParam">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>270</x>
       <y>200</y>
       <width>75</width>
       <height>23</height>
@@ -384,14 +384,14 @@
       <x>10</x>
       <y>110</y>
       <width>160</width>
-      <height>80</height>
+      <height>100</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_8">
      <item row="0" column="0">
       <widget class="QLabel" name="label_11">
        <property name="text">
-        <string>DelayTime</string>
+        <string>DelayTime(s)</string>
        </property>
       </widget>
      </item>
@@ -401,26 +401,26 @@
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>1</number>
+        <number>2</number>
        </property>
        <property name="minimum">
         <double>0.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>5.000000000000000</double>
+        <double>10.000000000000000</double>
        </property>
        <property name="singleStep">
         <double>0.500000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>0.100000000000000</double>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>ResTime</string>
+        <string>ResTime(s)</string>
        </property>
       </widget>
      </item>
@@ -436,17 +436,17 @@
         <number>1</number>
        </property>
        <property name="maximum">
-        <double>5.000000000000000</double>
+        <double>10.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>0.300000000000000</double>
        </property>
       </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_15">
        <property name="text">
-        <string>F_Cutoff</string>
+        <string>F_Cutoff(Hz)</string>
        </property>
       </widget>
      </item>
@@ -472,6 +472,35 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_22">
+       <property name="text">
+        <string>SampCycle(ms)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="SampleCycle">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <double>65535.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>5.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>20.000000000000000</double>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="formLayoutWidget_9">
@@ -480,17 +509,10 @@
       <x>180</x>
       <y>110</y>
       <width>160</width>
-      <height>80</height>
+      <height>81</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_9">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>DeadZone</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
       <widget class="QDoubleSpinBox" name="DeadZone">
        <property name="keyboardTracking">
@@ -508,14 +530,14 @@
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_22">
+      <widget class="QLabel" name="label_23">
        <property name="text">
-        <string>Ctrl_Mode</string>
+        <string>Calc_Mode</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QDoubleSpinBox" name="PID_Factor">
+      <widget class="QDoubleSpinBox" name="PID_Calc_Mode">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -530,6 +552,42 @@
        </property>
        <property name="value">
         <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_24">
+       <property name="text">
+        <string>PID_Factor</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="PID_Factor">
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="minimum">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>4.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>DeadZone(mv)</string>
        </property>
       </widget>
      </item>
@@ -560,7 +618,7 @@
       <item>
        <widget class="QRadioButton" name="PID_AutoIncMode1">
         <property name="text">
-         <string>自动增量</string>
+         <string>自动增量1</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -570,7 +628,7 @@
       <item>
        <widget class="QRadioButton" name="PID_AutoIncMode2">
         <property name="text">
-         <string>自动增量</string>
+         <string>自动增量2</string>
         </property>
         <property name="checked">
          <bool>false</bool>
@@ -652,7 +710,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>SetPoint</string>
+        <string>SetPoint(mv)</string>
        </property>
       </widget>
      </item>
@@ -668,7 +726,7 @@
         <double>6000.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>1000.000000000000000</double>
+        <double>2000.000000000000000</double>
        </property>
        <property name="value">
         <double>5000.000000000000000</double>
