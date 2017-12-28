@@ -120,10 +120,10 @@ float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ
  
 void ADC1_Init(void)
 {
-	ADC_GPIO_Config();
+	 
  
 	#ifdef __ADC_ADC1_MODE_
-	ADC1_Mode_Config();
+	ADC1_Config();
 	#endif
 	
 	#ifdef __ADC_INJECTED_MODE_
@@ -135,18 +135,8 @@ void ADC1_Init(void)
 	#endif
 }
 
-void ADC_GPIO_Config(void)
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
-	  /* POT_SDADC channel 5P (PB1) */
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOE, ENABLE);
-	
-  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AN;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9|GPIO_Pin_8;
-  GPIO_Init(GPIOE, &GPIO_InitStructure);
-}
-void ADC1_Mode_Config(void)
+ 
+uint8_t ADC1_Config(void)
 {
 	DMA_InitTypeDef DMA_InitStructure;
 	ADC_InitTypeDef ADC_InitStructure;
@@ -201,12 +191,14 @@ void ADC1_Mode_Config(void)
 	while(ADC_GetCalibrationStatus(ADC1));
  
 	ADC_SoftwareStartConv(ADC1);
+	
+	return 0;
 }
-uint32_t SDADC1_Config(void)
+uint8_t SDADC1_Config(void)
 {
 	
   SDADC_AINStructTypeDef SDADC_AINStructure;
-  
+  DMA_InitTypeDef   DMA_InitStructure;
   
   uint32_t SDADCTimeout = 0;
   /* POT_SDADC APB2 interface clock enable */
@@ -251,12 +243,7 @@ uint32_t SDADC1_Config(void)
   SDADC_AINStructure.SDADC_Offset = 0;
   SDADC_AINInit(POT_SDADC, SDADC_Conf_0, &SDADC_AINStructure);
   
-	////////////////////////////////// Using DMA
-	#ifdef __ADC_DMA_MODE_
-	SDADC_DMA_Config();
-	SDADC_DMAConfig(SDADC1,SDADC_DMATransfer_Injected, ENABLE);//DMA enable
-	#endif
-  //////////////////////////////////////
+	
   /* select POT_SDADC channel 5 to use conf0 only one channel each time*/
 	
   SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_7, SDADC_Conf_0);
@@ -289,80 +276,39 @@ uint32_t SDADC1_Config(void)
     /* EOCAL flag can not set */
     return 2;
   }
-	////////////////////////////////// Using injected
-  /* Enable end of injected conversion interrupt */
-	#ifdef __ADC_INJECTED_MODE_
-  SDADC_ITConfig(POT_SDADC, SDADC_IT_JEOC, ENABLE);
-	SDADC_NVIC_Config();
-	#endif
 	////////////////////////////////// 
   /* Start a software start conversion */
   SDADC_SoftwareStartInjectedConv(POT_SDADC);
   
+	////////////////////////////////// Using DMA
+	 
+  
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA2,ENABLE);
+
+	DMA_DeInit(DMA2_Channel3); //
+
+	/* DMA channel1 configuration ----------------------------------------------*/
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)SDADC1_DR_Address;
+	DMA_InitStructure.DMA_MemoryBaseAddr =(u32)& SDADC_ValueTab;
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
+	DMA_InitStructure.DMA_BufferSize = ADCMeanWindow*2;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable; // DMA_MemoryInc_Disable;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
+	DMA_Init(DMA2_Channel3, &DMA_InitStructure);
+
+	DMA_Cmd(DMA2_Channel3, ENABLE);
+	SDADC_DMAConfig(SDADC1,SDADC_DMATransfer_Injected, ENABLE);//DMA enable
+ 
+  //////////////////////////////////////
+	
   return 0;
 }
-void 	SDADC_NVIC_Config(void)
-{	
-	  /* NVIC Configuration */
-	NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = SDADC1_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-	}
-void SDADC_DMA_Config(void)
-{
-DMA_InitTypeDef   DMA_InitStructure;
-//NVIC_InitTypeDef NVIC_InitStructure;
-RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA2,ENABLE);
+ 
 
-DMA_DeInit(DMA2_Channel3); //
-
-/* DMA channel1 configuration ----------------------------------------------*/
-DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)SDADC1_DR_Address;
-DMA_InitStructure.DMA_MemoryBaseAddr =(u32)& SDADC_ValueTab;
-DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-DMA_InitStructure.DMA_BufferSize = ADCMeanWindow*2;
-DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable; // DMA_MemoryInc_Disable;
-DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-DMA_Init(DMA2_Channel3, &DMA_InitStructure);
-
-
-/*NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-NVIC_Init(&NVIC_InitStructure);
-				
-DMA_ITConfig(DMA2_Channel3, DMA_IT_TC, ENABLE);       
- */
-/* Enable DMA channel1 */
-DMA_Cmd(DMA2_Channel3, ENABLE);
-
-} 
-
-void SDADC1_IRQHandler(void)
- {
-  uint32_t ChannelIndex;
-  int16_t value = 0;
-  if(SDADC_GetFlagStatus(SDADC1, SDADC_FLAG_JEOC) != RESET)
-  {
-    /* Get the converted value */
-    value = SDADC_GetInjectedConversionValue(SDADC1, &ChannelIndex);
-		if(ChannelIndex == 0x00050020)//5 PB1
-			{
-			InjectedConvData[1] = value;
-		}
-		if(ChannelIndex == 0x00060040)//6 PB0
-			{
-			InjectedConvData[0] = value;
-		}
-		 
-  }
-}
+ 
 /*********************************************END OF FILE**********************/

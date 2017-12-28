@@ -14,41 +14,6 @@ uint8_t Dither_Index;//余数
 uint8_t PWM_Value_FirstPart_Changed=0;
 uint8_t PWM_Value_SecondPart_Changed=0;
 
-void PWM_GPIO_Config(void) 
-{
- 
-	GPIO_InitTypeDef GPIO_InitStructure;
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-
- 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
-}
-
- 
-void PWM_NVIC_Config(void)
-{
-	NVIC_InitTypeDef NVIC_InitStructure;
-
-	/* 配置TIM2_IRQ中断为中断源 
-	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	*/
-	#ifdef __PWM_DITHER_MODE_
-	NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel7_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init( &NVIC_InitStructure );
-	#endif
-}
-
 void PWM_Mode_Config()
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -74,7 +39,7 @@ void PWM_Mode_Config()
 	TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);						 //使能预装载 	-CH2
 
 	TIM_ARRPreloadConfig(TIM2, ENABLE);			 										 //使能TIM2重载寄存器ARR
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_1);
+	
 	/* TIM2 enable counter */
 	TIM_Cmd(TIM2, ENABLE);                   										 //使能定时器2	
 
@@ -93,13 +58,11 @@ void PWM_Mode_Config()
  
 void PWM_Init(void)
 {
-	PWM_GPIO_Config();//引脚
+ 
 	#ifdef __PWM_DITHER_MODE_
 	PWW_DMA_Init();	
 	#endif
 	PWM_Mode_Config();	//TIMER 相关
-	PWM_NVIC_Config();//中断优先级		
-
 }
  
 void PWW_DMA_Init(void){

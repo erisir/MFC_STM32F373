@@ -64,30 +64,13 @@ void AD5761_ReadConfig(void){
 
 void SPI3_Init()
 {
- 	GPIO_InitTypeDef GPIO_InitStructure;
+ 
   SPI_InitTypeDef  SPI_InitStructure;
   SPI_Cmd(SPI3, DISABLE); //停止SPI外设
 	
-	RCC_APB2PeriphClockCmd(	RCC_AHBPeriph_GPIOA, ENABLE );//PORTA时钟使能 
-	RCC_APB1PeriphClockCmd(	RCC_APB1Periph_SPI3,  ENABLE );//SPI3时钟使能 	
- 		
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2| GPIO_Pin_3;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd =  GPIO_PuPd_UP;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIOA	
 	
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_6);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_6);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_6);
-	//GPIO_PinAFConfig(GPIOA, GPIO_PinSource4, GPIO_AF_6);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd =  GPIO_PuPd_UP;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIOA
+ 		
+
   
 	//AD5761 rising edge 锁存 latched ；falling edge  transferred in
 	// SDO Data is clocked out on the rising edge of SCLK and is valid on the falling edge of SCLK.

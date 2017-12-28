@@ -28,36 +28,8 @@ void USART1_IRQHandler(void)
 //bound:波特率	  
 void RS485_Init(u32 bound)
 {  
-  GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
-  NVIC_InitTypeDef NVIC_InitStructure; 
-	/* config USART1 clock */
-	
-	RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOA, ENABLE);
-	RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOD, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE );
-
-	/* USART1 GPIO config second function*/
- 
-	GPIO_PinAFConfig(GPIOA,GPIO_PinSource9,GPIO_AF_7);
-	GPIO_PinAFConfig(GPIOA,GPIO_PinSource10,GPIO_AF_7);        
-	/*
-	*  USART1_RX_EN -> PA8 USART1_TX -> PA9 , USART1_RX ->        PA10
-	*/    
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9|GPIO_Pin_10;                 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF; 
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;                 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-
+  
 	/* USART1 mode config */
 	USART_InitStructure.USART_BaudRate = bound;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -71,15 +43,6 @@ void RS485_Init(u32 bound)
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
 
 	USART_Cmd(USART1, ENABLE);
-	
- 
-
-	/* Enable the USARTy Interrupt */
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;	 
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
 
   RS485_Mode_Rx();			//默认为接收模式
 }

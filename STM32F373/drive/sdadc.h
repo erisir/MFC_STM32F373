@@ -31,13 +31,9 @@ extern struct _Voltage voltage;
 extern struct _Voltage filter_voltage;
 
 void ADC1_Init(void);
+uint8_t SDADC1_Config(void);
+uint8_t ADC1_Config(void);
 
-uint32_t SDADC1_Config(void);
-void ADC_GPIO_Config(void);
-void SDADC_DMA_Config(void);
-
-void SDADC_NVIC_Config(void);
-void ADC1_Mode_Config(void);
 void Calculate_FilteringCoefficient(float Cut_Off);
 void VOL_IIR_Filter(void);
  

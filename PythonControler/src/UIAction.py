@@ -10,7 +10,7 @@ import binascii,encodings;
 import numpy as np
 from sympy.strategies.core import switch
 from struct import pack,unpack
-
+ 
 class ErrorMsg():
     _what = ""
     _why  = ""
@@ -573,7 +573,8 @@ class UIAction():
             self.logMessage(self._ERROR)
         else:
             self.logMessage(self._MSG, 'Set Paramater OK')
-    
+    def plotThread(self):
+        print('4343')
     def readRunningParam(self):
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1)
         buf = bytearray( 6 )

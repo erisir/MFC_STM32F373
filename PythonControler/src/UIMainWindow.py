@@ -1,4 +1,3 @@
-
 from PyQt5.QtGui import *  
 from PyQt5.QtCore import *  
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -9,7 +8,7 @@ import sys
 from UIAction import   UIAction
 
 class UIMainWindow(QDialog):  
-    def __init__(self,appHandle,parent=None):  
+    def __init__(self,appHandle,timers,parent=None):  
         super(UIMainWindow,self).__init__(parent)  
         self.app = appHandle
         self.firstUIComm=UIComm.Ui_Dialog()  
@@ -41,8 +40,10 @@ class UIMainWindow(QDialog):
         tabWidget.resize(520,570)
         
         self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
+        self.thirdUIControl.mplCanvas.InitGUI(self.uiAction,self.thirdUIControl.GetPoint,self.thirdUIControl.GetPointBar,self.thirdUIControl.SetPointBar,self.app)
+        self.thirdUIControl.mplCanvas.setTimers(timers)
         self.ConnectEvent()
-     
+ 
         
     def ConnectEvent(self):
         self.thirdUIControl.PWMOpen.clicked.connect(self.uiAction.PWMOpen)
@@ -56,7 +57,7 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.ShowUnit_slm.clicked.connect(self.uiAction.ShowUnit_slm)
         self.thirdUIControl.ShowUnit_V.clicked.connect(self.uiAction.ShowUnit_V)
         self.thirdUIControl.ShowUnit_mv.clicked.connect(self.uiAction.ShowUnit_mv)
-        self.thirdUIControl.mplCanvas.InitGUI(self.uiAction,self.thirdUIControl.GetPoint,self.thirdUIControl.GetPointBar,self.thirdUIControl.SetPointBar,self.app)
+        
         self.thirdUIControl.startPlot.clicked.connect(self.thirdUIControl.mplCanvas.startPlot)
         self.thirdUIControl.pausePlot.setEnabled(False)
         self.thirdUIControl.pausePlot.clicked.connect(self.thirdUIControl.mplCanvas.pausePlot)
@@ -118,7 +119,9 @@ time.sleep(0.2)
 tipLabel.setText( "程序正在启动...")
 time.sleep(0.2)
 tipLabel.setText( "正在尝试连接下位机...")
-mainApp=UIMainWindow(app) 
+timers = [QtCore.QTimer(),QtCore.QTimer()]#数据采集，绘图
+QtCore.QTimer().stop()
+mainApp=UIMainWindow(app,timers) 
 
 ret = True#mainApp.uiAction.TryConnect()
 if ret == False:

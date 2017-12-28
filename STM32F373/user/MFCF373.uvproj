@@ -508,6 +508,16 @@
               <FileType>5</FileType>
               <FilePath>..\drive\spi.h</FilePath>
             </File>
+            <File>
+              <FileName>rs485_DMA.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\drive\rs485_DMA.c</FilePath>
+            </File>
+            <File>
+              <FileName>rs485_DMA.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\drive\rs485_DMA.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

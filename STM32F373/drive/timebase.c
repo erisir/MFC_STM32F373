@@ -23,30 +23,12 @@ extern uint8_t Bsp_Int_Ok;
 void TIM4_Init(void){
 	/* TIM4 定时配置 */	
   TIM4_Configuration(71);
-	
-	/* 实战定时器的中断优先级 */
-	TIM4_NVIC_Configuration();
-
-	/* TIM4 重新开时钟，开始计时 */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , ENABLE);
 }
 void TIM4_Set_Prescaler(unsigned int Prescaler){
 	TIM4_Configuration(Prescaler);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , ENABLE);
 }
-/// TIM4中断优先级配置
-void TIM4_NVIC_Configuration(void)
-{
-    NVIC_InitTypeDef NVIC_InitStructure; 
-    
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //2bit 抢占，2bit响应 抢占优先，值小则优先 													
-    NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;	  
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-}
-
 /*
  * TIM_Period / Auto Reload Register(ARR) = 1000   TIM_Prescaler--71 
  * 中断周期为 = 1/(72MHZ /72) * 1000 = 1ms

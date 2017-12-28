@@ -9,8 +9,7 @@
 #define __PWM_DITHER_MODE_
 //#define __PWM_NONMAL_MODE_
  
-void PWM_GPIO_Config(void) ;
-void PWM_NVIC_Config(void);
+ 
 void PWM_Mode_Config(void);
 
 void PWM_Init(void);
