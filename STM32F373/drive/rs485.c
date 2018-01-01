@@ -64,7 +64,7 @@ void RS485_Send_Data(u8 *buf,u8 len)
 	RS485_RX_CNT=0;	  
 	RS485_Mode_Rx();				//设置为接收模式	
 }
-void RS485_PrintString(u8 *buf)
+void RS485_PrintString1(u8 *buf)
 {
 	RS485_Mode_Tx();			//设置为发送模式
   while(*buf)		//循环发送数据

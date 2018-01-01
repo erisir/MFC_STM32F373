@@ -25,6 +25,7 @@ class UIAction():
     comm = None
     commBusy = False
     error = ErrorMsg()
+    timeOutCounter = 0
     config = {}
     stopVoltageVsPWMCurse = False
     getRandomMid = 1000
@@ -155,6 +156,7 @@ class UIAction():
                 timeout -=1
             if timeout<=0:
                 self.error._why= 'SendToComAndRead timeout,com is busy'
+                self.timeOutCounter +=1
                 return None 
             
             self.commBusy = True     
@@ -172,7 +174,7 @@ class UIAction():
         buf[0] = ord('$') 
         buf[1]= ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 6
+        buf[3]= 2
         buf[4]= ord(cmd)
         buf[5]= self.CheckSumCalc(buf)  
         return self.SendToComAndRead(buf) 
@@ -204,6 +206,7 @@ class UIAction():
                 time.sleep(0.001)
             if timeout<=0:
                 self.error._why = 'readAnswer timeout,read'+ str(readLen)+'bit'
+                self.timeOutCounter +=1
                 return None
             ret = bytearray(readLen)
             for index in range(readLen):
@@ -283,8 +286,8 @@ class UIAction():
         
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
         self.error._what = 'GetPlotData'
-        ret = self.getRandom();
-        return [ret[0],ret[1],ret[2],ret[0],ret[1],ret[2]]
+        #ret = self.getRandom();
+        #return [ret[0],ret[1],ret[2],ret[0],ret[1],ret[2]]
         ret = self.readRunningParam()#self.readVoltage()#
         if ret == None:
             self.logMessage(self._DEBUG)
@@ -386,7 +389,7 @@ class UIAction():
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 37
+        buf[3]= 37-4
         buf[4]= ord(self._CMD_SetPIDParam )
         buf[5]= ord('X' )
         offset = 5
@@ -476,7 +479,7 @@ class UIAction():
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 6
+        buf[3]= 6-4
         buf[4]= ord(self._CMD_GetPIDParam )
         buf[5]= ord('X' )
         res = self.SendCommandWitAnswer(buf,35)
@@ -549,7 +552,7 @@ class UIAction():
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 11
+        buf[3]= 11-4
         buf[4]= ord(self._CMD_SetRunParam )
         buf[5]= ord('X' )
         offset = 5
@@ -573,15 +576,14 @@ class UIAction():
             self.logMessage(self._ERROR)
         else:
             self.logMessage(self._MSG, 'Set Paramater OK')
-    def plotThread(self):
-        print('4343')
+
     def readRunningParam(self):
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1)
         buf = bytearray( 6 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 6
+        buf[3]= 6-4
         buf[4]= ord(self._CMD_GetRunParam )
         buf[5]= ord('X' )
         res = self.SendCommandWitAnswer(buf,19)#23 old
@@ -681,6 +683,7 @@ class UIAction():
         if msg is None:
             msg = self.error._what+'\r\n'+self.error._why
         print(msg)
+        msg +=str(self.timeOutCounter)
         if flag ==self._DEBUG:
             self.fourUIOther.LogMsg.setText(msg)
         if flag ==self._ERROR:

@@ -20,18 +20,18 @@ extern u8 RS485_RX_CNT;   			//接收到的数据长度
 
 typedef struct 
 {
-	uint8_t FIRST_BYTE; 
-	uint32_t START_CODE;
-	uint8_t BodyLen;
-	uint8_t CMD_TYPE;  
-	uint32_t CMD_DATA;	
-	
+	uint8_t  FIRST_BYTE; 
+	uint16_t START_CODE;
+	uint8_t  BodyLen;
+	uint8_t  CMD_TYPE;  	
 }HOST_MSG_HEADER_T;//10 bytes
 
 //如果想串口中断接收，请不要注释以下宏定义
 #define EN_USART2_RX 	1			//0,不接收;1,接收.
 #define HOST_MSG_START_CODE_FIRST_BYTE '$'
-#define HOST_MSG_START_CODE 0xFFFFFFFF//uint32_t
+#define HOST_MSG_START_CODE_LEN  4
+ 
+#define HOST_MSG_START_CODE 0x4E3c//uint16_t$N<[len]
 #define CRC_LEN 0
 static void USART1_Configuration(uint32_t BaudRate);
 void PutMsg2RecvQueue(uint8_t * pMsgBuffer);
@@ -40,6 +40,7 @@ void rs485_DMA_Init(uint32_t BaudRate);
 void USART1_Start_DMA_Recv(void * recvBuf, uint32_t bufLen);
 void USART1_Start_DMA_Send(void * sendBuf, uint32_t bufLen);
 void RS485_PrintString(uint8_t  * sendBuf);
+ 
 #endif	   
 
 

@@ -22,9 +22,9 @@ Y_MAX = 6000
 Y1_MAX = 120000
 Y_MIN = 1
 
-PlotThreadInterval = 0.1
-getDataThreadInterval = 0.05
-timerInterval = 0.1;
+PlotThreadInterval = 50
+getDataThreadInterval = 50
+ 
 MAXCOUNTER = 40
 
 AutoRange =True
@@ -179,9 +179,10 @@ class  MyDynamicMplCanvas(QWidget):
             self.fileHandle=open('data/'+time.strftime("%y%m%d%H%M%S",time.localtime())+'.txt', 'a')
         try:     
             if not self.timers[0].isActive():
-                self.timers[0].start(20)
+                self.timers[0].start(PlotThreadInterval)
             if not self.timers[1].isActive():
-                self.timers[1].start(20)#dataThread
+                self.timers[1].start(getDataThreadInterval)#dataThread
+                
         except Exception as e:
             print(e)
     def clearData(self):

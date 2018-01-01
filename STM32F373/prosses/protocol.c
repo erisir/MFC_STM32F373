@@ -1,9 +1,9 @@
 #include "protocol.h"
 #include "led.h"
 #include "sdadc.h"
-#include "rs485.h" 
+#include "rs485_DMA.h" 
 #include "pwm.h" 
-
+#include "spi.h" 
 #include "pid.h" 
   
 extern u8 RS485_TX_BUF[64];
@@ -54,12 +54,12 @@ void parseData(u8 *buf,u8 rxlen){
 	 
 	case _CMD_GetRunParam:
 		Get_Running_Param(RS485_TX_BUF);
-		RS485_Send_Data(RS485_TX_BUF,RS485_TX_BUF[3]);
+		USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
 	 break;//8
 	 
 	case _CMD_GetPIDParam:
 		Get_PID_Param(RS485_TX_BUF);
-		RS485_Send_Data(RS485_TX_BUF,RS485_TX_BUF[3]);
+		USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
 	 break;//8
 
 	case _CMD_SetVClose:

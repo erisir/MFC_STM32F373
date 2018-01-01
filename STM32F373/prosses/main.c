@@ -26,26 +26,25 @@ static void Bsp_Int(void ){
 	delay_init();
 	LED_Init();		  
 	LED_ON_OFF();
-	rs485_DMA_Init(194000);
+	rs485_DMA_Init(115200);
 	RS485_PrintString("1:\tRS485_Init\n");
 	KEY_Init();
-	RS485_PrintString("2:\tKEY_Init\n");
+  RS485_PrintString("2:\tKEY_Init\n");
 	TIM4_Init();
-	RS485_PrintString("3:\tTIM4_Init\n");
+  RS485_PrintString("3:\tTIM4_Init\n");
 	PWM_Init();
-	RS485_PrintString("4:\tPWM_Init\n");
+  RS485_PrintString("4:\tPWM_Init\n");
 	PID_Init() ;
-	RS485_PrintString("5:\tPID_Init\n");
+  RS485_PrintString("5:\tPID_Init\n");
 	ADC1_Init();
 	Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
-	RS485_PrintString("6:\tADC_Init\n");
+  RS485_PrintString("6:\tADC_Init\n");
 	AD5761_Init() ;
-	RS485_PrintString("7:\tAD5761_Init\n");
+  RS485_PrintString("7:\tAD5761_Init\n");
  
-	
 	RCC_GetClocksFreq(&RCC_Clocks);
 	sprintf((char *)RS485_TX_BUF,"\n***ClocksFreq***[%d]\n",RCC_Clocks.HCLK_Frequency);
-	RS485_PrintString(RS485_TX_BUF);
+  RS485_PrintString(RS485_TX_BUF);
 	
 	Bsp_Int_Ok = 1;
 }
@@ -56,9 +55,11 @@ static void RCC_Configuration(void)
 			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOD, ENABLE);//USART1_EN
 			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOE, ENABLE);//SDADC_PE8 _PE9
 			//RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOF, ENABLE);//DEBUG PF6 PF7 PA14 PA15
+			RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);  
 		
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_SPI3,  ENABLE );//SPI3
-			RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1, ENABLE );//USART1					
+			RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1, ENABLE );//USART1				
+						
 
 }
 static void NVIC_Configuration(void)
@@ -97,8 +98,8 @@ static void NVIC_Configuration(void)
 		/* PWM Interrupt */
 		#ifdef __PWM_DITHER_MODE_
 		NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel7_IRQn;
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init( &NVIC_InitStructure );
 		#endif
@@ -188,10 +189,11 @@ int main(void)
 			Count_1ms = 0;		
 			Task_1000HZ();			
 		}
-		if(Count_2ms>=500)//500Hz
+		if(Count_2ms>=getFeedBackTime())//500Hz
 		{				
 			Count_2ms = 0;		
 			Task_500HZ();
+			 
 		}
 		
 		if(Count_5ms>=5)//200Hz
@@ -209,7 +211,7 @@ int main(void)
 			Count_100ms = 0;
 			Task_10HZ();		
 		}
-		//getFeedBackTime()
+ 
 		 
 	}
 }
