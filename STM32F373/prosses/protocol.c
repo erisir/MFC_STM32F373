@@ -1,11 +1,16 @@
+/**
+  ******************************************************************************
+  * @file    protocol.c
+  * @author  deadnight
+  * @version V1.0
+  * @date    2018-01-02
+  * @brief   protocol
+  ******************************************************************************
+  * @attention
+  ******************************************************************************
+  */ 
 #include "protocol.h"
-#include "led.h"
-#include "sdadc.h"
-#include "rs485_DMA.h" 
-#include "pwm.h" 
-#include "spi.h" 
-#include "pid.h" 
-  
+ 
 extern u8 RS485_TX_BUF[64];
 unsigned char checksumCalc(unsigned char rec[])
 { 

@@ -1,25 +1,19 @@
 /**
   ******************************************************************************
-  * @file    bsp_TimBase.c
-  * @author  fire
+  * @file    timebase.c
+  * @author  deadnight
   * @version V1.0
-  * @date    2013-xx-xx
-  * @brief   TIM2 1ms 定时应用bsp
+  * @date    2018-01-02
+  * @brief   TIM4 1ms  
   ******************************************************************************
   * @attention
-  *
-  * 实验平台:野火 iSO STM32 开发板 
-  * 论坛    :http://www.chuxue123.com
-  * 淘宝    :http://firestm32.taobao.com
-  *
   ******************************************************************************
   */ 
-
 #include "timebase.h" 
 
-uint16_t Count_1ms,Count_2ms,Count_5ms,Count_10ms,Count_100ms;
-uint32_t  Timer4_Count;//记录Timer3中断次数
+uint16_t Counters[CounterNum];
 extern uint8_t Bsp_Int_Ok;
+
 void TIM4_Init(void){
 	/* TIM4 定时配置 */	
   TIM4_Configuration(71);
@@ -67,21 +61,15 @@ void TIM4_Configuration(unsigned int Prescaler)
 
 void TIM4_IRQHandler(void)//Timer4中断
 {	
+	static uint8_t i;
 	if(TIM4->SR & TIM_IT_Update)
 	{     
 		TIM4->SR = ~TIM_FLAG_Update;//清除中断标志
 		
 		if( Bsp_Int_Ok == 0 )	return;//硬件未初始化完成，则返回
-		Timer4_Count++;
-		/*if(Timer4_Count%2 ==0)
-			GPIO_SetBits(GPIOA, GPIO_Pin_15);
-		else
-			GPIO_ResetBits(GPIOA, GPIO_Pin_15);*/
-		Count_1ms++;
-		Count_2ms++;
-		Count_5ms++;
-		Count_10ms++;
-		Count_100ms++;
+		for(i=0;i<CounterNum;i++){
+			Counters[i]+=1;
+		}
 	}
 }
 /*********************************************END OF FILE**********************/

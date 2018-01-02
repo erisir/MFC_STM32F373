@@ -1,6 +1,6 @@
 #ifndef __SPI_H
 #define __SPI_H
-#include "stm32f37x.h"
+#include "../prosses/tasks.h"
 
 #define SPI3_CSN_H GPIO_SetBits(GPIOA,GPIO_Pin_4)
 #define SPI3_CSN_L GPIO_ResetBits(GPIOA,GPIO_Pin_4)

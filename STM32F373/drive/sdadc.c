@@ -1,7 +1,16 @@
+/**
+  ******************************************************************************
+  * @file    sdadc.c
+  * @author  deadnight
+  * @version V1.0
+  * @date    2018-01-02
+  * @brief   sdadc
+  ******************************************************************************
+  * @attention
+  ******************************************************************************
+  */ 
 #include "sdadc.h"
-#include "delay.h"
-#include "spi.h" 
-#include <stdio.h>
+ 
 #define SDADC1_DR_Address             0x40016060
 #define ADCMeanWindow  200//偶数
 #define ADCMeanFacor   500500l
@@ -21,7 +30,7 @@ int16_t VoltageFilterBufCh1[ADCMeanWindow]={0};
 int8_t VoltageFilterCounter = 0;
 
 
-float SapmleTime = 0.01f;
+float SapmleTime = 0.02f;
 float VOL_IIR_FACTOR;
 struct _Voltage voltage;
 struct _Voltage filter_voltage;
@@ -48,7 +57,7 @@ void updateVoltageWindowBuf(void)//100Hz
 void updateRawData(void)//取中值 10Hz
 {
 	uint8_t i;
-	int32_t temp0=0,temp1=0;
+	//int32_t temp0=0,temp1=0;
 	ADC_Mean();
 	/*for (i=0;i<ADCMeanWindow;i++) 
 	{ 

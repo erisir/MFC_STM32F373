@@ -1,17 +1,15 @@
+/**
+  ******************************************************************************
+  * @file    pid.c
+  * @author  deadnight
+  * @version V1.0
+  * @date    2018-01-02
+  * @brief   pid
+  ******************************************************************************
+  * @attention
+  ******************************************************************************
+  */ 
 #include "pid.h"
-#include "sdadc.h"
-#include "delay.h" 
-#include <stdio.h>
-#include "pwm.h"
-#include "eeprom.h"
-#include "rs485_DMA.h"
-#include "tasks.h"
-#include "string.h"
-#include "math.h"
-#include "protocol.h"
- 
-
-//xdata struct PID spid; // PID Control Structure
 struct _PID spid;
  
 uint16_t data_x,data_y,data_z;
@@ -32,6 +30,7 @@ uint8_t set_point_changed= 0;
 
 uint8_t PID_Ctrl_Mode = 0;//0 soft 1:Ext FlowSet
 uint8_t PID_Calc_Mode = 0;
+
 uint16_t getFeedBackTime(void){
 	return feedbackTime;
 }

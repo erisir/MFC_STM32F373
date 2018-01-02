@@ -1,6 +1,6 @@
 #ifndef __TIMER_H
 #define __TIMER_H
-#include "stm32f37x.h"
+#include "../prosses/tasks.h"
 
 #define     PWM_DUTY        12000          
 

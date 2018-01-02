@@ -1,6 +1,6 @@
 #ifndef __ADC_H
 #define	__ADC_H
-#include "stm32f37x.h"
+#include "../prosses/tasks.h"
  
 
 //#define __ADC_INJECTED_MODE_

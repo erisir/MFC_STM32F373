@@ -1,7 +1,11 @@
 #ifndef TIME_TEST_H
 #define TIME_TEST_H
+ 
+#include "../prosses/tasks.h"
+#define CounterNum 3
+ 
 
-#include "stm32f37x.h"
+ 
 void TIM4_Configuration(unsigned int Prescaler);
 void TIM4_Init(void);
 void TIM4_Set_Prescaler(unsigned int Prescaler);

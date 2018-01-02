@@ -1,9 +1,7 @@
 #ifndef __USART1_H
 #define	__USART1_H
 
-#include "stm32f37x.h"
-#include "sys.h"
-#include <stdio.h>
+#include "tasks.h"
 
 #define _CMD_SetRunParam	 '0'
 #define _CMD_SetPIDParam	 '1'

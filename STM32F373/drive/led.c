@@ -1,5 +1,15 @@
+/**
+  ******************************************************************************
+  * @file    led.c
+  * @author  deadnight
+  * @version V1.0
+  * @date    2018-01-02
+  * @brief   led
+  ******************************************************************************
+  * @attention
+  ******************************************************************************
+  */ 
 #include "led.h"
-#include "delay.h"
 void LED_Init(void)
 {	
 	LED_Close();
@@ -13,6 +23,10 @@ void LED_Open(void)
 void LED_Close(void)
 {		
 		GPIO_ResetBits(LED_PORT, LED_PIN );
+}
+void LED_Toggle(void)
+{
+GPIO_WriteBit(LED_PORT, LED_PIN, (BitAction)((1-GPIO_ReadOutputDataBit(LED_PORT, LED_PIN))));
 }
 
  

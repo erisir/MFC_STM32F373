@@ -2,4 +2,5 @@
 *.pyc
 *.htm
 /STM32F373/bin
+/PythonControler/src/data
 PythonControler\src\__pycache__
