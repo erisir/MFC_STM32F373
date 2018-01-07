@@ -291,7 +291,7 @@ void Get_Running_Param(uint8_t *buf)
 	buf[3] = offset;
 }
 /*********************************************************** 
-              PID温度控制动作函数
+              PID控制动作函数
  ***********************************************************/ 
 void PID_Start() 		 
 { 
@@ -301,6 +301,9 @@ void PID_Start()
 		break;
 		case 1:
 			Inc_PID_Calc1();
+		break;
+		case 2:
+			Inc_PID_Calc2();
 		break;
 	}
 	
@@ -319,7 +322,7 @@ void Inc_PID_Calc(void)
  	register int iIncpid;
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
-	iError = Voltage_Set_Point_temp - NextPoint;
+	iError = Voltage_Set_Point - NextPoint;
 	if(abs(iError)<spid.deadzone){
 	iIncpid = 0;
 	}else if(abs(iError) >spid.error_High_Threadhold){
@@ -328,11 +331,11 @@ void Inc_PID_Calc(void)
 					- spid.kiH * spid.LastError //E[k－1]项
 					+ spid.kdH * spid.PrevError; //E[k－2]项
 	
-	}else if(abs(iError) <spid.error_High_Threadhold){
+	}else if(abs(iError) <spid.error_Low_Threadhold){
 	 	iIncpid = spid.kpL * iError //E[k]项
 						- spid.kiL * spid.LastError //E[k－1]项
 						+ spid.kdL * spid.PrevError; //E[k－2]项
-	}else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
+	}else{
 	 	iIncpid = spid.kpM * iError //E[k]项
 						- spid.kiM * spid.LastError //E[k－1]项
 						+ spid.kdM * spid.PrevError; //E[k－2]项
@@ -347,13 +350,46 @@ void Inc_PID_Calc(void)
 	PWM_Output += iIncpid;
 }
 //增量式PID控制设计
+void Inc_PID_Calc2(void)
+{
+	register float iError;
+ 	register int iIncpid;
+	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
+	//当前误差
+	iError = Voltage_Set_Point - NextPoint;
+	if(abs(iError)<spid.deadzone){
+	iIncpid = 0;
+	}else if(Voltage_Set_Point >spid.error_High_Threadhold){
+	 //增量计算系数与pid参数对应 Kp[e(k)-e(k-1)]+Kie(k)+Kd[e(k)-2e(k-1)+e(k-2)]
+	iIncpid = spid.kpH * (iError-spid.LastError) //E[k]项
+					+ spid.kiH * iError //E[k－1]项
+					+ spid.kdH * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+	
+	}else if(Voltage_Set_Point <spid.error_Low_Threadhold){
+	 	iIncpid = spid.kpL * (iError-spid.LastError) //E[k]项
+						+ spid.kiL * iError //E[k－1]项
+						+ spid.kdL * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+	}else{
+	 	iIncpid = spid.kpM * (iError-spid.LastError) //E[k]项
+						+ spid.kiM * iError //E[k－1]项
+						+ spid.kdM * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+	}
+	//存储误差，用于下次计算
+	spid.PrevError = spid.LastError;
+	spid.LastError = iError;
+	//返回增量值
+		if(abs(iIncpid) >spid.PWM_Change_Threadhold){
+		iIncpid = iIncpid>0?spid.PWM_Change_Threadhold:(-1*spid.PWM_Change_Threadhold);
+	}
+	PWM_Output += iIncpid;
+}
 void Inc_PID_Calc1(void)
 {
 	register float iError;
  	register int iIncpid;
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
-	iError = Voltage_Set_Point_temp - NextPoint;
+	iError = Voltage_Set_Point - NextPoint;
 	if(abs(iError)<spid.deadzone){
 	iIncpid = 0;
 	}else if(abs(iError) >spid.error_High_Threadhold){
@@ -362,13 +398,13 @@ void Inc_PID_Calc1(void)
 					+ spid.kiH * iError //E[k－1]项
 					+ spid.kdH * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
 	
-	}else if(abs(iError) <spid.error_High_Threadhold){
+	}else if(abs(iError) <spid.error_Low_Threadhold){
 	 	iIncpid = spid.kpL * (iError-spid.LastError) //E[k]项
-						- spid.kiL * iError //E[k－1]项
+						+ spid.kiL * iError //E[k－1]项
 						+ spid.kdL * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
-	}else if(abs(iError) >spid.error_Low_Threadhold && abs(iError) <spid.error_High_Threadhold){
+	}else{
 	 	iIncpid = spid.kpM * (iError-spid.LastError) //E[k]项
-						- spid.kiM * iError //E[k－1]项
+						+ spid.kiM * iError //E[k－1]项
 						+ spid.kdM * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
 	}
 	//存储误差，用于下次计算

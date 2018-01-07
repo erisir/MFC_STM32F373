@@ -12,7 +12,7 @@
 #include "sdadc.h"
  
 #define SDADC1_DR_Address             0x40016060
-#define ADCMeanWindow  200//偶数
+#define ADCMeanWindow  50//偶数
 #define ADCMeanFacor   500500l
 // SDADC转换的电压值通过inject方式传到SRAM
 int16_t InjectedConvData[2]={0};

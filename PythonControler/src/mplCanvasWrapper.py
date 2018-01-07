@@ -25,7 +25,7 @@ Y_MIN = 1
 PlotThreadInterval = 50
 getDataThreadInterval = 50
  
-MAXCOUNTER = 40
+MAXCOUNTER = 20
 
 AutoRange =True
 Debug = True

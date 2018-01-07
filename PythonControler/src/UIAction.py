@@ -54,34 +54,63 @@ class UIAction():
         self.proControl = proControl
         
     def RecaculatePIDParam(self):           
-        if self.proControl.PID_AutoIncMode1.isChecked() or self.proControl.PID_AutoIncMode2.isChecked():#根据Kp获得Ki,Kd
-            KpH = self.proControl.PID_KpH.value()
-            KpM = self.proControl.PID_KpM.value()
-            KpL = self.proControl.PID_KpL.value()
-            temp = KpH*3.5/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KiH.setProperty("value", float(temp))
-            temp = KpH*1.25/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KdH.setProperty("value", float(temp))
-            temp =KpM*3.5/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KiM.setProperty("value", float(temp))
-            temp = KpM*1.25/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KdM.setProperty("value", float(temp))
-            temp = KpL*3.5/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KiL.setProperty("value", float(temp))
-            temp = KpL*1.25/2.45
-            if temp>6553.5:
-                temp = 6553.5
-            self.proControl.PID_KdL.setProperty("value", float(temp))
+        if self.proControl.PID_AutoIncMode1.isChecked():#根据Kp获得Ki,Kd
+            if self.proControl.PID_Calc_Mode.value() == 0:
+                KpH = self.proControl.PID_KpH.value()
+                KpM = self.proControl.PID_KpM.value()
+                KpL = self.proControl.PID_KpL.value()
+                temp = KpH*3.5/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiH.setProperty("value", float(temp))
+                temp = KpH*1.25/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdH.setProperty("value", float(temp))
+                temp =KpM*3.5/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiM.setProperty("value", float(temp))
+                temp = KpM*1.25/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdM.setProperty("value", float(temp))
+                temp = KpL*3.5/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiL.setProperty("value", float(temp))
+                temp = KpL*1.25/2.45
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdL.setProperty("value", float(temp))
+            else:
+                KpH = self.proControl.PID_KpH.value()
+                KpM = self.proControl.PID_KpM.value()
+                KpL = self.proControl.PID_KpL.value()
+                temp = KpH*0.7
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiH.setProperty("value", float(temp))
+                temp = KpH*1.25
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdH.setProperty("value", float(temp))
+                temp =KpM*0.7
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiM.setProperty("value", float(temp))
+                temp = KpM*1.25
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdM.setProperty("value", float(temp))
+                temp = KpL*0.7
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KiL.setProperty("value", float(temp))
+                temp = KpL*1.25
+                if temp>6553.5:
+                    temp = 6553.5
+                self.proControl.PID_KdL.setProperty("value", float(temp))
              
         if self.proControl.PID_AutoIncMode2.isChecked():  
             response_time = self.proControl.Responce_Time.value() 

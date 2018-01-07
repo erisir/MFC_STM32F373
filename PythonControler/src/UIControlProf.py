@@ -241,7 +241,7 @@ class Ui_Dialog(object):
         self.PID_Calc_Mode.setAutoFillBackground(True)
         self.PID_Calc_Mode.setKeyboardTracking(False)
         self.PID_Calc_Mode.setDecimals(0)
-        self.PID_Calc_Mode.setMaximum(1.0)
+        self.PID_Calc_Mode.setMaximum(2.0)
         self.PID_Calc_Mode.setProperty("value", 0.0)
         self.PID_Calc_Mode.setObjectName("PID_Calc_Mode")
         self.formLayout_9.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.PID_Calc_Mode)
