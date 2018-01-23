@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>521</width>
-     <height>231</height>
+     <height>201</height>
     </rect>
    </property>
    <property name="title">
@@ -28,8 +28,8 @@
    <widget class="QPushButton" name="SetPIDParam">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>200</y>
+      <x>360</x>
+      <y>170</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -53,38 +53,19 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>KpH</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KpH">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <double>65535.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="value">
-          <double>6.300000000000000</double>
+          <string>Kp</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>KiH</string>
+          <string>Ki</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KiH">
+        <widget class="QDoubleSpinBox" name="PID_Ki">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -105,12 +86,12 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>KdH</string>
+          <string>Kd</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KdH">
+        <widget class="QDoubleSpinBox" name="PID_Kd">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -128,6 +109,28 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="PID_Kp">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <double>65535.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>6.300000000000000</double>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -135,19 +138,19 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
-          <string>KpM</string>
+          <string>KpF</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_17">
          <property name="text">
-          <string>KiM</string>
+          <string>KiF</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KiM">
+        <widget class="QDoubleSpinBox" name="PID_KiF">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -168,12 +171,12 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_18">
          <property name="text">
-          <string>KdM</string>
+          <string>KdF</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KdM">
+        <widget class="QDoubleSpinBox" name="PID_KdF">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -192,7 +195,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KpM">
+        <widget class="QDoubleSpinBox" name="PID_KpF">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -217,78 +220,78 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_19">
          <property name="text">
-          <string>KpL</string>
+          <string>eL</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KpL">
+        <widget class="QDoubleSpinBox" name="PID_eL">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1000.000000000000000</double>
          </property>
          <property name="value">
-          <double>6.300000000000000</double>
+          <double>3000.000000000000000</double>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
-          <string>KiL</string>
+          <string>eM</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KiL">
+        <widget class="QDoubleSpinBox" name="PID_eM">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1000.000000000000000</double>
          </property>
          <property name="value">
-          <double>6.500000000000000</double>
+          <double>2000.000000000000000</double>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_21">
          <property name="text">
-          <string>KdL</string>
+          <string>eS</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="PID_KdL">
+        <widget class="QDoubleSpinBox" name="PID_eS">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1000.000000000000000</double>
          </property>
          <property name="value">
-          <double>2.200000000000000</double>
+          <double>1000.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -299,12 +302,12 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>ThredHold_L</string>
+          <string>ecM</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="PID_ThredHold_Low">
+        <widget class="QDoubleSpinBox" name="PID_ecM">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -315,12 +318,12 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="value">
-          <double>100.000000000000000</double>
+          <double>200.000000000000000</double>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="PID_ThredHold_High">
+        <widget class="QDoubleSpinBox" name="PID_ecL">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -331,22 +334,22 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>50.000000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>2000.000000000000000</double>
+          <double>300.000000000000000</double>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>ThredHold_PWM</string>
+          <string>ecS</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="PID_ThredHold_PWM">
+        <widget class="QDoubleSpinBox" name="PID_ecS">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
@@ -360,17 +363,17 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>500.000000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>5000.000000000000000</double>
+          <double>100.000000000000000</double>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>ThredHold_H</string>
+          <string>ecL</string>
          </property>
         </widget>
        </item>
@@ -384,74 +387,19 @@
       <x>10</x>
       <y>110</y>
       <width>160</width>
-      <height>100</height>
+      <height>81</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_8">
      <item row="0" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>DelayTime(s)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="Delay_Time">
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>2</number>
-       </property>
-       <property name="minimum">
-        <double>0.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.500000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.100000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>ResTime(s)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QDoubleSpinBox" name="Responce_Time">
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.300000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
       <widget class="QLabel" name="label_15">
        <property name="text">
         <string>F_Cutoff(Hz)</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QDoubleSpinBox" name="F_Cutoff">
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="PID_Cutoff">
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
@@ -472,15 +420,15 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="label_22">
        <property name="text">
         <string>SampCycle(ms)</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QDoubleSpinBox" name="SampleCycle">
+     <item row="1" column="1">
+      <widget class="QDoubleSpinBox" name="PID_SampleCycle">
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
@@ -501,20 +449,15 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="formLayoutWidget_9">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>110</y>
-      <width>160</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout_9">
-     <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="DeadZone">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>DeadZone(mv)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="PID_DeadZone">
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
@@ -529,15 +472,27 @@
        </property>
       </widget>
      </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_9">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>110</y>
+      <width>160</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_9">
      <item row="1" column="0">
       <widget class="QLabel" name="label_23">
        <property name="text">
-        <string>Calc_Mode</string>
+        <string>PWM_MAX</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QDoubleSpinBox" name="PID_Calc_Mode">
+      <widget class="QDoubleSpinBox" name="PWM_MAX">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -548,22 +503,51 @@
         <number>0</number>
        </property>
        <property name="maximum">
-        <double>2.000000000000000</double>
+        <double>999999999.000000000000000</double>
        </property>
        <property name="value">
-        <double>0.000000000000000</double>
+        <double>690000.000000000000000</double>
        </property>
       </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_24">
        <property name="text">
-        <string>PID_Factor</string>
+        <string>PWM_MIN</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QDoubleSpinBox" name="PID_Factor">
+      <widget class="QDoubleSpinBox" name="PWM_MIN">
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="minimum">
+        <double>0.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>999999999.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>10000.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_25">
+       <property name="text">
+        <string>PWM_STEP</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="PWM_STEP">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -577,73 +561,14 @@
         <double>1.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>4.000000000000000</double>
+        <double>99999.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>DeadZone(mv)</string>
+        <double>2000.000000000000000</double>
        </property>
       </widget>
      </item>
     </layout>
-   </widget>
-   <widget class="QGroupBox" name="PIDAutoMode">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>110</y>
-      <width>91</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>PID_MODE</string>
-    </property>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>9</y>
-       <width>81</width>
-       <height>89</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QRadioButton" name="PID_AutoIncMode1">
-        <property name="text">
-         <string>自动增量1</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="PID_AutoIncMode2">
-        <property name="text">
-         <string>自动增量2</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="PID_ManuInc">
-        <property name="text">
-         <string>手动增量</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_4">
@@ -651,8 +576,8 @@
     <rect>
      <x>10</x>
      <y>260</y>
-     <width>271</width>
-     <height>101</height>
+     <width>191</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="title">
@@ -677,44 +602,18 @@
       <x>10</x>
       <y>20</y>
       <width>160</width>
-      <height>61</height>
+      <height>31</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_4">
      <item row="0" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>PWMSet</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="PWM_SET">
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <double>65535.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>50.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>50.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>SetPoint(mv)</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="1">
       <widget class="QDoubleSpinBox" name="PID_SetPoint">
        <property name="keyboardTracking">
         <bool>false</bool>

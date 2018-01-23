@@ -59,3 +59,16 @@ void LED_ON_OFF(void)
 
 	delay_ms(100);
 }
+void LED_Blink(uint8_t N)
+{
+	uint8_t i=0;
+	for(i=0;i<N;i++)
+	{
+		LED_Open();
+		delay_ms(200);
+		LED_Close();
+		delay_ms(200);	
+	}
+	 
+	LED_Close();
+}

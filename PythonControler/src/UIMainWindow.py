@@ -68,16 +68,12 @@ class UIMainWindow(QDialog):
    
         self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
         
-        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam) 
-        self.UIControlProf.PWM_SET.valueChanged.connect(self.uiAction.SetRuningParam) 
+        self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)         
         self.thirdUIControl.SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)        
         
         self.firstUIComm.connect.clicked.connect(self.uiAction.Connect)
         self.firstUIComm.Disconnect.clicked.connect(self.uiAction.Disconnect)
         
-         
-        self.UIControlProf.getVoltageVsPWMCurse.clicked.connect(self.uiAction.getPWMVSVotage) 
-        self.UIControlProf.StopVoltageVsPWMCurse.clicked.connect(self.uiAction.stopVolVsPWMCurse) 
     def Start(self):       
         #self.thirdUIControl.mplCanvas.startPlot();
         #self.uiAction.AutoConnect('COM5',194000)
@@ -126,8 +122,8 @@ mainApp=UIMainWindow(app,timers)
 ret = False#mainApp.uiAction.TryConnect()
 if ret == False:
     ret = []
-    for i in range(3,10):
-        for x in(['9600','14400','19200','38400','56000','57600','115200','194000']):
+    for i in range(2,3):
+        for x in(['38400','56000','57600','115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
             comm = 'COM'+str(i)   
             ret = mainApp.uiAction.AutoConnect(comm,x)
             progressBar.setValue(i*5+10)            

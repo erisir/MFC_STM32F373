@@ -43,7 +43,7 @@ void PWM_Mode_Config()
 	/* PWM模式配置 */
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;	    				//配置为PWM模式1
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;	//使能输出
-	TIM_OCInitStructure.TIM_Pulse = PWM_HIGH_MIN;					  			//设置初始PWM脉冲宽度为0	
+	TIM_OCInitStructure.TIM_Pulse = 0;					  			//设置初始PWM脉冲宽度为0	
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  	  //当定时器计数值小于CCR1_Val时为低电平
 
 	TIM_OC2Init(TIM2, &TIM_OCInitStructure);	 									 //使能通道 -CH2

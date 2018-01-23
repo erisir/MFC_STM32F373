@@ -53,124 +53,6 @@ class UIAction():
         self.fourUIOther = fourUIOther
         self.proControl = proControl
         
-    def RecaculatePIDParam(self):           
-        if self.proControl.PID_AutoIncMode1.isChecked():#根据Kp获得Ki,Kd
-            if self.proControl.PID_Calc_Mode.value() == 0:
-                KpH = self.proControl.PID_KpH.value()
-                KpM = self.proControl.PID_KpM.value()
-                KpL = self.proControl.PID_KpL.value()
-                temp = KpH*3.5/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiH.setProperty("value", float(temp))
-                temp = KpH*1.25/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdH.setProperty("value", float(temp))
-                temp =KpM*3.5/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiM.setProperty("value", float(temp))
-                temp = KpM*1.25/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdM.setProperty("value", float(temp))
-                temp = KpL*3.5/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiL.setProperty("value", float(temp))
-                temp = KpL*1.25/2.45
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdL.setProperty("value", float(temp))
-            else:
-                KpH = self.proControl.PID_KpH.value()
-                KpM = self.proControl.PID_KpM.value()
-                KpL = self.proControl.PID_KpL.value()
-                temp = KpH*0.7
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiH.setProperty("value", float(temp))
-                temp = KpH*1.25
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdH.setProperty("value", float(temp))
-                temp =KpM*0.7
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiM.setProperty("value", float(temp))
-                temp = KpM*1.25
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdM.setProperty("value", float(temp))
-                temp = KpL*0.7
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KiL.setProperty("value", float(temp))
-                temp = KpL*1.25
-                if temp>6553.5:
-                    temp = 6553.5
-                self.proControl.PID_KdL.setProperty("value", float(temp))
-             
-        if self.proControl.PID_AutoIncMode2.isChecked():  
-            response_time = self.proControl.Responce_Time.value() 
-            delay_time = self.proControl.Delay_Time.value()  
-            PID_factor = int(self.proControl.PID_Factor.value()) 
-            T = 0
-            Kp = 0
-            Ti = 0
-            Td = 0
-            if PID_factor==1:
-                T = 0.05*delay_time
-                Kp = 0.15*response_time/delay_time
-                Ti = 2*delay_time
-                Td = 0.45*delay_time
-            if PID_factor==2:
-                T = 0.16*delay_time
-                Kp = 1*response_time/delay_time
-                Ti = 1.9*delay_time
-                Td = 0.55*delay_time
-            if PID_factor==3:
-                T = 0.34*delay_time
-                Kp = 0.85*response_time/delay_time
-                Ti = 1.62*delay_time
-                Td = 0.65*delay_time
-            if PID_factor==4:
-                T = 0.6*delay_time
-                Kp = 0.6*response_time/delay_time
-                Ti = 1.5*delay_time
-                Td = 0.82*delay_time
-            Ki = Kp*T/Ti
-            Kd = Kp*Td/T
-            
-            #A = Kp+Ki+Kd
-            #B = Kp+2*Kd
-            #C = Kd    
-            A = Kp
-            B = Ki
-            C = Kd    
-            if T>6.5535:
-                T = 6.5535
-            if A>6553.5:
-                A = 6553.5
-            if B>6553.5:
-                B=6553.5
-            if C>6553.5:
-                C = 6553.5
-                
-            self.proControl.SampleCycle.setProperty("value", float(T*1000))
-            
-            self.proControl.PID_KpH.setProperty("value", float(A))
-            self.proControl.PID_KiH.setProperty("value", float(B))
-            self.proControl.PID_KdH.setProperty("value", float(C))
-            
-            self.proControl.PID_KpM.setProperty("value", float(A))
-            self.proControl.PID_KiM.setProperty("value", float(B))
-            self.proControl.PID_KdM.setProperty("value", float(C))
-            
-            self.proControl.PID_KpL.setProperty("value", float(A))
-            self.proControl.PID_KiL.setProperty("value", float(B))
-            self.proControl.PID_KdL.setProperty("value", float(C))
     def CheckSumCalc(self,buf):
         checkSum = 0;
         return checkSum;
@@ -240,7 +122,7 @@ class UIAction():
             ret = bytearray(readLen)
             for index in range(readLen):
                 ret[index] = data[index]
-            return bytes(ret)
+            return ret#bytes(ret)
         except  Exception as e:
             self.error._why ='readAnswer\t'+str(e.args)
             return None
@@ -316,19 +198,22 @@ class UIAction():
         #return int(Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1)
         self.error._what = 'GetPlotData'
         #ret = self.getRandom();
-        #return [ret[0],ret[1],ret[2],ret[0],ret[1],ret[2]]
+        #ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,PID_kp,PID_ki,PID_kd]
+        #return [ret[0],ret[1],ret[2],ret[0],ret[1],ret[2],ret[0],ret[1]]
         ret = self.readRunningParam()#self.readVoltage()#
         if ret == None:
             self.logMessage(self._DEBUG)
             return None
-        print(ret)
+       
         Voltage_Set_Point=self.GetShowValue(ret[0])  
         PWM_Output = ret[1]          
-        vCh0 = self.GetShowValue(ret[3])/10
-        vCh1 = self.GetShowValue(ret[4])/10
-        Voltage_Set_PointTemp = self.GetShowValue(ret[5])
-            
-        res = [vCh0,vCh1,Voltage_Set_Point,Voltage_Set_PointTemp,PWM_Output] 
+        vCh0 = self.GetShowValue(ret[3])
+        vCh1 = self.GetShowValue(ret[4])
+        kp = ret[5]
+        ki = ret[6]
+        kd = ret[7]
+        
+        res = [vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd] 
                         
         return res
 
@@ -411,92 +296,72 @@ class UIAction():
         if  self.comm is not None:
             self.comm.close()
         self.isDeviceReady = False  
+    def Bytes2Int32_t(self,buf):
+        offset = buf[3]
+        buf[3] +=4
+        return buf[offset+3]*256*256*256+buf[offset+2]*256*256+buf[offset+1]*256+buf[offset]
+    def Bytes2Int16_t(self,buf):
+        offset = buf[3]
+        buf[3] +=2
+        return buf[offset+1]*256+buf[offset]
+    def Int16_t2Bytes(self,buf,value):
+        offset = buf[3]
+        buf[offset+2] = int(value/256)
+        buf[offset+1] = int(value%256)
+        buf[3] = offset+2
+    def Int32_t2Bytes(self,buf,value):
+        offset = buf[3]
+        buf[3] = offset+4
+        buf[offset+4] = int(value/(256*256*256))
+        value = value%(256*256*256)
+        buf[offset+3] = int(value/(256*256))
+        value = value%(256*256)
+        buf[offset+2] = int(value/256)
+        buf[offset+1] = int(value%256)
         
-    def SetPIDParam(self):
+    
+    def SetPIDParam(self):#  $N< totalLen,CMD,[data]
         self.error._what = 'SetPIDParam'
-        buf = bytearray( 37 )
+        buf = bytearray( 64 )
+        offset = 4
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 37-4
+        buf[3]= offset
         buf[4]= ord(self._CMD_SetPIDParam )
-        buf[5]= ord('X' )
-        offset = 5
+         
+        self.Int16_t2Bytes(buf,self.proControl.PID_Kp.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_Ki.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_Kd.value()*100)
         
-        self.RecaculatePIDParam()
-        x=self.proControl.PID_KpH.value()*10
-        y=self.proControl.PID_KiH.value()*10
-        z=self.proControl.PID_KdH.value()*10
-       
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
-        offset = offset+ 2
-        x=self.proControl.PID_KpM.value()*10
-        y=self.proControl.PID_KiM.value()*10
-        z=self.proControl.PID_KdM.value()*10
-       
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
-        offset = offset+ 2
-        x=self.proControl.PID_KpL.value()*10
-        y=self.proControl.PID_KiL.value()*10
-        z=self.proControl.PID_KdL.value()*10
-       
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
-        offset = offset+ 2
-        x=self.proControl.PID_ThredHold_High.value()
-        y=self.proControl.PID_ThredHold_Low.value()
-        z=self.proControl.PID_ThredHold_PWM.value()
-       
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
-        offset = offset+ 2
+        self.Int16_t2Bytes(buf,self.proControl.PID_KpF.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_KiF.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_KdF.value()*100)
         
-        x=self.proControl.DeadZone.value()
-        y=self.proControl.Responce_Time.value()*1000
-        z=self.proControl.F_Cutoff.value()*1000
+        self.Int16_t2Bytes(buf,self.proControl.PID_eL.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_eM.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_eS.value())
         
-      
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
-        offset = offset+ 2  
+        self.Int16_t2Bytes(buf,self.proControl.PID_ecL.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_ecM.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_ecS.value())
         
-        x = 0#int(self.proControl.PID_Factor.value()) 
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-                                                
-        ret= self.SendCommandWithData(bytes(buf))
+        self.Int16_t2Bytes(buf,self.proControl.PID_Cutoff.value()*10)
+        self.Int16_t2Bytes(buf,self.proControl.PID_SampleCycle.value()*10)
+        self.Int16_t2Bytes(buf,self.proControl.PID_DeadZone.value()*10)
+        
+        self.Int32_t2Bytes(buf,self.proControl.PWM_MAX.value())
+        self.Int32_t2Bytes(buf,self.proControl.PWM_MIN.value())
+        self.Int32_t2Bytes(buf,self.proControl.PWM_STEP.value())
+         
+        cmdLen = buf[3]+1
+        dataLen = cmdLen -4#4 bytes head 
+        buf[3]=dataLen                   
+        sendBuf =  bytearray(cmdLen)  
+        for x in range(0,cmdLen):
+            sendBuf[x]=  buf[x]       
+            
+        ret= self.SendCommandWithData(bytes(sendBuf))
         if ret is None:
             self.logMessage(self._ERROR)
         else:
@@ -511,111 +376,87 @@ class UIAction():
         buf[3]= 6-4
         buf[4]= ord(self._CMD_GetPIDParam )
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,35)
+        ret = self.SendCommandWitAnswer(buf,45)
         
-        if res is  None:
+        if ret is  None:
             return False
         if True:
-            if res[0] != ord('$') :
+            if ret[0] != ord('$') :
                 return False
-            if res[1] != ord('N' ):
+            if ret[1] != ord('N' ):
                 return False
-            if res[2] != ord('>' ):
+            if ret[2] != ord('>' ):
                 return False
-            if res[4] != ord(self._CMD_GetPIDParam ):
+            if ret[4] != ord(self._CMD_GetPIDParam ):
                 return False
         offset = 5
-        x = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        y = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpH.setProperty("value", float(x/10))
-        self.proControl.PID_KiH.setProperty("value", float(y/10))
-        self.proControl.PID_KdH.setProperty("value", float(z/10))
-        
-        offset  =offset+2
-        x = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        y = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpM.setProperty("value", float(x/10))
-        self.proControl.PID_KiM.setProperty("value", float(y/10))
-        self.proControl.PID_KdM.setProperty("value", float(z/10))
-        offset  =offset+2
-        x = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        y = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        z = res[offset+1]*256+res[offset]
-        self.proControl.PID_KpL.setProperty("value", float(x/10))
-        self.proControl.PID_KiL.setProperty("value", float(y/10))
-        self.proControl.PID_KdL.setProperty("value", float(z/10))
-        offset  =offset+2
-        x = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        y = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        z = res[offset+1]*256+res[offset]
-        self.proControl.PID_ThredHold_High.setProperty("value", x)
-        self.proControl.PID_ThredHold_Low.setProperty("value", y)
-        self.proControl.PID_ThredHold_PWM.setProperty("value", z)
-       
-        offset  =offset+2
-        x = res[offset+1]*256+res[offset]               
-        offset  =offset+2
-        y = (res[offset+1]*256+res[offset])
-        offset  =offset+2
-        z = (res[offset+1]*256+res[offset])
-        
+        res = bytearray( 64 )
          
-        self.proControl.DeadZone.setProperty("value", x)
-        self.proControl.Responce_Time.setProperty("value", float(y/1000))
-        self.proControl.F_Cutoff.setProperty("value", float(z/1000))
+        for ii in range(0,len(ret)):
+            res[ii]= ret[ii]
+        res[3] = offset
+        #32byte
+        self.proControl.PID_Kp.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_Ki.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_Kd.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+
+        self.proControl.PID_KpF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_KiF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_KdF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+     
+        self.proControl.PID_eL.setProperty("value", self.Bytes2Int16_t(res))
+        self.proControl.PID_eM.setProperty("value", self.Bytes2Int16_t(res))
+        self.proControl.PID_eS.setProperty("value", self.Bytes2Int16_t(res))
+                
+        self.proControl.PID_ecL.setProperty("value", self.Bytes2Int16_t(res))
+        self.proControl.PID_ecM.setProperty("value", self.Bytes2Int16_t(res))
+        self.proControl.PID_ecS.setProperty("value", self.Bytes2Int16_t(res))
+ 
+        self.proControl.PID_Cutoff.setProperty("value", float(self.Bytes2Int16_t(res)/10))
+        self.proControl.PID_SampleCycle.setProperty("value", float(self.Bytes2Int16_t(res))/10)
+        self.proControl.PID_DeadZone.setProperty("value", float(self.Bytes2Int16_t(res)/10))
+ 
+        
+        self.proControl.PWM_MAX.setProperty("value", self.Bytes2Int32_t(res))
+        self.proControl.PWM_MIN.setProperty("value", self.Bytes2Int32_t(res))
+        self.proControl.PWM_STEP.setProperty("value", self.Bytes2Int32_t(res))
+        
         return True
    
     def SetRuningParam(self):
         self.error._what = 'SetRuningParam'
-        buf = bytearray( 11 )
+        buf = bytearray( 16 )
+        offset = 4
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 11-4
+        buf[3]= offset
         buf[4]= ord(self._CMD_SetRunParam )
-        buf[5]= ord('X' )
-        offset = 5
+        self.getRandomMid = self.proControl.PID_SetPoint.value()
+        self.Int16_t2Bytes(buf,self.proControl.PID_SetPoint.value())
         
-        x=self.proControl.PWM_SET.value()
-        y=self.proControl.PID_SetPoint.value()
-        self.getRandomMid = y
-        z=self.proControl.PID_Calc_Mode.value()
-       
-        buf[offset+1] = int(x/256)
-        buf[offset] = int(x%256)
-        offset = offset+ 2
-        buf[offset+1] = int(y/256)
-        buf[offset] = int(y%256)
-        offset = offset+ 2
-        buf[offset+1] = int(z/256)
-        buf[offset] = int(z%256)
+        cmdLen = buf[3]+1
+        dataLen = cmdLen -4#4 bytes head 
+        buf[3]=dataLen                   
+        sendBuf =  bytearray(cmdLen)  
+        for x in range(0,cmdLen):
+            sendBuf[x]=  buf[x]       
  
-        ret= self.SendCommandWithData(bytes(buf))
+        ret= self.SendCommandWithData(bytes(sendBuf))
         if ret is None:
             self.logMessage(self._ERROR)
         else:
             self.logMessage(self._MSG, 'Set Paramater OK')
-
+  
     def readRunningParam(self):
-        #return int(Voltage_Set_Point,PWM_Output,lastVoltage,LastError,PrevError,SumError,currentVol0,currentVol1)
         buf = bytearray( 6 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
-        buf[3]= 6-4
+        buf[3]= 2
         buf[4]= ord(self._CMD_GetRunParam )
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,19)#23 old
+        res = self.SendCommandWitAnswer(buf,23) 
         
         if res is  None:
             return None    
@@ -628,86 +469,25 @@ class UIAction():
                 return None
             if res[4] != ord(self._CMD_GetRunParam ):
                 return None    
+       
         offset = 5
-        Voltage_Set_Point = res[offset+1]*256+res[offset]
-        offset  =offset+2
-        PWM_Output = res[offset+3]*256*256*256+res[offset+2]*256*256+res[offset+1]*256+res[offset]
-        offset  =offset+4
-        lastVoltage = res[offset+1]*256+res[offset]
+        res[3]= offset
+        Voltage_Set_Point =self.Bytes2Int16_t(res); 
+        PWM_Output = self.Bytes2Int32_t(res); 
+        lastVoltage = self.Bytes2Int16_t(res); 
         
-        offset  =offset+2
-        currentVol0 = (res[offset+1]*256+res[offset])
-        offset  =offset+2
-        currentVol1 = (res[offset+1]*256+res[offset])
-        offset  =offset+2
-        Voltage_Set_Point_temp = (res[offset+1]*256+res[offset])
-        offset  =offset+2
+        currentVol0 = self.Bytes2Int16_t(res)/10; 
+        currentVol1 = self.Bytes2Int16_t(res)/10; 
+        
+        PID_kp = self.Bytes2Int16_t(res)/100; 
+        PID_ki = self.Bytes2Int16_t(res)/100; 
+        PID_kd = self.Bytes2Int16_t(res)/100; 
               
-        ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,Voltage_Set_Point_temp]
+        ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,PID_kp,PID_ki,PID_kd]
+        print(res)
+        print(ret)
         return ret
-    def getPWMVSVotage(self):
-        self.stopVoltageVsPWMCurse = False
- 
-        pwmForward = []
-        votageForward = []
-        pwmBackward = []
-        votageBackward = []
-        if True:
-            pl.cla()
-            pl.grid() #开启网格
-            pl.xlabel("PWM")
-            pl.ylabel("Votage")
-            pl.title("PWM => Votage")
-            pl.legend()
-            pl.show()
-        start = int(self.proControl.BackForward_Start.value())
-        end = int(self.proControl.BackForward_End.value())
-        stepsize = int(self.proControl.BackForward_StepSize.value())
-        self.proControl.PWM_SET.setProperty("value", 0)
-        self.SetRuningParam()
-        time.sleep(0.2)
-        for x in range(start,end,stepsize):
-            if self.stopVoltageVsPWMCurse :
-                return   
-            self.proControl.PWM_SET.setProperty("value", x)
-             
-            self.SetRuningParam()
- 
-            time.sleep(0.1)
-        
-            ret = self.GetPlotData()
-            time.sleep(0.1)
-            if ret is None:
-                continue
-            
-            pwmForward.append(x)
-            votageForward.append(ret[3])
-            print([x,ret[3]])
-        
-          
-        
-        pl.plot(pwmForward, votageForward, 'ro')
-        pl.plot(pwmForward, votageForward, 'b-')
-         
-        for x in range(end,start,-1*stepsize):
-            if self.stopVoltageVsPWMCurse :
-                return 
-            self.proControl.PWM_SET.setProperty("value", x)
-            self.SetRuningParam()
-            time.sleep(0.1)
-            ret = self.GetPlotData()
-            time.sleep(0.1)
-            if ret is None:
-                continue
- 
-            pwmBackward.append(x)
-            votageBackward.append(ret[3])
-            print([x,ret[3]])
-      
-            pl.plot(pwmBackward, votageBackward, 'b*')
-    def stopVolVsPWMCurse(self):
-        self.stopVoltageVsPWMCurse = True   
- 
+     
     def logMessage(self,flag,msg=None):# debug
         if msg is None:
             msg = self.error._what+'\r\n'+self.error._why

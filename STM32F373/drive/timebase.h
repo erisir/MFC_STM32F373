@@ -2,7 +2,7 @@
 #define TIME_TEST_H
  
 #include "../prosses/tasks.h"
-#define CounterNum 3
+#define CounterNum 4
  
 
  

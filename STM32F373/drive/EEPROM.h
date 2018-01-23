@@ -59,7 +59,7 @@
 #define PAGE_FULL               ((uint8_t)0x80)
 
 /* Variables' number */
-#define NumbOfVar               ((uint8_t)20)
+#define NumbOfVar               ((uint8_t)26)
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/

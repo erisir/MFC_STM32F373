@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-This example demonstrates many of the 2D plotting capabilities
-in pyqtgraph. All of the plots may be panned/scaled by dragging with 
-the left/right mouse buttons. Right click on any plot to show a context menu.
+This example demonstrates the creation of a plot with a customized
+AxisItem and ViewBox. 
 """
-
-#import initExample ## Add path to library (just for examples; you do not need this)
-
-
-from pyqtgraph.Qt import QtGui, QtCore
-import numpy as np
+ 
 import pyqtgraph as pg
-import random
+from pyqtgraph.Qt import QtCore, QtGui
+import numpy as np
 import time
-
+import random
+from datetime import datetime
+from matplotlib.dates import  date2num
 class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
@@ -47,45 +44,63 @@ class DateAxis(pg.AxisItem):
             label = ''
         #self.setLabel(text=label)
         return strns
- 
 
-    #ptr =ptr+ 1
-    
+class CustomViewBox(pg.ViewBox):
+    def __init__(self, *args, **kwds):
+        pg.ViewBox.__init__(self, *args, **kwds)
+        self.setMouseMode(self.RectMode)
+        self.setMouseEnabled( x=False, y=False)
+        
+    ## reimplement right-click to zoom out
+    def amouseClickEvent(self, ev):
+        if ev.button() == QtCore.Qt.RightButton:
+            self.autoRange()
+            
+    def amouseDragEvent(self, ev):
+        if ev.button() == QtCore.Qt.RightButton:
+            ev.ignore()
+        else:
+            pg.ViewBox.mouseDragEvent(self, ev)
 
- 
+
 app = pg.mkQApp()
 
 axis = DateAxis(orientation='bottom')
- 
+vb = CustomViewBox()
 
-pw = pg.PlotWidget( axisItems={'bottom': axis}, enableMenu=False, title="PlotItem with custom axis and ViewBox<br>Menu disabled, mouse behavior changed: left-drag to zoom, right-click to reset zoom")
- 
- 
- 
-
-datay= []
-datax = []
-ptr = 0
-dates = np.arange(8) * (24)
-curve1 = pw.plot(x=[0], y=[0], symbol='o') 
-#curve1 = pw.plot(x=dates, y=datay, symbol='o')
+pw = pg.PlotWidget(viewBox=vb,axisItems={'bottom': axis},enableMenu=False, title="PlotItem with custom axis and ViewBox<br>Menu disabled, mouse behavior changed: left-drag to zoom, right-click to reset zoom")
+dates = np.arange(51) *(60*24*3600)
+#pw.plot(x=dates, y=[1,6,2,4,3,5,6,8], symbol='o')
 pw.show()
+pw.setWindowTitle('pyqtgraph example: customPlot')
+
+ 
+count = 0
+ydata = []
+xdata = []
+startTime= date2num(datetime.now())
+
 def update():
-    global ptr,datay,datax,pw,dates,curve1
-    datay.append(500+random.randint(1, 100)/100)
-    ptr =ptr+ 1
-    
-    if ptr >7:
-        datay[:-1] = datay[1:]
-         
-        #curve1 = pw.plot(x=dates, y=datay, symbol='o')
-    #   curve1.setData(dates,datay)
-    #   pw.show()
-    #   datay.pop(0)
+    global data3, ptr3,pw,count,dates,ydata,xdata,startTime
+    try:
+        ydata.append(random.randint(10,100))
+        newTime= date2num(datetime.now())
+        delta = newTime - startTime
+        delta = delta*100000#s
+        xdata.append(delta)
+        if count <=50:
+            count +=  1
+        if count >50:        
+            pw.plot(x=xdata, y=ydata, clear=True)
+            ydata.pop(0)
+            xdata.pop(0)
+    except Exception as e:
+        print(e)
         
-#timer = QtCore.QTimer()
-#timer.timeout.connect(update)
-#timer.start(10000)
+    
+timer = pg.QtCore.QTimer()
+timer.timeout.connect(update)
+timer.start(50)
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     import sys

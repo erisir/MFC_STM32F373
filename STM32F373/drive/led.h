@@ -10,5 +10,6 @@ void LED_Open(void);
 void LED_Close(void);
 void LED_Toggle(void);
 void LED_ON_OFF(void);
+void LED_Blink(uint8_t N);
 #endif /* __LED_H */
 

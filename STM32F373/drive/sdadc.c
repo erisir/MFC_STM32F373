@@ -12,7 +12,7 @@
 #include "sdadc.h"
  
 #define SDADC1_DR_Address             0x40016060
-#define ADCMeanWindow  50//偶数
+#define ADCMeanWindow  200//偶数
 #define ADCMeanFacor   500500l
 // SDADC转换的电压值通过inject方式传到SRAM
 int16_t InjectedConvData[2]={0};
@@ -40,7 +40,7 @@ struct _Voltage filter_voltage;
 *******************************************************************************/ 
 void Calculate_FilteringCoefficient(float Cut_Off)
 {
-	VOL_IIR_FACTOR =(float)( SapmleTime /( SapmleTime + 1/(2.0f*3.14*Cut_Off) ));
+	VOL_IIR_FACTOR =(float)( SapmleTime /( SapmleTime + 1.0f/(2.0f*3.14f*Cut_Off) ));
 }
 
 void updateVoltageWindowBuf(void)//100Hz
@@ -56,15 +56,7 @@ void updateVoltageWindowBuf(void)//100Hz
 }
 void updateRawData(void)//取中值 10Hz
 {
-	uint8_t i;
-	//int32_t temp0=0,temp1=0;
 	ADC_Mean();
-	/*for (i=0;i<ADCMeanWindow;i++) 
-	{ 
-		temp0 +=VoltageFilterBufCh0[i]*(i+1);
-		temp1 +=VoltageFilterBufCh1[i]*(i+1);	 
-	} */
-	
 	VoltageData[0]=VoltageDataRaw[0];//temp0/ADCMeanFacor;
 	VoltageData[1]=VoltageDataRaw[1];//temp1/ADCMeanFacor;
 	

@@ -13,7 +13,7 @@
 
 uint16_t Counters[CounterNum];
 extern uint8_t Bsp_Int_Ok;
-
+ 
 void TIM4_Init(void){
 	/* TIM4 定时配置 */	
   TIM4_Configuration(71);
@@ -69,7 +69,7 @@ void TIM4_IRQHandler(void)//Timer4中断
 		if( Bsp_Int_Ok == 0 )	return;//硬件未初始化完成，则返回
 		for(i=0;i<CounterNum;i++){
 			Counters[i]+=1;
-		}
+		}	
 	}
 }
 /*********************************************END OF FILE**********************/

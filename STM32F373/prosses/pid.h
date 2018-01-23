@@ -16,59 +16,71 @@ Copyright(C) bg8wj
 ///////////////////////////////////////////////////////////
  
 
-#define EEPROM_PID_PH		0
-#define EEPROM_PID_IH		1
-#define EEPROM_PID_DH		2
+#define EEPROM_PID_P		0
+#define EEPROM_PID_I		1
+#define EEPROM_PID_D		2
 
-#define EEPROM_PID_PM		3
-#define EEPROM_PID_IM		4
-#define EEPROM_PID_DM		5
+#define EEPROM_PID_PF		3
+#define EEPROM_PID_IF		4
+#define EEPROM_PID_DF		5
 
-#define EEPROM_PID_PL		6
-#define EEPROM_PID_IL		7
-#define EEPROM_PID_DL		8
+#define EEPROM_PID_EFRL		6
+#define EEPROM_PID_EFRM		7
+#define EEPROM_PID_EFRS		8
 
-#define EEPROM_PID_THD_H		9
-#define EEPROM_PID_THD_L		10
-#define EEPROM_PID_THD_PWM		11
+#define EEPROM_PID_ECFRL		9
+#define EEPROM_PID_ECFRM		10
+#define EEPROM_PID_ECFRS		11
 
-#define EEPROM_PID_DEADZONE		12
-#define EEPROM_RUN_RES_TIME		13
-#define EEPROM_RUN_FREQ_CUTOFF 14
+
+#define EEPROM_PID_CUTOFF_FREQ		12
+#define EEPROM_PID_CONTROL_CYCLE 13
+#define EEPROM_PID_DEADZONE		14
  
+#define EEPROM_PWM_MAX_HIGH 15
+#define EEPROM_PWM_MIN_HIGH 16
+#define EEPROM_PWM_STEP_HIGH 17
 
- 
-#define EEPROM_SUM				15
+#define EEPROM_PWM_MAX_LOW 18
+#define EEPROM_PWM_MIN_LOW 19
+#define EEPROM_PWM_STEP_LOW 20
+
+#define EEPROM_SUM				21
+
+#define NL 0 
+#define NM 1 
+#define NS 2 
+#define ZE 3 
+#define PS 4 
+#define PM 5 
+#define PL 6 
+
 /************************************************
 PID函数
+
  *************************************************/ 
 /*************PID**********************************/
 struct _PID {
-	float kpH; // 比例常数 Proportional Const
-	float kiH; // 积分常数 Integral Const
-	float kdH; // 微分常数 Derivative Const
-	
-	float kpM; // 比例常数 Proportional Const
-	float kiM; // 积分常数 Integral Const
-	float kdM; // 微分常数 Derivative Const
-	
-	float kpL; // 比例常数 Proportional Const
-	float kiL; // 积分常数 Integral Const
-	float kdL; // 微分常数 Derivative Const
-	
-		
-	float error_High_Threadhold;
-	float error_Low_Threadhold;
-	int16_t  PWM_Change_Threadhold;
-	int16_t  deadzone;
+	float kpid[3]; // kp ki kd
+	float kpidF[3]; // kp ki kd factor	
+	uint16_t eFuzzyRule[3]; //  high middle low
+	uint16_t ecFuzzyRule[3]; //  high middle low
+ 	
+	float PID_Cutoff;
+	uint16_t PID_ControlCycle;
+	float PID_DeadZone;
+	 
 
 	float LastError; // Error[-1]
 	float PrevError; // Error[-2]
 	int32_t SumError;
 	
+	uint32_t PWM_MAX;
+	uint32_t PWM_MIN;
+	uint32_t PWM_STEP;
+	
 };
 extern struct _PID spid;
-uint16_t getFeedBackTime(void);
 
 void PID_Init (void);  
 void EEPROM_INIT(void);
@@ -79,23 +91,28 @@ void PID_Param_Reset(void);
 void PID_Start(void); 		
 
 void Set_Running_Param(uint8_t *buf);
-void Get_Running_Param(uint8_t *buf);
+uint8_t Get_Running_Param(uint8_t *buf);
 
 void Set_PID_Param(uint8_t *buf); 
-void Get_PID_Param(uint8_t *buf); 
+uint8_t Get_PID_Param(uint8_t *buf); 
 
 void Valve_Close(void);
 void Valve_Open(void);
 void Valve_PID_Ctrl(void);
 
 
-unsigned char is_PID_Running(void);
-unsigned int abs( int val);
- 
-void Inc_PID_Calc(void);
-void Inc_PID_Calc1(void);
-void Inc_PID_Calc2(void);
-void PID_Setpoint_Change(void);
+uint8_t PID_isRunning(void);
+uint16_t abs( int val);
+uint16_t Get_ControlCycle(void);
 
+void Inc_PID_Calc(void);
+ 
+void Fuzzy_Kpid(int16_t e, int16_t ec) ;
+void Init_FuzzyMap(void);
+uint32_t Bytes2Int32_t(uint8_t * buf,uint8_t offset);
+uint16_t Bytes2Int16_t(uint8_t * buf,uint8_t offset);
+
+void Int32_t2Bytes(uint32_t val,uint8_t * buf,uint8_t offset);
+void Int16_t2Bytes(uint16_t val,uint8_t * buf,uint8_t offset);
 #endif
 /*********************************************END OF FILE**********************/

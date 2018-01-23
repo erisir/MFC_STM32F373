@@ -18,7 +18,7 @@
 #define RS485_TX_EN		PDout(8)	//485模式控制.0,接收;1,发送.
 
 float Byte2Float(unsigned char* buf,int offset);
-void parseData(u8 *buf,u8 len);
+void ParseData(uint8_t *buf);
 void PrintHexU8(uint8_t data);
 void PrintHexS16(int16_t num);
 void PrintS8( int8_t num);

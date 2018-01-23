@@ -15,21 +15,76 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *  
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  * 
- 
+import pyqtgraph as pg
 
 X_SECOND = 50
 Y_MAX = 6000
 Y1_MAX = 120000
 Y_MIN = 1
 
-PlotThreadInterval = 50
-getDataThreadInterval = 50
+PlotThreadInterval = 20
+getDataThreadInterval = 20
  
-MAXCOUNTER = 20
+MAXCOUNTER = 60
 
 AutoRange =True
 Debug = True
 DrawFigure = True
+
+
+class DateAxis(pg.AxisItem):
+    def __init__(self, *args, **kwds):
+        pg.AxisItem.__init__(self, *args, **kwds)
+        self.setTickSpacing(8000, 2000)
+    def tickStrings(self, values, scale, spacing):
+        #print(spacing)
+        strings = []
+        for x in values:
+            try:
+                h = x/(60*60*1000)
+                x = x%(60*60*1000)
+                m = x/(60*1000)
+                
+                x = x%(60*1000)
+                
+                s = x/(1000)
+                strings.append(str(int(h))+':'+str(int(m))+':'+str(int(s)))
+            except ValueError:  ## Windows can't handle dates before 1970
+                strings.append('')
+        return strings
+
+class CustomViewBox(pg.ViewBox):
+    def __init__(self, *args, **kwds):
+        pg.ViewBox.__init__(self, *args, **kwds)
+        #self.setMouseMode(self.RectMode)
+        #self.setMouseEnabled( x=False, y=False)
+        #self.setMouseEnabled(self, x=None, y=None):
+        
+    ## reimplement right-click to zoom out
+    def wheelEvent(self, ev):
+        ev.ignore()
+    def mouseClickEvent(self, ev):
+        #self.autoRange()
+        ev.ignore()
+        pass
+        if ev.button() == QtCore.Qt.RightButton:
+            pass
+        if ev.button() == QtCore.Qt.MiddleButton:
+            pass
+        if ev.button() == QtCore.Qt.MidButton:
+            pass
+        if ev.button() == QtCore.Qt.LeftButton:
+            pass
+            #
+    def resizeEvent(self, ev):
+        ev.ignore()       
+    def mouseDragEvent(self, ev):
+        ev.ignore()
+        pass
+        if ev.button() == QtCore.Qt.RightButton:
+            ev.ignore()
+        else:
+            pg.ViewBox.mouseDragEvent(self, ev)  
 class MplCanvas(FigureCanvas):
     curveVCh0= None # draw object
     curveVCh1 = None # draw object
@@ -137,24 +192,37 @@ class  MyDynamicMplCanvas(QWidget):
         
     def __init__(self , parent =None):
         QWidget.__init__(self, parent)
-        #self.win = pg.GraphicsWindow(title="Basic plotting examples")
-        #pg.setConfigOptions(antialias=True)
-        #pg.setConfigOption('foreground', 'w')
-        #self.p6 = self.win.addPlot(title="Updating plot")
-        #self.curve = self.p6.plot(pen='y')
+        self.win = pg.GraphicsWindow()
+        pg.setConfigOptions(antialias=True)
+        pg.setConfigOption('foreground', 'w')
+        
+        axis = DateAxis(orientation='bottom')
+        vb = CustomViewBox()
+        axis1 = DateAxis(orientation='bottom')
+        vb1 = CustomViewBox()
+        axis2 = DateAxis(orientation='bottom')
+        vb2 = CustomViewBox()
+        
+        self.p1 = self.win.addPlot(viewBox=vb,axisItems={'bottom': axis})
+        self.win.nextRow()
+        self.p2 = self.win.addPlot(viewBox=vb1,axisItems={'bottom': axis1})
+        self.win.nextRow()
+        self.p3 = self.win.addPlot(viewBox=vb2,axisItems={'bottom': axis2})
         self.canvas = MplCanvas()
         self.vbl = QVBoxLayout()
-        self.ntb = NavigationToolbar(self.canvas, parent)
-        self.vbl.addWidget(self.ntb)
-        self.vbl.addWidget(self.canvas)
-        #self.vbl.addWidget(self.win)
+        #self.ntb = NavigationToolbar(self.canvas, parent)
+        #self.vbl.addWidget(self.ntb)
+        #self.vbl.addWidget(self.canvas)
+        self.vbl.addWidget(self.win)
         self.setLayout(self.vbl)
         self.dataX= []
         
         self.ydataVCh0= []
         self.ydataVCh1 = []
         self.ydataVSetPoint = []
-        self.ydataVSetPointTemp = []
+        self.kp = []
+        self.ki = []
+        self.kd = []
         
         self.ydataPWMOut = []
         
@@ -185,6 +253,22 @@ class  MyDynamicMplCanvas(QWidget):
                 
         except Exception as e:
             print(e)
+    def getTimeNum(self):
+        timeString = str(datetime.now())
+        return int(timeString[11:13])*60*60*1000+int(timeString[14:16])*60*1000+int(timeString[17:19])*1000+int(timeString[20:23])
+    def getPlotRange(self,data,stdFactor,stdMin,stdMax):
+        mean = int(np.mean(data))
+        std = np.std(data)*stdFactor
+        if std <stdMin:
+            std =stdMin
+        if std >stdMax:
+            std =stdMax
+            
+        ystart = mean-std
+        if ystart <0:
+            ystart = 0
+        yend = mean+std*2
+        return [ystart,yend]
     def clearData(self):
         if self.dataX==None:
             return
@@ -193,8 +277,10 @@ class  MyDynamicMplCanvas(QWidget):
         self.ydataVCh0.clear()                   
         self.ydataVCh1.clear()  
         self.ydataVSetPoint.clear()  
-        self.ydataVSetPointTemp.clear()         
-        self.ydataPWMOut.clear()      
+        self.ydataPWMOut.clear() 
+        self.kp.clear()   
+        self.ki.clear()   
+        self.kd.clear()      
     def pausePlot(self):
         self.UIAction.thirdUIControl.startPlot.setEnabled(True)
         self.UIAction.thirdUIControl.pausePlot.setEnabled(False)
@@ -232,8 +318,23 @@ class  MyDynamicMplCanvas(QWidget):
                 setpoint = 90
             self.UI_getpointbar.setValue(getpoint)# )
             self.UI_setpointbar.setValue(setpoint)#)                
-            if self.PlotCounter >= 3:                                                             
-                self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)                                       
+            if self.PlotCounter >= 3:   
+                #[vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd]                      
+                self.p1.plot(x=self.dataX, y=self.ydataVCh0, pen=(255,0,0),clear=True) 
+                #self.p1.plot(x=self.dataX, y=self.ydataVSetPoint, pen=(0,0,255))
+                #self.p1.plot(x=self.dataX, y=self.ydataVCh1, pen=(0,255,0)) 
+                #self.p1.plot(x=self.dataX, y=self.ydataVSetPoint, pen=(0,0,255))  
+                
+                self.p2.plot(x=self.dataX, y=self.ydataPWMOut, pen=(0,0,255),clear=True) 
+                 
+                self.p3.plot(x=self.dataX, y=self.kp, pen=(0,0,255),clear=True)
+                self.p3.plot(x=self.dataX, y=self.ki, pen=(0,255,0))        
+                self.p3.plot(x=self.dataX, y=self.kd, pen=(255,0,0))    
+                    
+                ret = self.getPlotRange(self.ydataVCh0,5,5,3000)  
+                #self.p1.vb.setRange(yRange=[ret[0],ret[1]])
+                #self.p2                             
+                #self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)                                       
         except:
             self.UIAction.errorMessage("绘图出错")
     def dataThread(self): 
@@ -250,12 +351,17 @@ class  MyDynamicMplCanvas(QWidget):
             resStr = resStr.replace(']', '')
             if self.fileHandle is not None:
                 self.fileHandle.write(resStr )     
-            self.dataX.append(newTime)                        
+            self.dataX.append(self.getTimeNum())    
+            
+            # [vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd]                 
             self.ydataVCh0.append(newData[0])                   
             self.ydataVCh1.append(newData[1])       
             self.ydataVSetPoint.append(newData[2])
-            self.ydataVSetPointTemp.append(newData[3])            
-            self.ydataPWMOut.append(newData[4])
+            self.ydataPWMOut.append(newData[3])
+            
+            self.kp.append(newData[4])    
+            self.ki.append(newData[5])    
+            self.kd.append(newData[6])     
             
             self.getpoint_Value = newData[0]
             self.setpoint_Value = newData[2]
@@ -267,9 +373,11 @@ class  MyDynamicMplCanvas(QWidget):
                 self.ydataVCh1.pop(0) 
                 
                 self.ydataVSetPoint.pop(0) 
-                self.ydataVSetPointTemp.pop(0) 
-                
                 self.ydataPWMOut.pop(0) 
+                
+                self.kp.pop(0) 
+                self.ki.pop(0) 
+                self.kd.pop(0) 
             else:
                 self.PlotCounter+=1
             

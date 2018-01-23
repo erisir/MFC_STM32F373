@@ -39,7 +39,7 @@ void rs485_DMA_Init(uint32_t BaudRate);
 void USART1_Start_DMA_Recv(void * recvBuf, uint32_t bufLen);
 void USART1_Start_DMA_Send(void * sendBuf, uint32_t bufLen);
 void RS485_PrintString(uint8_t  * sendBuf);
- 
+void ParseMsgRecvQueue(void);
 #endif	   
 
 

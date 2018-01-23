@@ -19,6 +19,7 @@ extern u8 RS485_TX_BUF[64];
  
 void OnResetFlowDown(void)
 {
+	LED_Blink(2);
 	RS485_PrintString("0:\tOnResetFlowDown\n");
 }
 void Bsp_Int(void )
