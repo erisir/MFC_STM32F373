@@ -44,7 +44,7 @@ void Bsp_Int(void )
 	PID_Init() ;
   RS485_PrintString("5:\tPID_Init\n");
 	ADC1_Init();
-	Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
+	//Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
   RS485_PrintString("6:\tADC_Init\n");
 	AD5761_Init() ;
   RS485_PrintString("7:\tAD5761_Init\n");
@@ -62,8 +62,9 @@ void RCC_Configuration(void)
 			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOD, ENABLE);//USART1_EN
 			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOE, ENABLE);//SDADC_PE8 _PE9
 			//RCC_AHBPeriphClockCmd( RCC_AHBPeriph_GPIOF, ENABLE);//DEBUG PF6 PF7 PA14 PA15
-			RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);  
-		
+			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_DMA1,ENABLE);  // Sdadc PWM_dma
+			 
+		  RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE);   //PWM
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_SPI3,  ENABLE );//SPI3
 			RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1, ENABLE );//USART1				
 						

@@ -40,6 +40,7 @@ class UIMainWindow(QDialog):
         tabWidget.resize(520,570)
         
         self.uiAction = UIAction(self.firstUIComm,self.secondUIDetail,self.thirdUIControl,self.fourUIOther,self.UIControlProf)
+        self.uiAction.setTimers(timers)
         self.thirdUIControl.mplCanvas.InitGUI(self.uiAction,self.thirdUIControl.GetPoint,self.thirdUIControl.GetPointBar,self.thirdUIControl.SetPointBar,self.app)
         self.thirdUIControl.mplCanvas.setTimers(timers)
         self.ConnectEvent()
@@ -67,6 +68,9 @@ class UIMainWindow(QDialog):
     
    
         self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
+        self.UIControlProf.FuzzyRead.clicked.connect(self.uiAction.FuzzyRead)
+        self.UIControlProf.FuzzySet.clicked.connect(self.uiAction.FuzzySet)
+        self.UIControlProf.FuzzySave.clicked.connect(self.uiAction.FuzzySave)
         
         self.UIControlProf.PID_SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)         
         self.thirdUIControl.SetPoint.valueChanged.connect(self.uiAction.SetRuningParam)        
@@ -115,15 +119,16 @@ time.sleep(0.2)
 tipLabel.setText( "程序正在启动...")
 time.sleep(0.2)
 tipLabel.setText( "正在尝试连接下位机...")
-timers = [QtCore.QTimer(),QtCore.QTimer()]#数据采集，绘图
+timers = [QtCore.QTimer(),QtCore.QTimer(),QtCore.QTimer()]#数据采集，绘图
 QtCore.QTimer().stop()
 mainApp=UIMainWindow(app,timers) 
 
 ret = False#mainApp.uiAction.TryConnect()
 if ret == False:
     ret = []
-    for i in range(2,3):
-        for x in(['38400','56000','57600','115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
+    for i in range(9,10):
+    #'38400','56000','57600',
+        for x in(['115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
             comm = 'COM'+str(i)   
             ret = mainApp.uiAction.AutoConnect(comm,x)
             progressBar.setValue(i*5+10)            

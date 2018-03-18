@@ -3,16 +3,19 @@
 
 #include "tasks.h"
 
-#define _CMD_SetRunParam	 '0'
-#define _CMD_SetPIDParam	 '1'
+#define _CMD_SetRunParam	 0
+#define _CMD_SetPIDParam	 1
 
-#define _CMD_GetRunParam	 '2'
-#define _CMD_GetPIDParam	 '3'
+#define _CMD_GetRunParam	 2
+#define _CMD_GetPIDParam	 3
 
-#define _CMD_SetVClose		 '4'
-#define _U_SetVOpen				 '5'
-#define _U_SetVPID				 '6'
-#define _U_SetVOut				 '7'
+#define _CMD_SetVClose		 4
+#define _U_SetVOpen				 5
+#define _U_SetVPID				 6
+#define _CMD_SetFuzzyMap   7
+#define _CMD_ReadFuzzyMap  8
+#define _U_SetVOut				 9
+#define _U_DEBUG				   10
 
 
 #define RS485_TX_EN		PDout(8)	//485模式控制.0,接收;1,发送.

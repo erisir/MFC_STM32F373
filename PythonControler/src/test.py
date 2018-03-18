@@ -11,98 +11,20 @@ import time
 import random
 from datetime import datetime
 from matplotlib.dates import  date2num
-class DateAxis(pg.AxisItem):
-    def tickStrings(self, values, scale, spacing):
-        strns = []
-        rng = max(values)-min(values)
-        #if rng < 120:
-        #    return pg.AxisItem.tickStrings(self, values, scale, spacing)
-        if rng < 3600*24:
-            string = '%H:%M:%S'
-            label1 = '%b %d -'
-            label2 = ' %b %d, %Y'
-        elif rng >= 3600*24 and rng < 3600*24*30:
-            string = '%d'
-            label1 = '%b - '
-            label2 = '%b, %Y'
-        elif rng >= 3600*24*30 and rng < 3600*24*30*24:
-            string = '%b'
-            label1 = '%Y -'
-            label2 = ' %Y'
-        elif rng >=3600*24*30*24:
-            string = '%Y'
-            label1 = ''
-            label2 = ''
-        for x in values:
-            try:
-                strns.append(time.strftime(string, time.localtime(x)))
-            except ValueError:  ## Windows can't handle dates before 1970
-                strns.append('')
-        try:
-            label = time.strftime(label1, time.localtime(min(values)))+time.strftime(label2, time.localtime(max(values)))
-        except ValueError:
-            label = ''
-        #self.setLabel(text=label)
-        return strns
 
-class CustomViewBox(pg.ViewBox):
-    def __init__(self, *args, **kwds):
-        pg.ViewBox.__init__(self, *args, **kwds)
-        self.setMouseMode(self.RectMode)
-        self.setMouseEnabled( x=False, y=False)
-        
-    ## reimplement right-click to zoom out
-    def amouseClickEvent(self, ev):
-        if ev.button() == QtCore.Qt.RightButton:
-            self.autoRange()
-            
-    def amouseDragEvent(self, ev):
-        if ev.button() == QtCore.Qt.RightButton:
-            ev.ignore()
-        else:
-            pg.ViewBox.mouseDragEvent(self, ev)
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import  *
+import matplotlib.pyplot as pl
+import serial  #pip install pyserial
+import sys,os,json
+import time
+import random #pip install random
+import binascii,encodings; 
+import numpy as np
+from sympy.strategies.core import switch
+from struct import pack,unpack
+from PyQt5 import QtCore, QtGui, QtWidgets
+import struct
 
-
-app = pg.mkQApp()
-
-axis = DateAxis(orientation='bottom')
-vb = CustomViewBox()
-
-pw = pg.PlotWidget(viewBox=vb,axisItems={'bottom': axis},enableMenu=False, title="PlotItem with custom axis and ViewBox<br>Menu disabled, mouse behavior changed: left-drag to zoom, right-click to reset zoom")
-dates = np.arange(51) *(60*24*3600)
-#pw.plot(x=dates, y=[1,6,2,4,3,5,6,8], symbol='o')
-pw.show()
-pw.setWindowTitle('pyqtgraph example: customPlot')
-
- 
-count = 0
-ydata = []
-xdata = []
-startTime= date2num(datetime.now())
-
-def update():
-    global data3, ptr3,pw,count,dates,ydata,xdata,startTime
-    try:
-        ydata.append(random.randint(10,100))
-        newTime= date2num(datetime.now())
-        delta = newTime - startTime
-        delta = delta*100000#s
-        xdata.append(delta)
-        if count <=50:
-            count +=  1
-        if count >50:        
-            pw.plot(x=xdata, y=ydata, clear=True)
-            ydata.pop(0)
-            xdata.pop(0)
-    except Exception as e:
-        print(e)
-        
-    
-timer = pg.QtCore.QTimer()
-timer.timeout.connect(update)
-timer.start(50)
-## Start Qt event loop unless running in interactive mode or using pyside.
-if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+print(ch0)
+print(ch1)

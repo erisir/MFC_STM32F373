@@ -96,6 +96,8 @@ uint8_t Get_Running_Param(uint8_t *buf);
 void Set_PID_Param(uint8_t *buf); 
 uint8_t Get_PID_Param(uint8_t *buf); 
 
+void Set_FuzzyMap_Param(uint8_t *buf);
+void Get_FuzzyMap_Param(uint8_t *buf,uint8_t row);
 void Valve_Close(void);
 void Valve_Open(void);
 void Valve_PID_Ctrl(void);

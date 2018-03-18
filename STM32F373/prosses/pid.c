@@ -16,16 +16,16 @@ uint16_t data_x,data_y,data_z;
 
 uint32_t PWM_Output;
 uint16_t Voltage_Set_Point;
-
+extern uint32_t tocTimers[4];
 
 uint8_t PID_Votage_Chanel = 0;
 uint8_t PID_Ctrl_Votage_Chanel = 1;
 uint8_t isRunning=0;
 
-int16_t  eFuzzyRule[7]={-3000,-2000,-1000,0.0,1000,2000,3000};   
-int16_t  ecFuzzyRule[7]={-300,-200,-100,0.0,100,200,300};
+float  eFuzzyRule[7]={-3000,-2000,-1000,0,1000,2000,3000};   
+float  ecFuzzyRule[7]={-300,-200,-100,0,100,200,300};
 
-float Kpid_calcu[3]={0,0,0};
+float Kpid_calcu[3]={0.0,0.0,0.0};
 
 float eFuzzy[]={0.0,0.0};       
 float ecFuzzy[]={0.0,0.0};  
@@ -33,34 +33,72 @@ float ecFuzzy[]={0.0,0.0};
 float deFuzzyFactor[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 	
 int8_t  DefuzzyRuleMap[3][7]={
-								{-3,-2,-1,0.0,1.0,2.0,3.0}, 
-								{-3,-2,-1,0.0,1.0,2.0,3.0},
-								{-3,-2,-1,0.0,1.0,2.0,3.0}}; 
-int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->*/
-/*Row[ec]*/	
-        {{PL,PM,PS },{PL,PL,PS },{PM,PL,ZE },{PM,PL,ZE },{PS,PL,ZE },{ZE,PL,PS },{ZE,PM,PS}} ,
-    		{{PL,PL,NL },{PL,PS,NL },{PM,PS,NM },{PS,PS,NS },{PS,PS,NS },{ZE,PS,NM },{ZE,PS,NM}} ,
-    		{{PL,ZE,NL },{PL,ZE,NL },{PM,ZE,NM },{ZE,ZE,NS },{ZE,ZE,NM },{NS,NS,NM },{NS,NS,NM}} ,
-    		{{PL,NS,NS },{PM,NS,NS },{PS,NS,NS },{NS,NS,NS },{NM,NS,NS },{NM,NS,ZE },{NM,ZE,NM}} ,
-    		{{PM,ZE,NL },{PS,ZE,NL },{ZE,ZE,NM },{NM,ZE,NS },{NM,ZE,NM },{NM,NS,ZE },{NM,ZE,NM}} ,
-    		{{ZE,PL,NL },{ZE,PS,NL },{NS,PL,ZE },{NM,PS,NS },{NL,PS,NM },{NM,ZE,ZE },{NM,PS,NL}} ,
-    		{{ZE,PM,PS },{ZE,PM,PS },{NS,PL,ZE },{NM,PL,ZE },{NM,PL,ZE },{NM,PS,PS },{NM,PS,NL}}
+								{-3,-2,-1,0.0,1,2,3}, 
+								{-3,-2,-1,0.0,1,2,3},
+								{-3,-2,-1,0.0,1,2,3}}; 
+int8_t  FuzzyCtrlRuleMapInital[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->*/
+/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
+/*NL*/        {{PL,PM,PS },{PL,PL,PS },{PM,PL,ZE },{PM,PL,ZE },{PS,PL,ZE },{ZE,PL,PS },{ZE,PM,PS}} ,
+/*NM*/    		{{PL,PL,NL },{PL,PS,NL },{PM,PS,NM },{PS,PS,NS },{PS,PS,NS },{ZE,PS,NM },{ZE,PS,NM}} ,
+/*NS*/    		{{PL,ZE,NL },{PL,ZE,NL },{PM,ZE,NM },{ZE,ZE,NS },{ZE,ZE,NM },{NS,NS,NM },{NS,NS,NM}} ,
+/*ZE*/    		{{PL,NS,NS },{PM,NS,NS },{PS,NS,NS },{NS,NS,NS },{NM,NS,NS },{NM,NS,ZE },{NM,ZE,NM}} ,
+/*PS*/    		{{PM,ZE,NL },{PS,ZE,NL },{ZE,ZE,NM },{NM,ZE,NS },{NM,ZE,NM },{NM,NS,ZE },{NM,ZE,NM}} ,
+/*PM*/    		{{ZE,PL,NL },{ZE,PS,NL },{NS,PL,ZE },{NM,PS,NS },{NL,PS,NM },{NM,ZE,ZE },{NM,PS,NL}} ,
+/*PL*/    		{{ZE,PM,PS },{ZE,PM,PS },{NS,PL,ZE },{NM,PL,ZE },{NM,PL,ZE },{NM,PS,PS },{NM,PS,NL}}
     		};
-int8_t  FuzzyCtrlRuleMap[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->*/
-/*Row[ec]*/	
-        {{PL,PM,PS },{PL,PL,PS },{PM,PL,ZE },{PM,PL,ZE },{PS,PL,ZE },{ZE,PL,PS },{ZE,PM,PS}} ,
-    		{{PL,PL,NL },{PL,PS,NL },{PM,PS,NM },{PS,PS,NS },{PS,PS,NS },{ZE,PS,NM },{ZE,PS,NM}} ,
-    		{{PL,ZE,NL },{PL,ZE,NL },{PM,ZE,NM },{ZE,ZE,NS },{ZE,ZE,NM },{NS,NS,NM },{NS,NS,NM}} ,
-    		{{PL,NS,NS },{PM,NS,NS },{PS,NS,NS },{NS,NS,NS },{NM,NS,NS },{NM,NS,ZE },{NM,ZE,NM}} ,
-    		{{PM,ZE,NM },{PS,ZE,NM },{ZE,ZE,NM },{NM,ZE,NS },{NM,ZE,NM },{NM,NS,ZE },{NM,ZE,NM}} ,
-    		{{ZE,PS,NM },{ZE,PS,NM },{NS,PS,ZE },{NM,PS,NS },{NL,PS,NM },{NM,ZE,ZE },{NM,PS,NL}} ,
-    		{{ZE,PM,PS },{ZE,PM,PS },{NS,PM,ZE },{NM,PL,ZE },{NM,PL,ZE },{NM,PS,PS },{NM,PS,NL}}
+int8_t  FuzzyCtrlRuleMap1[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->磁滞*/
+/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
+/*NL*/        {{PL,PM,PS },{PL,PL,PS },{PM,PL,ZE },{PM,PL,ZE },{PS,PL,ZE },{ZE,PL,PS },{ZE,PM,PS}} ,
+/*NM*/    		{{PL,PL,NL },{PL,PS,NL },{PM,PS,NM },{PS,PS,NS },{PS,PS,NS },{ZE,PS,NM },{ZE,PS,NM}} ,
+/*NS*/    		{{PL,ZE,NL },{PL,ZE,NL },{PM,ZE,NM },{ZE,ZE,NS },{ZE,ZE,NM },{NS,NS,NM },{NS,NS,NM}} ,
+/*ZE*/    		{{PL,PL,NL },{PL,PL,NL },{PL,PM,ZE },{NS,PM,NS },{PL,PM,ZE },{PL,PL,NL },{PL,PL,NL}} ,
+/*PS*/    		{{PM,ZE,NL },{PS,ZE,NL },{ZE,ZE,NM },{NM,ZE,NS },{NM,ZE,NM },{NM,NS,ZE },{NM,ZE,NM}} ,
+/*PM*/    		{{ZE,PL,NL },{ZE,PS,NL },{NS,PL,ZE },{NM,PS,NS },{NL,PS,NM },{NM,ZE,ZE },{NM,PS,NL}} ,
+/*PL*/    		{{ZE,PM,PS },{ZE,PM,PS },{NS,PL,ZE },{NM,PL,ZE },{NM,PL,ZE },{NM,PS,PS },{NM,PS,NL}}
+    		};
+int8_t  FuzzyCtrlRuleMap[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->步进电机*/
+/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
+/*NL*/        {{PL,PL,PL },{PL,PL,PM },{PM,PL,PL },{PM,NM,PL },{PM,NM,PL },{PS,ZE,ZE },{ZE,ZE,NL}} ,
+/*NM*/    		{{PL,PL,PM },{PL,PL,PS },{PM,PM,PM },{PM,NS,PM },{PM,NS,PM },{ZE,ZE,NS },{ZE,PS,NL}} ,
+/*NS*/    		{{PL,PL,PS },{PM,PL,ZE },{PS,PS,PS },{PM,ZE,PS },{ZE,ZE,ZE },{NS,PS,NM },{NS,PS,NL}} ,
+/*ZE*/    		{{PM,PL,NL },{PS,PM,NM },{PS,PS,NS },{ZE,ZE,NS },{NS,PS,ZE },{NS,PM,PS },{NM,PL,PM}} ,
+/*PS*/    		{{PS,PM,NL },{PS,PS,NL },{PS,ZE,PS },{NS,ZE,PS },{NS,PS,PS },{NS,PM,ZE },{NM,PL,PS}} ,
+/*PM*/    		{{ZE,PS,NL },{ZE,ZE,NS },{ZE,NS,PM },{NS,NS,PM },{NM,PM,PM },{NM,PL,PS },{NM,PL,PM}} ,
+/*PL*/    		{{ZE,ZE,NL },{NS,ZE,ZE },{NS,NM,PL },{NS,NM,PL },{NM,PL,PL },{NM,PL,PM },{NL,PL,PL}}
     		};
 
+void Set_FuzzyMap_Param(uint8_t *buf)
+{
+	uint8_t i = 0;
+	for(i=0;i<7;i++){
+		FuzzyCtrlRuleMap[buf[5]][i][0]=buf[6+3*i];
+		FuzzyCtrlRuleMap[buf[5]][i][1]=buf[6+3*i+1];
+		FuzzyCtrlRuleMap[buf[5]][i][2]=buf[6+3*i+2];
+	}
+}
+void Get_FuzzyMap_Param(uint8_t *buf,uint8_t row)
+{
+	int offset = 5;
+	uint8_t i = 0;
+	buf[0] = '$';
+	buf[1] = 'N';
+	buf[2] = '>';//发给上位机
+	buf[4] = _CMD_ReadFuzzyMap;
+	for(i=0;i<7;i++){
+		buf[offset+i*3] = FuzzyCtrlRuleMap[row][i][0];
+		buf[offset+i*3+1] = FuzzyCtrlRuleMap[row][i][1];
+		buf[offset+i*3+2] = FuzzyCtrlRuleMap[row][i][2];
+		
+	}
+	offset+=3*7;
+	buf[offset] = Get_Checksum(buf);offset+=1;
+	buf[3] = offset+1;
+	
+}
 uint16_t Get_ControlCycle(void){
 	return spid.PID_ControlCycle;
 }
- 
+
 uint16_t VirtAddVarTab[NumbOfVar] = {
 	0x9A00,0x9A01,0x9A02,0x9A03,0x9A04,0x9A05,0x9A06,0x9A07,0x9A08,0x9A09,
 	0x9A0A,0x9A0B,0x9A0C,0x9A0D,0x9A0F,0x9A10,0x9A11,0x9A12,0x9A13,0x9A14,
@@ -107,7 +145,7 @@ void Set_PID_Param(uint8_t *buf)
 	spid.ecFuzzyRule[2] = Bytes2Int16_t(buf,offset); offset+=2;
 	
 	spid.PID_Cutoff = Bytes2Int16_t(buf,offset)/10.0f; offset+=2;
-	spid.PID_ControlCycle = Bytes2Int16_t(buf,offset)/10.0f; offset+=2;
+	spid.PID_ControlCycle = Bytes2Int16_t(buf,offset); offset+=2;
 	spid.PID_DeadZone = Bytes2Int16_t(buf,offset)/10.0f; offset+=2;
 	
 	spid.PWM_MAX = Bytes2Int32_t(buf,offset); offset+=4;
@@ -115,7 +153,7 @@ void Set_PID_Param(uint8_t *buf)
 	spid.PWM_STEP = Bytes2Int32_t(buf,offset); offset+=4;
  	
 	Init_FuzzyMap();	
-	Calculate_FilteringCoefficient(spid.PID_Cutoff );
+	//Calculate_FilteringCoefficient(spid.PID_Cutoff );
 	 
 	EEPROM_SAVE_PID();
 }
@@ -160,7 +198,7 @@ uint8_t Get_PID_Param(uint8_t *buf){
 	Int16_t2Bytes(spid.ecFuzzyRule[2], buf,offset);offset+=2;
 	
 	Int16_t2Bytes(spid.PID_Cutoff*10 , buf,offset);offset+=2;
-	Int16_t2Bytes(spid.PID_ControlCycle*10, buf,offset);offset+=2;
+	Int16_t2Bytes(spid.PID_ControlCycle, buf,offset);offset+=2;
 	Int16_t2Bytes(spid.PID_DeadZone*10, buf,offset);offset+=2;
 	
 	Int32_t2Bytes(spid.PWM_MAX  , buf,offset);offset+=4;
@@ -175,11 +213,13 @@ uint8_t Get_PID_Param(uint8_t *buf){
 void Set_Running_Param(uint8_t *buf)
 {
 	int offset = 5;
-	Voltage_Set_Point=Bytes2Int16_t(buf,offset);
+	Voltage_Set_Point=Bytes2Int16_t(buf,offset);offset+=2;
+	PWM_Mode_Config(Bytes2Int16_t(buf,offset));
 }
 uint8_t Get_Running_Param(uint8_t *buf)
 {
 	int offset = 5;
+	float temp = 0.0;
 	buf[0] = '$';
 	buf[1] = 'N';
 	buf[2] = '>';//发给上位机
@@ -191,10 +231,18 @@ uint8_t Get_Running_Param(uint8_t *buf)
 	
 	Int16_t2Bytes(GetADCVoltage(0)*10.f , buf,offset);offset+=2;
 	Int16_t2Bytes(GetADCVoltage(1)*10.f , buf,offset);offset+=2;
-	 	
+	
+ 
 	Int16_t2Bytes((spid.kpid[0]+Kpid_calcu[0]*spid.kpidF[0])*100 , buf,offset);offset+=2;
 	Int16_t2Bytes((spid.kpid[1]+Kpid_calcu[1]*spid.kpidF[1])*100 , buf,offset);offset+=2;
-	Int16_t2Bytes((spid.kpid[2]+Kpid_calcu[2]*spid.kpidF[2])*100 , buf,offset);offset+=2;
+  Int16_t2Bytes((spid.kpid[2]+Kpid_calcu[2]*spid.kpidF[2])*100 , buf,offset);offset+=2;
+	
+ 
+	
+	Int32_t2Bytes(tocTimers[0] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[1] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[2] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[3] , buf,offset);offset+=4;
 	
 	buf[offset] = Get_Checksum(buf);offset+=1;
 	buf[3] = offset+1;
@@ -218,7 +266,7 @@ void PID_Start()
 void Inc_PID_Calc(void)
 {
 	register float iError;
- 	register int iIncpid;
+ 	register float iIncpid;
 	float NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
 	iError = Voltage_Set_Point - NextPoint;
@@ -387,7 +435,7 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 			pe = 4;
 		}   else if(eFuzzyRule[5]<=e && e<eFuzzyRule[6])  {eFuzzy[0] = (eFuzzyRule[6]-e)/(eFuzzyRule[6]-eFuzzyRule[5]);   
 			pe = 5;
-		}   else  {   eFuzzy[0] =0;pe =5;
+		}   else  {   eFuzzy[0] =1;pe =5;
 		}      
 		eFuzzy[1] =(float)(1.0f - eFuzzy[0]);       
 		/*****误差变化隶属函数描述*****/       
@@ -404,14 +452,14 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 			pec=4;
 		}   else if(ecFuzzyRule[5]<=ec && ec<ecFuzzyRule[6]) {   ecFuzzy[0] = (ecFuzzyRule[6]-ec)/(ecFuzzyRule[6]-ecFuzzyRule[5]);         
 			pec=5;
-		}   else  {   ecFuzzy[0] =0.0;		pec = 5;
+		}   else  {   ecFuzzy[0] =1;		pec = 5;
 		}   
 		ecFuzzy[1] = (float)(1.0f - ecFuzzy[0]);    
 		/***********查询模糊规则表*************/   
 		
 		for(KpidSelect=0;KpidSelect<3;KpidSelect++){
 			memset(deFuzzyFactor,0,7*sizeof(float));
-			num =FuzzyCtrlRuleMap[pec][pe][KpidSelect];   //主值
+			num =FuzzyCtrlRuleMap[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]
 			deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[0]; 
 			
 			num =FuzzyCtrlRuleMap[pec][pe+1][KpidSelect];   
@@ -423,13 +471,14 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 			num =FuzzyCtrlRuleMap[pec+1][pe+1][KpidSelect];   
 			deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[1];  
 			
-			/********加权平均法解模糊********/
+			/********加权平均法解模糊********///DefuzzyRuleMap = [-3,-2,-1,0,1,2,3]
 			temp=0;
 			for(i=0;i<7;i++){
 				temp+=deFuzzyFactor[i]*DefuzzyRuleMap[KpidSelect][i];      
 			}
 			 
 			Kpid_calcu[KpidSelect]=temp;
+			//Kpid_calcu
 		}
 	 
 	}
@@ -455,20 +504,20 @@ void PID_Param_Reset(void)
 	spid.kpidF[2] = 0.5;
 	
   spid.eFuzzyRule[0] = 3000;
-	spid.eFuzzyRule[1] = 2000;
-	spid.eFuzzyRule[2] = 1000;
+	spid.eFuzzyRule[1] = 500;
+	spid.eFuzzyRule[2] = 20;
 	
 	spid.ecFuzzyRule[0] = 300;
-	spid.ecFuzzyRule[1] = 200;
-	spid.ecFuzzyRule[2] = 100;
+	spid.ecFuzzyRule[1] = 50;
+	spid.ecFuzzyRule[2] = 5;
  
  	
-	spid.PID_Cutoff=5;
+	spid.PID_Cutoff=10;
 	spid.PID_ControlCycle=50;
-	spid.PID_DeadZone=1;
+	spid.PID_DeadZone=0;
 	 
  
-	spid.PWM_MAX=200000;
+	spid.PWM_MAX=5000000;
 	spid.PWM_MIN=100000;
 	spid.PWM_STEP=5000;
 	

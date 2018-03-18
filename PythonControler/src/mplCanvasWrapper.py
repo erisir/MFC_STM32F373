@@ -16,16 +16,17 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  * 
 import pyqtgraph as pg
-
+from scipy.fftpack import fft,ifft
+import math
 X_SECOND = 50
 Y_MAX = 6000
 Y1_MAX = 120000
 Y_MIN = 1
 
-PlotThreadInterval = 20
-getDataThreadInterval = 20
+PlotThreadInterval = 50
+getDataThreadInterval = 50
  
-MAXCOUNTER = 60
+MAXCOUNTER = 500
 
 AutoRange =True
 Debug = True
@@ -206,8 +207,8 @@ class  MyDynamicMplCanvas(QWidget):
         self.p1 = self.win.addPlot(viewBox=vb,axisItems={'bottom': axis})
         self.win.nextRow()
         self.p2 = self.win.addPlot(viewBox=vb1,axisItems={'bottom': axis1})
-        self.win.nextRow()
-        self.p3 = self.win.addPlot(viewBox=vb2,axisItems={'bottom': axis2})
+        #self.win.nextRow()
+        #self.p3 = self.win.addPlot(viewBox=vb2,axisItems={'bottom': axis2})
         self.canvas = MplCanvas()
         self.vbl = QVBoxLayout()
         #self.ntb = NavigationToolbar(self.canvas, parent)
@@ -241,10 +242,11 @@ class  MyDynamicMplCanvas(QWidget):
     def startPlot(self):
         self.UIAction.thirdUIControl.startPlot.setEnabled(False)
         self.UIAction.thirdUIControl.pausePlot.setEnabled(True) 
-        self.startTime = date2num(datetime.now())
+        
         if self.fileHandle is  None:
-            #self.fileHandle=open('data/'+time.strftime("%y%m%d",time.localtime())+'/'+time.strftime("%H%M%S",time.localtime())+'.txt', 'a')
+            self.startTime = date2num(datetime.now())
             self.fileHandle=open('data/'+time.strftime("%y%m%d%H%M%S",time.localtime())+'.txt', 'a')
+            self.fileHandle.write('time/s,vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd\r\n')
         try:     
             if not self.timers[0].isActive():
                 self.timers[0].start(PlotThreadInterval)
@@ -281,13 +283,13 @@ class  MyDynamicMplCanvas(QWidget):
         self.kp.clear()   
         self.ki.clear()   
         self.kd.clear()      
-    def pausePlot(self):
+    def pausePlot(self,useSameFile):
         self.UIAction.thirdUIControl.startPlot.setEnabled(True)
         self.UIAction.thirdUIControl.pausePlot.setEnabled(False)
-        if self.fileHandle is not None:
+        if self.fileHandle is not None and not useSameFile:
             self.fileHandle.close()
             self.fileHandle = None
-        self.clearData();
+            self.clearData();
         try:     
             if self.timers[0].isActive():
                 self.timers[0].stop()
@@ -297,42 +299,37 @@ class  MyDynamicMplCanvas(QWidget):
             print(e)
  
     def plotThread(self):  
-        self.datay.append(500+random.randint(1, 100)/100)
-        #if self.ptr >20:
-        #    self.curve.setData(self.datay)
-        #self.ptr += 1
-        #return
         try:     
             self.UI_getpoint.display(str(self.getpoint_Value))
-            #self.setpoint.display(str(newData[2]))
-            getpoint =int((self.getpoint_Value-1000)*100)
-            if getpoint<0:
-                getpoint = 0
-            if getpoint >90:
-                getpoint = 90
-            #setpoint = int(self.setpoint_Value/50)
-            setpoint =int((self.setpoint_Value-1000)*100)
-            if setpoint <0:
-                setpoint =0;
-            if setpoint >90:
-                setpoint = 90
+            if self.getpoint_Value>100:
+                getpoint =int((self.getpoint_Value)/50)
+            else:
+                getpoint=self.getpoint_Value
+            if self.setpoint_Value>100:
+                setpoint =int((self.setpoint_Value)/50)
+            else :
+                setpoint = self.setpoint_Value 
+
             self.UI_getpointbar.setValue(getpoint)# )
-            self.UI_setpointbar.setValue(setpoint)#)                
-            if self.PlotCounter >= 3:   
+            self.UI_setpointbar.setValue(setpoint)#)  
+            
+            if self.PlotCounter >= 20:   
                 #[vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd]                      
                 self.p1.plot(x=self.dataX, y=self.ydataVCh0, pen=(255,0,0),clear=True) 
                 #self.p1.plot(x=self.dataX, y=self.ydataVSetPoint, pen=(0,0,255))
                 #self.p1.plot(x=self.dataX, y=self.ydataVCh1, pen=(0,255,0)) 
                 #self.p1.plot(x=self.dataX, y=self.ydataVSetPoint, pen=(0,0,255))  
-                
+ 
                 self.p2.plot(x=self.dataX, y=self.ydataPWMOut, pen=(0,0,255),clear=True) 
+                #.p2.plot(x=self.dataX, y=self.ydataVCh1, pen=(0,0,255),clear=True) 
+              
                  
-                self.p3.plot(x=self.dataX, y=self.kp, pen=(0,0,255),clear=True)
-                self.p3.plot(x=self.dataX, y=self.ki, pen=(0,255,0))        
-                self.p3.plot(x=self.dataX, y=self.kd, pen=(255,0,0))    
+                #self.p3.plot(x=self.dataX, y=self.kp, pen=(0,0,255),clear=True)
+                #self.p3.plot(x=self.dataX, y=self.ki, pen=(0,255,0))        
+                #self.p3.plot(x=self.dataX, y=self.kd, pen=(255,0,0))    
                     
-                ret = self.getPlotRange(self.ydataVCh0,5,5,3000)  
-                #self.p1.vb.setRange(yRange=[ret[0],ret[1]])
+                #ret = self.getPlotRange(self.ydataVCh1,2,2,3000)  
+                #self.p2.vb.setRange(yRange=[ret[0],ret[1]])
                 #self.p2                             
                 #self.canvas.plot(self.dataX,self.ydataVCh0,self.ydataVCh1,self.ydataVSetPoint,self.ydataVSetPointTemp,self.ydataPWMOut)                                       
         except:

@@ -17,7 +17,7 @@ u8 RS485_RX_BUF[64];  	//接收缓冲,最大64个字节.
 u8 RS485_TX_BUF[64];	  //串口发送缓冲区
 //接收到的数据长度
 u8 RS485_RX_CNT=0;   		  
-  
+
 void USART1_IRQHandler(void)
 {
 	u8 res;	    

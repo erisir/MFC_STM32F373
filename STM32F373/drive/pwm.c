@@ -25,16 +25,16 @@ uint8_t Dither_Index;//余数
 uint8_t PWM_Value_FirstPart_Changed=0;
 uint8_t PWM_Value_SecondPart_Changed=0;
 
-void PWM_Mode_Config()
+void PWM_Mode_Config(uint16_t Period)
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef  TIM_OCInitStructure;																				
-
+  TIM_Cmd(TIM2, DISABLE);  
 	/* 设置TIM2CLK 时钟为72MHZ */
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); 					//使能TIM2时钟
+	
 
 	/* 基本定时器配置 */		 
-	TIM_TimeBaseStructure.TIM_Period = PWM_DUTY;   				        //当定时器从0计数到255，即为266次，为一个定时周期
+	TIM_TimeBaseStructure.TIM_Period = Period;   				        //当定时器从0计数到255，即为266次，为一个定时周期
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;	    				//设置预分频：
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1 ;			//设置时钟分频系数：不分频(这里用不到)
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  	//向上计数模式
@@ -44,7 +44,7 @@ void PWM_Mode_Config()
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;	    				//配置为PWM模式1
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;	//使能输出
 	TIM_OCInitStructure.TIM_Pulse = 0;					  			//设置初始PWM脉冲宽度为0	
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  	  //当定时器计数值小于CCR1_Val时为低电平
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;//;TIM_OCPolarity_Low  	  //当定时器计数值小于CCR1_Val时为低电平
 
 	TIM_OC2Init(TIM2, &TIM_OCInitStructure);	 									 //使能通道 -CH2
 	TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);						 //使能预装载 	-CH2
@@ -73,15 +73,13 @@ void PWM_Init(void)
 	#ifdef __PWM_DITHER_MODE_
 	PWW_DMA_Init();	
 	#endif
-	PWM_Mode_Config();	//TIMER 相关
+	PWM_Mode_Config(PWM_DUTY);	//TIMER 相关
 }
  
 void PWW_DMA_Init(void){
             
 	DMA_InitTypeDef DMA_InitStructure;
-  
-  RCC_AHBPeriphClockCmd( RCC_AHBPeriph_DMA1, ENABLE );  // dma1时钟使能
-    
+        
   DMA_DeInit( DMA1_Channel7 );   // DMA复位
   DMA_StructInit( &DMA_InitStructure );   // DMA缺省的参数
     

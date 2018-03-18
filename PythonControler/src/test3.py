@@ -2,7 +2,27 @@
 """
 Various methods of drawing scrolling plots.
 """
- 
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtGui
+import numpy as np
+import time
+import random
+from datetime import datetime
+from matplotlib.dates import  date2num
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import  *
+import matplotlib.pyplot as pl
+import serial  #pip install pyserial
+import sys,os,json
+import time
+import random #pip install random
+import binascii,encodings; 
+import numpy as np
+from sympy.strategies.core import switch
+from struct import pack,unpack
+from PyQt5 import QtCore, QtGui, QtWidgets
+import struct
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
@@ -69,13 +89,47 @@ win = pg.GraphicsWindow()
 win.setWindowTitle('pyqtgraph example: Scrolling Plots')
 axis = DateAxis(orientation='bottom')
 vb = CustomViewBox()
-p2 = win.addPlot(viewBox=vb,axisItems={'bottom': axis})
+p2 = win.addPlot()#viewBox=vb,axisItems={'bottom': axis})
 #curve2 = p2.plot(data1)
 count = 0
 ydata = []
 ydata1 = []
 ydata2 = []
 xdata = []
+comm = serial.Serial("COM5",int(115200))
+buf = bytearray( 6 )
+buf[0] = ord('$') 
+buf[1]= ord('N' )
+buf[2]= ord('<' )
+buf[3]= 2
+buf[4]= ord('8')
+buf[5]= 0 
+res = bytearray( 4096 )
+fileHandle=open('data/Ch0'+time.strftime("%y%m%d%H%M%S",time.localtime())+'.txt', 'a')
+def getData():
+    global comm, buf,res
+    comm.write(bytes(buf))    
+    readLen=0
+    time.sleep(2)
+    while (comm.inWaiting() > 0):
+        ret = bytes(comm.read(1))
+        res[readLen] = ret[0]
+        readLen +=1
+ 
+    ch0 = []
+    ch1 = []
+    print(readLen)
+    for x in range(0,512,4):
+        t = struct.unpack_from("h", res, x)[0]
+        v = 2.0* (((t + 32768) * 2862) / (1 * 65535))
+        ch0.append(v)
+        t = struct.unpack_from("h", res, x+2)[0]
+        v = 2.0* (((t + 32768) * 2862) / (1 * 65535))
+        ch1.append(v)
+    
+    
+    return [ch0,ch1]
+
 def getMinute(date=datetime.now()):
     return str(date)[14:16]
 def getHour(date=datetime.now()):
@@ -89,35 +143,21 @@ def getTimeNum(date):
     timeString = str(date)
     return int(timeString[11:13])*60*60*1000+int(timeString[14:16])*60*1000+int(timeString[17:19])*1000+int(timeString[20:23])
 def update1():
-    global xdata, ydata,ydata1,ydata2, count,curve2,p2
-    ydata.append(random.randint(10,100))
-    ydata1.append(random.randint(40,60))
-    ydata2.append(random.randint(120,150))
-    xdata.append(getTimeNum(datetime.now()))#date2num(datetime.now()))
-    #print(time.strftime('%H:%M:%S',time.localtime()))
-    if count <=100:
-        count +=  1
-    if count >100:        
-        # pw.plot(x=xdata, y=ydata, clear=True)
-        ydata.pop(0)
-        ydata1.pop(0)
-        ydata2.pop(0)
-        xdata.pop(0)
-        
-        #xdata[:-1] = xdata[1:]  # shift data in the array one sample left
-        #ydata[:-1] = ydata[1:]  # shift data in the array one sample left
-        #curve2.setData(x=xdata, y=ydata)
-    #curve2.setPos(ptr1, 0)
-    p2.plot(x=xdata, y=ydata, pen=(255,0,0),clear=True)
-    p2.plot(x=xdata, y=ydata1, pen=(0,255,0))
-    p2.plot(x=xdata, y=ydata2, pen=(0,0,255))
+    ret = getData()
+    xdata = []
+    for x in range(0,len(ret[0])):
+        xdata.append(x)
+        fileHandle.write(str(x)+','+str(ret[0][x])+','+str(ret[1][x])+'\r\n')
+    p2.plot(x=xdata, y=ret[0], pen=(255,0,0),clear=True)     
+    #p2.plot(x=xdata, y=ret[1], pen=(0,255,0),clear=True)
+ 
 # update all plots
 def update():
     update1()
 
 timer = pg.QtCore.QTimer()
 timer.timeout.connect(update)
-timer.start(50)
+timer.start(100)
 
 
 
@@ -126,3 +166,5 @@ if __name__ == '__main__':
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         QtGui.QApplication.instance().exec_()
+    comm.close()
+    fileHandle.close()

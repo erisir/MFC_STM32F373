@@ -12,188 +12,218 @@
 #include "sdadc.h"
  
 #define SDADC1_DR_Address             0x40016060
-#define ADCMeanWindow  200//偶数
-#define ADCMeanFacor   500500l
-// SDADC转换的电压值通过inject方式传到SRAM
-int16_t InjectedConvData[2]={0};
-int16_t SDADC_ValueTab[ADCMeanWindow*2]={0};
-uint16_t ADC_ValueTab[ADCMeanWindow*3]={0};	
+#define ADCMeanWindow  1024//偶数
+#define ADCMeanWindowShift  10//偶数
+ 
+#define FilterWindowSHIFT 3   //
+#define FilterWindowLen  10   //LEN=2^SHIFT+2 
+
+#define FilterWindowSHIFTII 1   //
+#define FilterWindowLenII  2   //LEN=2^SHIFT+2 
+
+int16_t ch0VoltageBuf[FilterWindowLen];
+int16_t ch1VoltageBuf[FilterWindowLen];
+
+int16_t ch0VoltageBufII[FilterWindowLenII];
+int16_t ch1VoltageBufII[FilterWindowLenII];
+
+int16_t filterCounter = 0;
+int16_t pdata;   
+int16_t pmaxCh0,pminCh0,pmaxCh1,pminCh1; 
+
+int16_t pdataII;   
+int16_t pmaxCh0II,pminCh0II,pmaxCh1II,pminCh1II; 
+
+int16_t SDADC_ValueTable[ADCMeanWindow*2]={0};
+ 
+struct _VoltageRaw voltage;
+struct _Voltage filter_voltage;
+struct _VoltageSum sum_voltage;
+
 
  
-int16_t VoltageData[2]={0};
-int16_t VoltageDataRaw[2]={0};
-int16_t VoltageInterRef = 0;
-
-int16_t VoltageFilterBufCh0[ADCMeanWindow]={0};
-int16_t VoltageFilterBufCh1[ADCMeanWindow]={0};
-
-int8_t VoltageFilterCounter = 0;
-
-
-float SapmleTime = 0.02f;
-float VOL_IIR_FACTOR;
-struct _Voltage voltage;
-struct _Voltage filter_voltage;
-/******************************************************************************
-函数原型：	void Calculate_FilteringCoefficient(float Time, float Cut_Off)
-功    能：	iir低通滤波参数计算
-*******************************************************************************/ 
-void Calculate_FilteringCoefficient(float Cut_Off)
-{
-	VOL_IIR_FACTOR =(float)( SapmleTime /( SapmleTime + 1.0f/(2.0f*3.14f*Cut_Off) ));
-}
-
-void updateVoltageWindowBuf(void)//100Hz
-{
-	 
-	ADC_Mean();
-	VoltageFilterBufCh0[VoltageFilterCounter] =VoltageDataRaw[0];
-	VoltageFilterBufCh1[VoltageFilterCounter] =VoltageDataRaw[1];
-
-	VoltageFilterCounter++;
-	if(VoltageFilterCounter==ADCMeanWindow)
-		VoltageFilterCounter = 0;
-}
-void updateRawData(void)//取中值 10Hz
-{
-	ADC_Mean();
-	VoltageData[0]=VoltageDataRaw[0];//temp0/ADCMeanFacor;
-	VoltageData[1]=VoltageDataRaw[1];//temp1/ADCMeanFacor;
-	
-}
-void ADC_Mean(void) {
-	int i = 0;
-	int32_t sum0=0,sum1=0,sum2=0;
-	for(i=0;i<ADCMeanWindow;i++){
-		#ifdef __ADC_DMA_MODE_
-		sum1  +=( int32_t)SDADC_ValueTab[i*2];	
-		sum0 +=( int32_t)SDADC_ValueTab[i*2+1];	
-		#endif
-		
-		#ifdef __ADC_INJECTED_MODE_
-		sum0 +=( int32_t)InjectedConvData[0];	
-		sum1 +=( int32_t)InjectedConvData[1];	
-		#endif
-		
-		#ifdef __ADC_ADC1_MODE_
-		sum0 +=( int32_t)ADC_ValueTab[i*3];	
-		sum1 +=( int32_t)ADC_ValueTab[i*3+1];	
-		sum2 +=( int32_t)ADC_ValueTab[i*3+2];	
-		#endif
-	}
-	VoltageDataRaw[0]=(int16_t)(sum0/ADCMeanWindow); 
-	VoltageDataRaw[1]=(int16_t)(sum1/ADCMeanWindow); 	
-	VoltageInterRef = (int16_t)(sum2/ADCMeanWindow); 
-}
 void VOL_IIR_Filter()
 {
-	updateRawData();
-	#ifdef __ADC_DMA_MODE_
-  voltage.ch0 = (float)(2.0f* (((VoltageData[0] + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
-	voltage.ch1 = (float)(2.0f* (((VoltageData[1] + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
-	#endif
+	uint16_t i = 0;
+	int16_t temp = 0;
+	sum_voltage.ch0 = 0;
+	sum_voltage.ch1 = 0;
+	for(i=0;i<ADCMeanWindow;i++){
+		sum_voltage.ch0 +=SDADC_ValueTable[2*i+1];
+		sum_voltage.ch1 +=SDADC_ValueTable[2*i+0];
+	}
+	temp =sum_voltage.ch0>>ADCMeanWindowShift;
 	
-	#ifdef __ADC_INJECTED_MODE_
-  voltage.ch0 = (float)(2.0f* (((VoltageData[0] + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
-	voltage.ch1 = (float)(2.0f* (((VoltageData[1] + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
-	#endif
+  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =sum_voltage.ch1>>ADCMeanWindowShift;
+	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	 
+	return;
 	
-	#ifdef __ADC_ADC1_MODE_
-	voltage.ch0 = (float)(2.0f*1000*VoltageData[0]/VoltageInterRef*1.2f);
-	voltage.ch1 = (float)(2.0f*1000*VoltageData[1]/VoltageInterRef*1.2f);
-	#endif
+	pmaxCh0 =pminCh0=SDADC_ValueTable[0];
+	pmaxCh1 =pminCh1=SDADC_ValueTable[1];
+	for(i=1;i<ADCMeanWindow;i++){
+		if(pmaxCh0<SDADC_ValueTable[2*i+0])
+				pmaxCh0=SDADC_ValueTable[2*i+0];
+		else if(pminCh0>SDADC_ValueTable[2*i+0])
+				pminCh0=SDADC_ValueTable[2*i+0];
+				
+		if(pmaxCh1<SDADC_ValueTable[2*i+1])
+				pmaxCh1=SDADC_ValueTable[2*i+1];
+		else if(pminCh1>SDADC_ValueTable[2*i+1])
+				pminCh1=SDADC_ValueTable[2*i+1];
+	}
+  
+	pdata=(pdata+1)%FilterWindowLen; //pdata=[0<->FilterWindowLen-1]
+	sum_voltage.ch0 = pminCh0+pmaxCh0;
+	sum_voltage.ch1 = pminCh1+pmaxCh1;
+	pminCh1 = pminCh0=0;
+	pmaxCh0 = pmaxCh1=0;
+	ch0VoltageBuf[pdata]=sum_voltage.ch0>>1;
+	ch1VoltageBuf[pdata]=sum_voltage.ch1>>1;
 	
-	filter_voltage.ch0 = (float)(filter_voltage.ch0 + VOL_IIR_FACTOR*(voltage.ch0 - filter_voltage.ch0)); 
-	filter_voltage.ch1 =(float)(filter_voltage.ch1 + VOL_IIR_FACTOR*(voltage.ch1 - filter_voltage.ch1)); 
+  sum_voltage.ch0 = 0;
+	sum_voltage.ch1 = 0;
+  for(i=0;i<FilterWindowLen;i++){
+     sum_voltage.ch0 +=ch0VoltageBuf[i];
+		 sum_voltage.ch1 +=ch1VoltageBuf[i]; 
+   }
+	 if(ch0VoltageBuf[pdata]>ch0VoltageBuf[pmaxCh0])
+      pmaxCh0=pdata;    
+	 else if(ch0VoltageBuf[pdata]<ch0VoltageBuf[pminCh0])
+      pminCh0=pdata;  
+			
+	 if(ch1VoltageBuf[pdata]>ch1VoltageBuf[pmaxCh1])
+      pmaxCh1=pdata;    
+	 else if(ch1VoltageBuf[pdata]<ch1VoltageBuf[pminCh1])
+      pminCh1=pdata;  		
+
+		if(pdata==pmaxCh0)   
+		 {      
+					for(i=0;i<FilterWindowLen;i++)
+							if(ch0VoltageBuf[i]>ch0VoltageBuf[pmaxCh0])
+							   pmaxCh0=i;
+		 }
+		 else if(pdata==pminCh0) 
+		 {      
+				 for(i=0;i<FilterWindowLen;i++)
+							if(ch0VoltageBuf[i]<ch0VoltageBuf[pminCh0])
+								  pminCh0=i;
+		 }
+		 
+		 if(pdata==pmaxCh1)   
+		 {      
+					for(i=0;i<FilterWindowLen;i++)
+							if(ch1VoltageBuf[i]>ch1VoltageBuf[pmaxCh1])
+							   pmaxCh1=i;
+		 }
+		 else if(pdata==pminCh1) 
+		 {      
+				 for(i=0;i<FilterWindowLen;i++)
+							if(ch1VoltageBuf[i]<ch1VoltageBuf[pminCh1])
+								  pminCh1=i;
+		 }
+	sum_voltage.ch0 =sum_voltage.ch0 -ch0VoltageBuf[pminCh0]-ch0VoltageBuf[pmaxCh0];
+	sum_voltage.ch1 =sum_voltage.ch1 -ch1VoltageBuf[pminCh1]-ch1VoltageBuf[pmaxCh1]; 
 	
+	temp =(sum_voltage.ch0>>FilterWindowSHIFT)& 0xFFFF;
+	filter_voltage.ch0 = (float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =(sum_voltage.ch1>>FilterWindowSHIFT)& 0xFFFF;
+	//filter_voltage.ch1 = (float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	ch1VoltageBufII[filterCounter] =temp;// (float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));	
+ /*
+	temp =(sum_voltage.ch0>>FilterWindowSHIFT)& 0xFFFF;
+	ch0VoltageBufII[filterCounter] =temp;//(float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =(sum_voltage.ch1>>FilterWindowSHIFT)& 0xFFFF;
+	ch1VoltageBufII[filterCounter] =temp;// (float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));	
+ /*
+	filterCounter++;
+	if(filterCounter>=FilterWindowLenII){
+		filterCounter = 0;
+		sum_voltage.ch0 = 0;
+		sum_voltage.ch1 = 0;
+		for(i = 0;i<FilterWindowLenII;i++){
+			sum_voltage.ch0 +=ch0VoltageBufII[i];
+			sum_voltage.ch1 +=ch1VoltageBufII[i];
+		}
+		temp =(sum_voltage.ch0>>FilterWindowSHIFTII)& 0xFFFF;
+		filter_voltage.ch0 = (float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+		temp =(sum_voltage.ch1>>FilterWindowSHIFTII)& 0xFFFF;
+		filter_voltage.ch1 = (float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));	
+	}*/
+	//AD5761_SetVotage(65536.0f*(filter_voltage.ch0/5000.0f));
+	
+}
+void VOL_IIR_FilterII()
+{
+	uint16_t i = 0;
+	int16_t temp = 0;
+	pdataII=(pdataII+1)%FilterWindowLen; //pdata=[0<->FilterWindowLen-1]
+	ch0VoltageBufII[pdataII]=voltage.ch0;
+	ch1VoltageBufII[pdataII]=voltage.ch0;
+	
+  sum_voltage.ch0 = 0;
+	sum_voltage.ch1 = 0;
+  for(i=0;i<FilterWindowLen;i++){
+     sum_voltage.ch0 +=ch0VoltageBuf[i];
+		 sum_voltage.ch1 +=ch1VoltageBuf[i]; 
+   }
+	 if(ch0VoltageBufII[pdataII]>ch0VoltageBufII[pmaxCh0II])
+      pmaxCh0II=pdataII;    
+	 else if(ch0VoltageBufII[pdataII]<ch0VoltageBufII[pminCh0II])
+      pminCh0II=pdataII;  
+			
+	 if(ch1VoltageBufII[pdataII]>ch1VoltageBufII[pmaxCh1II])
+      pmaxCh1II=pdataII;    
+	 else if(ch1VoltageBufII[pdataII]<ch1VoltageBufII[pminCh1II])
+      pminCh1II=pdataII;  		
+
+		if(pdataII==pmaxCh0II)   
+		 {      
+					for(i=0;i<FilterWindowLen;i++)
+							if(ch0VoltageBufII[i]>ch0VoltageBufII[pmaxCh0II])
+							   pmaxCh0II=i;
+		 }
+		 else if(pdataII==pminCh0II) 
+		 {      
+				 for(i=0;i<FilterWindowLen;i++)
+							if(ch0VoltageBufII[i]<ch0VoltageBufII[pminCh0II])
+								  pminCh0II=i;
+		 }
+		 
+		 if(pdataII==pmaxCh1II)   
+		 {      
+					for(i=0;i<FilterWindowLen;i++)
+							if(ch1VoltageBufII[i]>ch1VoltageBufII[pmaxCh1II])
+							   pmaxCh1II=i;
+		 }
+		 else if(pdataII==pminCh1II) 
+		 {      
+				 for(i=0;i<FilterWindowLen;i++)
+							if(ch1VoltageBufII[i]<ch1VoltageBufII[pminCh1II])
+								  pminCh1II=i;
+		 }
+	sum_voltage.ch0 =sum_voltage.ch0 -ch0VoltageBufII[pminCh0II]-ch0VoltageBufII[pmaxCh0II];
+	sum_voltage.ch1 =sum_voltage.ch1 -ch1VoltageBufII[pminCh1II]-ch1VoltageBufII[pmaxCh1II]; 
+	temp =(sum_voltage.ch0>>FilterWindowSHIFT)& 0xFFFF;
+	filter_voltage.ch0 =(float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =(sum_voltage.ch1>>FilterWindowSHIFT)& 0xFFFF;
+	filter_voltage.ch1 = (float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));	
+	//AD5761_SetVotage(65536.0f*(filter_voltage.ch0/5000.0f));
 }
 
 float  GetADCVoltage(unsigned char ch){//PID调用
-	AD5761_SetVotage(65536.0f*(filter_voltage.ch0/5000.0f));
 	if(ch == 0)
 		 return filter_voltage.ch0;
 	 else
-		 return filter_voltage.ch1;
+		 return  filter_voltage.ch1;
 }
- 
-
  
 void ADC1_Init(void)
-{
-	 
- 
-	#ifdef __ADC_ADC1_MODE_
-	ADC1_Config();
-	#endif
-	
-	#ifdef __ADC_INJECTED_MODE_
+{	 
 	SDADC1_Config();
-	#endif
-	
-	#ifdef __ADC_DMA_MODE_
-	SDADC1_Config();
-	#endif
 }
-
  
-uint8_t ADC1_Config(void)
-{
-	DMA_InitTypeDef DMA_InitStructure;
-	ADC_InitTypeDef ADC_InitStructure;
-
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 , ENABLE);
-	RCC_ADCCLKConfig(RCC_PCLK2_Div6); //72M/6=12,ADC<14M
-	
-	DMA_DeInit(DMA1_Channel1); 
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&ADC1->DR; 
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)ADC_ValueTab; 
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC; 
-	DMA_InitStructure.DMA_BufferSize = ADCMeanWindow*3; 
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; 
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable; 
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord; 
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord; 
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; 
-	DMA_InitStructure.DMA_Priority = DMA_Priority_High; 
-	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable; 
-	DMA_Init(DMA1_Channel1, &DMA_InitStructure); 
-
- 
-	DMA_Cmd(DMA1_Channel1, ENABLE);
-//////////////////////////////////////////////////////////////////////////////////////////////
-	ADC_DeInit(ADC1);  
-	ADC_TempSensorVrefintCmd(ENABLE); 
- 
-	ADC_InitStructure.ADC_ScanConvMode = ENABLE; 
-	ADC_InitStructure.ADC_ContinuousConvMode = ENABLE; 
-	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; 
-	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right; 
-	ADC_InitStructure.ADC_NbrOfChannel = 3; 
-	ADC_Init(ADC1, &ADC_InitStructure);
-
- 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_239Cycles5);	 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 2, ADC_SampleTime_239Cycles5);	 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_17,3, ADC_SampleTime_239Cycles5);	//inter reference(1.2V)	
-	
- 
-	ADC_DMACmd(ADC1, ENABLE);
- 
-	ADC_Cmd(ADC1, ENABLE);
- 
-	ADC_ResetCalibration(ADC1);
- 
-	while(ADC_GetResetCalibrationStatus(ADC1));
- 
-	ADC_StartCalibration(ADC1);
- 
-	while(ADC_GetCalibrationStatus(ADC1));
- 
-	ADC_SoftwareStartConv(ADC1);
-	
-	return 0;
-}
 uint8_t SDADC1_Config(void)
 {
 	
@@ -217,7 +247,7 @@ uint8_t SDADC1_Config(void)
   /* Select External reference: The reference voltage selection is available
      only in SDADC1 and therefore to select the VREF for SDADC2/SDADC3, SDADC1
      clock must be already enabled */
-  SDADC_VREFSelect(SDADC_VREF_Ext);
+  SDADC_VREFSelect(SDADC_VREF_VDDA);
 
   /* Insert delay equal to ~5 ms */
   delay_ms(5);
@@ -246,12 +276,12 @@ uint8_t SDADC1_Config(void)
 	
   /* select POT_SDADC channel 5 to use conf0 only one channel each time*/
 	
-  SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_7, SDADC_Conf_0);
-	SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_8, SDADC_Conf_0);
+  SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_8, SDADC_Conf_0);
+	SDADC_ChannelConfig(POT_SDADC, SDADC_Channel_7, SDADC_Conf_0);
 
 
   /* select channel(*) 5 */
-	SDADC_InjectedChannelSelect(POT_SDADC, SDADC_Channel_7|SDADC_Channel_8);
+	SDADC_InjectedChannelSelect(POT_SDADC, SDADC_Channel_8|SDADC_Channel_7);
 
 
   /* Enable continuous mode */
@@ -289,7 +319,7 @@ uint8_t SDADC1_Config(void)
 
 	/* DMA channel1 configuration ----------------------------------------------*/
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)SDADC1_DR_Address;
-	DMA_InitStructure.DMA_MemoryBaseAddr =(u32)& SDADC_ValueTab;
+	DMA_InitStructure.DMA_MemoryBaseAddr =(u32)& SDADC_ValueTable;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
 	DMA_InitStructure.DMA_BufferSize = ADCMeanWindow*2;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;

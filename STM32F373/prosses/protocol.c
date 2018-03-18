@@ -12,6 +12,9 @@
 #include "protocol.h"
 extern uint8_t commERROR;
 extern u8 RS485_TX_BUF[64];
+extern int16_t SDADC_ValueTable[256];
+int16_t tempBuf[256];
+uint8_t * pBuf;
 unsigned char checksumCalc(unsigned char rec[])
 { 
 	return (( unsigned char)rec[0])^(( unsigned char)rec[1])^(( unsigned char)rec[2])^(( unsigned char)rec[3]);
@@ -31,14 +34,37 @@ void ParseData(uint8_t *buf){
 	//uint8_t len = buf[3];
   uint16_t  data = 0;
 	uint8_t len = 0;
-	//if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
+	uint8_t i=0;
+	
 	if( buf[0] != '$' )	return;	//数据校验
 	if( buf[1] != 'N' )	return;	//数据校验
 	if( buf[2] != '<' )	return;	//上位机下发
+	//if( Get_Checksum(buf)!=buf[len] )	return;	//数据校验
 	commERROR = 0;
  
 	switch(buf[4]){
-  
+	case _CMD_SetFuzzyMap:
+		Set_FuzzyMap_Param(buf);
+		sprintf((char*)RS485_TX_BUF,"SetFuzzyMap:OK\n");
+		RS485_PrintString(RS485_TX_BUF);
+		break;
+	case _CMD_ReadFuzzyMap:
+		  for(i=0;i<7;i++){
+			Get_FuzzyMap_Param(RS485_TX_BUF,i);
+			USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
+			delay_ms(50);
+			}
+			break;
+  case _U_DEBUG:
+		pBuf = (uint8_t*)SDADC_ValueTable;
+		memcpy((uint8_t *)tempBuf,pBuf,512);	
+		pBuf = (uint8_t *)tempBuf;
+		for(len = 0;len<8;len++){
+			memcpy(RS485_TX_BUF,pBuf,64);	
+			USART1_Start_DMA_Send(RS485_TX_BUF,64);
+			pBuf +=64;
+		}		
+		break;
 	case _CMD_SetRunParam:
 		Set_Running_Param(buf);
 		sprintf((char*)RS485_TX_BUF,"Set_Running_Param:OK\n");
@@ -59,12 +85,12 @@ void ParseData(uint8_t *buf){
 	 break;//
 	 
 	case _CMD_GetRunParam:
-		len = Get_Running_Param(RS485_TX_BUF);
+		Get_Running_Param(RS485_TX_BUF);
 		USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
 	 break;//
 	 
 	case _CMD_GetPIDParam:
-		len = Get_PID_Param(RS485_TX_BUF);
+    Get_PID_Param(RS485_TX_BUF);
 		USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
 	 break;//
 

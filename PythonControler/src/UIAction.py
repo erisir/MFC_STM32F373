@@ -10,11 +10,13 @@ import binascii,encodings;
 import numpy as np
 from sympy.strategies.core import switch
 from struct import pack,unpack
- 
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 class ErrorMsg():
-    _what = ""
-    _why  = ""
     _when = ""
+    _why  = ""
+    _what = ""
+    
 class UIAction():     
     firstUIComm = None
     secondUIDetail= None
@@ -29,19 +31,20 @@ class UIAction():
     config = {}
     stopVoltageVsPWMCurse = False
     getRandomMid = 1000
-    _CMD_SetRunParam = '0';
-    _CMD_SetPIDParam = '1';
-    _CMD_GetRunParam = '2';
-    _CMD_GetPIDParam = '3';
-    _CMD_SetVClose  = '4';
-    _CMD_SetVOpen    = '5';
-    _CMD_SetVPID    = '6'
+    _CMD_SetRunParam = 0
+    _CMD_SetPIDParam = 1
+    _CMD_GetRunParam = 2
+    _CMD_GetPIDParam = 3
+    _CMD_SetVClose   = 4
+    _CMD_SetVOpen    = 5
+    _CMD_SetVPID     = 6
+    _CMD_SetFuzzyMap = 7
+    _CMD_ReadFuzzyMap = 8
     
     _DEBUG = 0
     _MSG = 1
     _ERROR = 2
     
-    showUnit = "mv"
  
     Interception = 0
     Slope = 1
@@ -52,18 +55,20 @@ class UIAction():
         self.thirdUIControl = thirdUIControl
         self.fourUIOther = fourUIOther
         self.proControl = proControl
+        self._translate = QtCore.QCoreApplication.translate
+        self.ShowUnit_mv()
         
     def CheckSumCalc(self,buf):
         checkSum = 0;
         return checkSum;
-    def SendToComAndRead(self,buf,timeout=10,expectLen=1):
+    def SendToComAndRead(self,buf,timeout=10,expectLen=-1):
         self.error._what += '\t->SendToComAndRead'
         if self.isDeviceReady == False  :
             self.error._why='Device not ready'
             return None
         try:    
             while self.commBusy and timeout>0:
-                time.sleep(0.001)  
+                time.sleep(0.01)  
                 timeout -=1
             if timeout<=0:
                 self.error._why= 'SendToComAndRead timeout,com is busy'
@@ -86,13 +91,13 @@ class UIAction():
         buf[1]= ord('N' )
         buf[2]= ord('<' )
         buf[3]= 2
-        buf[4]= ord(cmd)
+        buf[4]= cmd
         buf[5]= self.CheckSumCalc(buf)  
-        return self.SendToComAndRead(buf) 
+        return self.SendToComAndRead(buf)
     def SendCommandWithData(self,buf):       
-        return self.SendToComAndRead(buf,20)
+        return self.SendToComAndRead(buf)
     def SendCommandWitAnswer(self,buf,expectLen): 
-        return self.SendToComAndRead(buf,50,expectLen)
+        return self.SendToComAndRead(buf,1000,expectLen)
     def clearComPort(self):
         self.error._what += '\t->clearComPort'
         try:         
@@ -102,23 +107,58 @@ class UIAction():
         except  Exception as e:
             self.error._why ='clearComPort\t'+str(e.args)
             return False
-        
+    def pausePlot(self):
+        self.thirdUIControl.startPlot.setEnabled(True)
+        self.thirdUIControl.pausePlot.setEnabled(False)
+        try:     
+            if self.timers[0].isActive():
+                self.timers[0].stop()
+            if self.timers[1].isActive():
+                self.timers[1].stop()
+        except Exception as e:
+            print(e)
+    def startPlot(self):
+        self.thirdUIControl.startPlot.setEnabled(False)
+        self.thirdUIControl.pausePlot.setEnabled(True) 
+        try:     
+            if not self.timers[0].isActive():
+                self.timers[0].start(self.thirdUIControl.mplCanvas.PlotThreadInterval)
+            if not self.timers[1].isActive():
+                self.timers[1].start(self.thirdUIControl.mplCanvas.getDataThreadInterval)#dataThread               
+        except Exception as e:
+            print(e)
+    def setTimers(self,timers):
+        self.timers = timers
+        #self.timer.timeout.connect(self.plotThread)
+    def changeSetPoint(self):
+        #v=self.proControl.PID_SetPoint.value()
+        #self.proControl.PWM_STEP.setProperty("value", self.Bytes2Int32_t(res))
+        #self.SetRuningParam(self)
+        pass
     def readAnswer(self,timeout,expDataLen):     
         self.error._what+='\t->readAnswer'   
-        data = bytearray(64)
+        data = bytearray(256)
         readLen = 0
-        try:   
-            while(readLen <expDataLen and timeout>0):        
-                while (readLen <expDataLen and self.comm.inWaiting() > 0):
+        try:
+            if expDataLen>0:   #read some len
+                while(readLen <expDataLen and timeout>0):        
+                    while (readLen <expDataLen and self.comm.inWaiting() > 0):
+                        res = bytes(self.comm.read(1))
+                        data[readLen] = res[0]
+                        readLen +=1            
+                    timeout = timeout-1  
+                    time.sleep(0.001)
+                if timeout<=0:
+                    self.error._why = 'readAnswer timeout,read'+ str(readLen)+'bit'
+                    self.timeOutCounter +=1
+                    return None
+            else:#read all
+                time.sleep(0.1)
+                while self.comm.inWaiting() > 0:
                     res = bytes(self.comm.read(1))
                     data[readLen] = res[0]
-                    readLen +=1
-                timeout = timeout-1  
-                time.sleep(0.001)
-            if timeout<=0:
-                self.error._why = 'readAnswer timeout,read'+ str(readLen)+'bit'
-                self.timeOutCounter +=1
-                return None
+                    readLen +=1  
+                
             ret = bytearray(readLen)
             for index in range(readLen):
                 ret[index] = data[index]
@@ -128,23 +168,26 @@ class UIAction():
             return None
    
     def PWMOpen (self):
+        self.logMessage(self._MSG,'PWMOpen')
         ret = self.SendCommand(self._CMD_SetVOpen)
         if ret is None:
             self.logMessage(self._ERROR, 'Open False')
         else:
-            self.logMessage(self._MSG, 'Open OK')
+            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
     def PWMClose (self):
+        self.logMessage(self._MSG,'PWMClose')
         ret=self.SendCommand(self._CMD_SetVClose)
         if ret is None:
             self.logMessage(self._ERROR, 'Close False')
         else:
-            self.logMessage(self._MSG, 'Close OK')
+            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
     def PWMPID (self):
+        self.logMessage(self._MSG,'PWMPID')
         ret=self.SendCommand(self._CMD_SetVPID)
         if ret is None:
             self.logMessage(self._ERROR, 'PID False')
         else:
-            self.logMessage(self._MSG, 'PID OK')
+            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
          
     def CtrlMode_Dig (self):
         pass
@@ -156,14 +199,24 @@ class UIAction():
         pass
     def ShowUnit_FS (self):
         self.showUnit = "FS"
+        self.thirdUIControl.FlowSetUnit.setText(self._translate("Dialog", "% of F.S."))
+        self.thirdUIControl.FlowShowUnit.setText(self._translate("Dialog", "% of F.S."))
     def ShowUnit_sccm (self):
         self.showUnit = "sccm"
+        self.thirdUIControl.FlowSetUnit.setText(self._translate("Dialog", "sccm"))
+        self.thirdUIControl.FlowShowUnit.setText(self._translate("Dialog", "sccm"))
     def ShowUnit_slm (self):
         self.showUnit = "slm"
+        self.thirdUIControl.FlowSetUnit.setText(self._translate("Dialog", "slm"))
+        self.thirdUIControl.FlowShowUnit.setText(self._translate("Dialog", "slm"))
     def ShowUnit_V (self):
         self.showUnit = "V"
+        self.thirdUIControl.FlowSetUnit.setText(self._translate("Dialog", "V"))
+        self.thirdUIControl.FlowShowUnit.setText(self._translate("Dialog", "V"))
     def ShowUnit_mv (self):
         self.showUnit = "mv"
+        self.thirdUIControl.FlowSetUnit.setText(self._translate("Dialog", "mv"))
+        self.thirdUIControl.FlowShowUnit.setText(self._translate("Dialog", "mv"))
     
     def Set_PID_AutoInc(self):
         pass
@@ -182,16 +235,31 @@ class UIAction():
         return Votage
     
     def GetShowValue(self,votage):
+        ret = 0;
         if self.showUnit == "FS":
-            return votage/3200
+            ret =votage/50
+            if(ret>100):
+                ret = 100
+            if(ret<0):
+                ret = 0
+ 
         if self.showUnit == "sccm":
-            return votage/320
+            ret =votage/50
+            if(ret>100):
+                ret = 100
+            if(ret<0):
+                ret = 0
         if self.showUnit == "slm":
-            return votage/32
+            ret =votage/50
+            if(ret>100):
+                ret = 100
+            if(ret<0):
+                ret = 0
         if self.showUnit == "V":
-            return votage/1000
+            ret= votage/1000
         if self.showUnit == "mv":
-            return votage
+            ret= votage
+        return ret
 
     def GetPlotData(self):
         
@@ -322,13 +390,14 @@ class UIAction():
     
     def SetPIDParam(self):#  $N< totalLen,CMD,[data]
         self.error._what = 'SetPIDParam'
+        self.logMessage(self._MSG)
         buf = bytearray( 64 )
         offset = 4
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
         buf[3]= offset
-        buf[4]= ord(self._CMD_SetPIDParam )
+        buf[4]= self._CMD_SetPIDParam
          
         self.Int16_t2Bytes(buf,self.proControl.PID_Kp.value()*100)
         self.Int16_t2Bytes(buf,self.proControl.PID_Ki.value()*100)
@@ -347,12 +416,13 @@ class UIAction():
         self.Int16_t2Bytes(buf,self.proControl.PID_ecS.value())
         
         self.Int16_t2Bytes(buf,self.proControl.PID_Cutoff.value()*10)
-        self.Int16_t2Bytes(buf,self.proControl.PID_SampleCycle.value()*10)
+        self.Int16_t2Bytes(buf,self.proControl.PID_SampleCycle.value())
         self.Int16_t2Bytes(buf,self.proControl.PID_DeadZone.value()*10)
         
         self.Int32_t2Bytes(buf,self.proControl.PWM_MAX.value())
         self.Int32_t2Bytes(buf,self.proControl.PWM_MIN.value())
         self.Int32_t2Bytes(buf,self.proControl.PWM_STEP.value())
+        a = 10
          
         cmdLen = buf[3]+1
         dataLen = cmdLen -4#4 bytes head 
@@ -360,12 +430,14 @@ class UIAction():
         sendBuf =  bytearray(cmdLen)  
         for x in range(0,cmdLen):
             sendBuf[x]=  buf[x]       
-            
+        self.thirdUIControl.mplCanvas.pausePlot(True); 
+        time.sleep(0.05)  
         ret= self.SendCommandWithData(bytes(sendBuf))
+        self.thirdUIControl.mplCanvas.startPlot();
         if ret is None:
             self.logMessage(self._ERROR)
         else:
-            self.logMessage(self._MSG, 'Set Paramater OK')
+            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
         
     def readPIDParam(self):
         self.error._what+='\t->readPIDParam'
@@ -374,7 +446,7 @@ class UIAction():
         buf[1]=ord('N' )
         buf[2]= ord('<' )
         buf[3]= 6-4
-        buf[4]= ord(self._CMD_GetPIDParam )
+        buf[4]= self._CMD_GetPIDParam
         buf[5]= ord('X' )
         ret = self.SendCommandWitAnswer(buf,45)
         
@@ -387,7 +459,7 @@ class UIAction():
                 return False
             if ret[2] != ord('>' ):
                 return False
-            if ret[4] != ord(self._CMD_GetPIDParam ):
+            if ret[4] != self._CMD_GetPIDParam:
                 return False
         offset = 5
         res = bytearray( 64 )
@@ -413,7 +485,7 @@ class UIAction():
         self.proControl.PID_ecS.setProperty("value", self.Bytes2Int16_t(res))
  
         self.proControl.PID_Cutoff.setProperty("value", float(self.Bytes2Int16_t(res)/10))
-        self.proControl.PID_SampleCycle.setProperty("value", float(self.Bytes2Int16_t(res))/10)
+        self.proControl.PID_SampleCycle.setProperty("value", float(self.Bytes2Int16_t(res)))
         self.proControl.PID_DeadZone.setProperty("value", float(self.Bytes2Int16_t(res)/10))
  
         
@@ -425,15 +497,17 @@ class UIAction():
    
     def SetRuningParam(self):
         self.error._what = 'SetRuningParam'
+        self.logMessage(self._MSG)
         buf = bytearray( 16 )
         offset = 4
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
         buf[3]= offset
-        buf[4]= ord(self._CMD_SetRunParam )
+        buf[4]=  self._CMD_SetRunParam 
         self.getRandomMid = self.proControl.PID_SetPoint.value()
         self.Int16_t2Bytes(buf,self.proControl.PID_SetPoint.value())
+        self.Int16_t2Bytes(buf,self.proControl.BackForward_End.value())
         
         cmdLen = buf[3]+1
         dataLen = cmdLen -4#4 bytes head 
@@ -441,22 +515,104 @@ class UIAction():
         sendBuf =  bytearray(cmdLen)  
         for x in range(0,cmdLen):
             sendBuf[x]=  buf[x]       
- 
+        self.thirdUIControl.mplCanvas.pausePlot(True);
+        time.sleep(0.05) 
         ret= self.SendCommandWithData(bytes(sendBuf))
+        self.thirdUIControl.mplCanvas.startPlot();
         if ret is None:
             self.logMessage(self._ERROR)
         else:
-            self.logMessage(self._MSG, 'Set Paramater OK')
+            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
   
+    def FuzzySave(self):
+        pass
+    def FuzzySet(self):
+        self.error._what = 'SetFuzzyMap'
+        self.logMessage(self._MSG)
+        buf = bytearray( 27 )
+        offset = 4
+        buf[0] = ord('$') 
+        buf[1]=ord('N' )
+        buf[2]= ord('<' )
+        buf[3]= offset
+        buf[4]= self._CMD_SetFuzzyMap
+        table = self.proControl.FuzzyMap;
+        dic = {'NL':0,'NM':1,'NS':2,'ZE':3,'PS':4,'PM':5,'PL':6}
+
+        self.thirdUIControl.mplCanvas.pausePlot(True);
+        time.sleep(0.05) 
+        for rows_index in range(7):#ec
+            buf[5] = rows_index
+            cmdLen = 5;
+            for cols_index in range(7):#e
+                v = table.item(rows_index,cols_index).text()
+                v=v.replace(' ','')
+                kpkikd = v.split(',')
+                buf[6+3*cols_index]=dic[kpkikd[0]]
+                buf[6+3*cols_index+1]=dic[kpkikd[1]]
+                buf[6+3*cols_index+2]=dic[kpkikd[2]]
+                cmdLen +=3
+            cmdLen+=1
+            dataLen = cmdLen -4#4 bytes head 
+            buf[3]=dataLen                   
+            sendBuf =  bytearray(cmdLen)  
+            for x in range(0,cmdLen):
+                sendBuf[x]=  buf[x]             
+            ret= self.SendCommandWithData(bytes(sendBuf))
+            
+            if ret is None:
+                self.logMessage(self._ERROR)
+            else:
+                self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
+            time.sleep(0.05) 
+        self.thirdUIControl.mplCanvas.startPlot();
+    def FuzzyRead(self):
+        buf = bytearray( 6 )
+        buf[0] = ord('$') 
+        buf[1]=ord('N' )
+        buf[2]= ord('<' )
+        buf[3]= 2
+        buf[4]= self._CMD_ReadFuzzyMap
+        buf[5]= ord('X' )
+        res = self.SendCommandWitAnswer(buf,196) 
+        if res is  None:
+            return None    
+        if True:
+            if res[0] != ord('$') :
+                return None
+            if res[1] != ord('N' ):
+                return None
+            if res[2] != ord('>' ):
+                return None
+            if res[4] != self._CMD_ReadFuzzyMap:
+                return None    
+       
+        offset = 5
+        res[3]= offset
+        table = self.proControl.FuzzyMap;
+        dic = {0:'NL',1:'NM',2:'NS' ,3:'ZE' ,4:'PS' ,5:'PM' ,6:'PL' }
+        tableValue  =np.array(res).reshape(7,-1)
+        for rows_index in range(7):#ec
+            buf[5] = rows_index
+            v = tableValue[rows_index][5:]
+            #06 05 04 06 06 04 05 06 03 05 06 03 04 06 03 03 06 04 03 05 04 68
+            for cols_index in range(7):#e
+                t = str(dic[v[cols_index*3 ]])+','+str(dic[v[cols_index*3+1 ]])+','+str(dic[v[cols_index*3 +2]])
+                print(t)
+                newItem = QTableWidgetItem(t)
+                table.setItem(rows_index, cols_index, newItem)
+                
+ 
+ 
     def readRunningParam(self):
         buf = bytearray( 6 )
         buf[0] = ord('$') 
         buf[1]=ord('N' )
         buf[2]= ord('<' )
         buf[3]= 2
-        buf[4]= ord(self._CMD_GetRunParam )
+        buf[4]= self._CMD_GetRunParam
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,23) 
+        res = self.SendCommandWitAnswer(buf,39) 
         
         if res is  None:
             return None    
@@ -467,7 +623,7 @@ class UIAction():
                 return None
             if res[2] != ord('>' ):
                 return None
-            if res[4] != ord(self._CMD_GetRunParam ):
+            if res[4] != self._CMD_GetRunParam:
                 return None    
        
         offset = 5
@@ -477,20 +633,21 @@ class UIAction():
         lastVoltage = self.Bytes2Int16_t(res); 
         
         currentVol0 = self.Bytes2Int16_t(res)/10; 
-        currentVol1 = self.Bytes2Int16_t(res)/10; 
+        currentVol1 = self.Bytes2Int16_t(res)/10+self.thirdUIControl.SetPoint.value();
         
         PID_kp = self.Bytes2Int16_t(res)/100; 
         PID_ki = self.Bytes2Int16_t(res)/100; 
         PID_kd = self.Bytes2Int16_t(res)/100; 
               
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,PID_kp,PID_ki,PID_kd]
-        print(res)
-        print(ret)
+        timersInfo  =[self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res)]; 
+        print(timersInfo)
         return ret
      
     def logMessage(self,flag,msg=None):# debug
         if msg is None:
             msg = self.error._what+'\r\n'+self.error._why
+        msg = msg.replace('\n','')
         print(msg)
         msg +=str(self.timeOutCounter)
         if flag ==self._DEBUG:

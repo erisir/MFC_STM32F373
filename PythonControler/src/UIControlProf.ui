@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
-    <height>549</height>
+    <width>588</width>
+    <height>540</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,7 +70,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -96,7 +96,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -118,7 +118,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -155,7 +155,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -164,7 +164,7 @@
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.500000000000000</double>
+          <double>1.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -181,7 +181,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -190,7 +190,7 @@
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>2.200000000000000</double>
+          <double>1.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -200,7 +200,7 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
@@ -209,7 +209,7 @@
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>6.300000000000000</double>
+          <double>1.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -262,10 +262,10 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>1000.000000000000000</double>
+          <double>100.000000000000000</double>
          </property>
          <property name="value">
-          <double>2000.000000000000000</double>
+          <double>500.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -288,10 +288,10 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>1000.000000000000000</double>
+          <double>50.000000000000000</double>
          </property>
          <property name="value">
-          <double>1000.000000000000000</double>
+          <double>100.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -318,7 +318,7 @@
           <double>65535.000000000000000</double>
          </property>
          <property name="value">
-          <double>200.000000000000000</double>
+          <double>100.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -366,7 +366,7 @@
           <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>100.000000000000000</double>
+          <double>50.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -564,56 +564,56 @@
         <double>99999.000000000000000</double>
        </property>
        <property name="value">
-        <double>2000.000000000000000</double>
+        <double>5000.000000000000000</double>
        </property>
       </widget>
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>260</y>
-     <width>191</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>调试</string>
-   </property>
-   <widget class="QPushButton" name="SetRuningParam">
+   <widget class="QWidget" name="formLayoutWidget_5">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>120</y>
-      <width>75</width>
-      <height>23</height>
+      <x>350</x>
+      <y>110</y>
+      <width>161</width>
+      <height>51</height>
      </rect>
     </property>
-    <property name="text">
-     <string>设置</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="formLayoutWidget_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>160</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout_4">
+    <layout class="QFormLayout" name="formLayout_5">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
      <item row="0" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>PWMdudy</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="BackForward_End">
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <double>65535.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>65535.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>SetPoint(mv)</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QDoubleSpinBox" name="PID_SetPoint">
        <property name="keyboardTracking">
         <bool>false</bool>
@@ -639,149 +639,384 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>380</y>
-     <width>271</width>
-     <height>161</height>
+     <y>210</y>
+     <width>571</width>
+     <height>301</height>
     </rect>
    </property>
    <property name="title">
     <string>控制</string>
    </property>
-   <widget class="QWidget" name="formLayoutWidget_5">
+   <widget class="QTableWidget" name="FuzzyMap">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>20</y>
-      <width>161</width>
-      <height>94</height>
+      <width>571</width>
+      <height>251</height>
      </rect>
     </property>
-    <layout class="QFormLayout" name="formLayout_5">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    <attribute name="horizontalHeaderDefaultSectionSize">
+     <number>75</number>
+    </attribute>
+    <row>
+     <property name="text">
+      <string>ecNL</string>
      </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>Start</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="BackForward_Start">
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <double>65535.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>100.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>End</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QDoubleSpinBox" name="BackForward_End">
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <double>65535.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>65530.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_14">
-       <property name="text">
-        <string>StepSize</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QDoubleSpinBox" name="BackForward_StepSize">
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="minimum">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>65535.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>500.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>2000.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <layout class="QFormLayout" name="formLayout_2"/>
-     </item>
-    </layout>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecNM</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecNS</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecZE</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecPS</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecPM</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>ecPL</string>
+     </property>
+    </row>
+    <column>
+     <property name="text">
+      <string>eNL</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>eNM</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>eNS</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>eZE</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>ePS</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>ePM</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>ePL</string>
+     </property>
+    </column>
+    <item row="0" column="0">
+     <property name="text">
+      <string>PL,PM,PS</string>
+     </property>
+    </item>
+    <item row="0" column="1">
+     <property name="text">
+      <string>PL,PL,PS</string>
+     </property>
+    </item>
+    <item row="0" column="2">
+     <property name="text">
+      <string>PM,PL,ZE</string>
+     </property>
+    </item>
+    <item row="0" column="3">
+     <property name="text">
+      <string>PM,PL,ZE</string>
+     </property>
+    </item>
+    <item row="0" column="4">
+     <property name="text">
+      <string>PS,PL,ZE</string>
+     </property>
+    </item>
+    <item row="0" column="5">
+     <property name="text">
+      <string>ZE,PL,PS</string>
+     </property>
+    </item>
+    <item row="0" column="6">
+     <property name="text">
+      <string>ZE,PM,PS</string>
+     </property>
+    </item>
+    <item row="1" column="0">
+     <property name="text">
+      <string>PL,PL,NL</string>
+     </property>
+    </item>
+    <item row="1" column="1">
+     <property name="text">
+      <string>PL,PS,NL</string>
+     </property>
+    </item>
+    <item row="1" column="2">
+     <property name="text">
+      <string>PM,PS,NM</string>
+     </property>
+    </item>
+    <item row="1" column="3">
+     <property name="text">
+      <string>PS,PS,NS</string>
+     </property>
+    </item>
+    <item row="1" column="4">
+     <property name="text">
+      <string>PS,PS,NS</string>
+     </property>
+    </item>
+    <item row="1" column="5">
+     <property name="text">
+      <string>ZE,PS,NM</string>
+     </property>
+    </item>
+    <item row="1" column="6">
+     <property name="text">
+      <string>ZE,PS,NM</string>
+     </property>
+    </item>
+    <item row="2" column="0">
+     <property name="text">
+      <string>PL,ZE,NL</string>
+     </property>
+    </item>
+    <item row="2" column="1">
+     <property name="text">
+      <string>PL,ZE,NL</string>
+     </property>
+    </item>
+    <item row="2" column="2">
+     <property name="text">
+      <string>PM,ZE,NM</string>
+     </property>
+    </item>
+    <item row="2" column="3">
+     <property name="text">
+      <string>ZE,ZE,NS </string>
+     </property>
+    </item>
+    <item row="2" column="4">
+     <property name="text">
+      <string>ZE,ZE,NM</string>
+     </property>
+    </item>
+    <item row="2" column="5">
+     <property name="text">
+      <string>NS,NS,NM</string>
+     </property>
+    </item>
+    <item row="2" column="6">
+     <property name="text">
+      <string>NS,NS,NM</string>
+     </property>
+    </item>
+    <item row="3" column="0">
+     <property name="text">
+      <string>PL,PL,NL</string>
+     </property>
+    </item>
+    <item row="3" column="1">
+     <property name="text">
+      <string>PL,PL,NL </string>
+     </property>
+    </item>
+    <item row="3" column="2">
+     <property name="text">
+      <string>PL,PM,ZE</string>
+     </property>
+    </item>
+    <item row="3" column="3">
+     <property name="text">
+      <string>NS,PM,NS</string>
+     </property>
+    </item>
+    <item row="3" column="4">
+     <property name="text">
+      <string>PL,PM,ZE</string>
+     </property>
+    </item>
+    <item row="3" column="5">
+     <property name="text">
+      <string>PL,PL,NL</string>
+     </property>
+    </item>
+    <item row="3" column="6">
+     <property name="text">
+      <string>PL,PL,NL</string>
+     </property>
+    </item>
+    <item row="4" column="0">
+     <property name="text">
+      <string>PM,ZE,NL</string>
+     </property>
+    </item>
+    <item row="4" column="1">
+     <property name="text">
+      <string>PS,ZE,NL</string>
+     </property>
+    </item>
+    <item row="4" column="2">
+     <property name="text">
+      <string>ZE,ZE,NM</string>
+     </property>
+    </item>
+    <item row="4" column="3">
+     <property name="text">
+      <string>NM,ZE,NS</string>
+     </property>
+    </item>
+    <item row="4" column="4">
+     <property name="text">
+      <string>NM,ZE,NM</string>
+     </property>
+    </item>
+    <item row="4" column="5">
+     <property name="text">
+      <string>NM,NS,ZE</string>
+     </property>
+    </item>
+    <item row="4" column="6">
+     <property name="text">
+      <string>NM,ZE,NM</string>
+     </property>
+    </item>
+    <item row="5" column="0">
+     <property name="text">
+      <string>ZE,PL,NL</string>
+     </property>
+    </item>
+    <item row="5" column="1">
+     <property name="text">
+      <string>ZE,PS,NL</string>
+     </property>
+    </item>
+    <item row="5" column="2">
+     <property name="text">
+      <string>NS,PL,ZE</string>
+     </property>
+    </item>
+    <item row="5" column="3">
+     <property name="text">
+      <string>NM,PS,NS</string>
+     </property>
+    </item>
+    <item row="5" column="4">
+     <property name="text">
+      <string>NL,PS,NM </string>
+     </property>
+    </item>
+    <item row="5" column="5">
+     <property name="text">
+      <string>NM,ZE,ZE</string>
+     </property>
+    </item>
+    <item row="5" column="6">
+     <property name="text">
+      <string>NM,PS,NL</string>
+     </property>
+    </item>
+    <item row="6" column="0">
+     <property name="text">
+      <string>ZE,PM,PS</string>
+     </property>
+    </item>
+    <item row="6" column="1">
+     <property name="text">
+      <string>ZE,PM,PS</string>
+     </property>
+    </item>
+    <item row="6" column="2">
+     <property name="text">
+      <string>NS,PL,ZE</string>
+     </property>
+    </item>
+    <item row="6" column="3">
+     <property name="text">
+      <string>NM,PL,ZE</string>
+     </property>
+    </item>
+    <item row="6" column="4">
+     <property name="text">
+      <string>NM,PL,ZE</string>
+     </property>
+    </item>
+    <item row="6" column="5">
+     <property name="text">
+      <string>NM,PS,PS</string>
+     </property>
+    </item>
+    <item row="6" column="6">
+     <property name="text">
+      <string>NM,PS,NL</string>
+     </property>
+    </item>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>110</y>
-      <width>239</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="getVoltageVsPWMCurse">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>绘制滞回线</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="StopVoltageVsPWMCurse">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>停止</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="savePVFDtoMCU">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>保存</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>500</y>
+     <width>239</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="FuzzyRead">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Read</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="FuzzySet">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Set</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="FuzzySave">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

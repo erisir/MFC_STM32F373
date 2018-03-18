@@ -2,13 +2,13 @@
 #define __TIMER_H
 #include "../prosses/tasks.h"
 
-#define     PWM_DUTY        12000          
+#define     PWM_DUTY        48000          
  
 #define __PWM_DITHER_MODE_
 //#define __PWM_NONMAL_MODE_
  
  
-void PWM_Mode_Config(void);
+void PWM_Mode_Config(uint16_t Period);
 
 void PWM_Init(void);
 
