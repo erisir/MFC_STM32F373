@@ -16,6 +16,7 @@
 #define _CMD_ReadFuzzyMap  8
 #define _U_SetVOut				 9
 #define _U_DEBUG				   10
+#define _U_SetPWMValue     11
 
 
 #define RS485_TX_EN		PDout(8)	//485模式控制.0,接收;1,发送.

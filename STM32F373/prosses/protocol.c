@@ -35,6 +35,7 @@ void ParseData(uint8_t *buf){
   uint16_t  data = 0;
 	uint8_t len = 0;
 	uint8_t i=0;
+	uint32_t pwmValue =0;
 	
 	if( buf[0] != '$' )	return;	//数据校验
 	if( buf[1] != 'N' )	return;	//数据校验
@@ -48,6 +49,7 @@ void ParseData(uint8_t *buf){
 		sprintf((char*)RS485_TX_BUF,"SetFuzzyMap:OK\n");
 		RS485_PrintString(RS485_TX_BUF);
 		break;
+ 
 	case _CMD_ReadFuzzyMap:
 		  for(i=0;i<7;i++){
 			Get_FuzzyMap_Param(RS485_TX_BUF,i);

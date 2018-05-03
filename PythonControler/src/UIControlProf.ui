@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>588</width>
-    <height>540</height>
+    <height>629</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,16 +70,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>6.500000000000000</double>
+          <double>6.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -96,16 +96,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>2.200000000000000</double>
+          <double>2.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -118,16 +118,16 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
-          <double>6.300000000000000</double>
+          <double>6.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -155,13 +155,13 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
           <double>1.000000000000000</double>
@@ -181,13 +181,13 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
           <double>1.000000000000000</double>
@@ -200,13 +200,13 @@
           <bool>false</bool>
          </property>
          <property name="decimals">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <double>65535.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>1.000000000000000</double>
          </property>
          <property name="value">
           <double>1.000000000000000</double>
@@ -394,7 +394,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label_15">
        <property name="text">
-        <string>F_Cutoff(Hz)</string>
+        <string>Bang-BangTerm</string>
        </property>
       </widget>
      </item>
@@ -407,16 +407,16 @@
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="maximum">
-        <double>100.000000000000000</double>
+        <double>65535.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>5.000000000000000</double>
+        <double>10.000000000000000</double>
        </property>
        <property name="value">
-        <double>5.000000000000000</double>
+        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -462,10 +462,10 @@
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
-        <double>20.000000000000000</double>
+        <double>65535.000000000000000</double>
        </property>
        <property name="value">
         <double>0.000000000000000</double>
@@ -503,7 +503,7 @@
         <number>0</number>
        </property>
        <property name="maximum">
-        <double>999999999.000000000000000</double>
+        <double>2097120.000000000000000</double>
        </property>
        <property name="value">
         <double>690000.000000000000000</double>
@@ -591,7 +591,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="BackForward_End">
+      <widget class="QDoubleSpinBox" name="PWMDudy">
        <property name="keyboardTracking">
         <bool>false</bool>
        </property>
@@ -619,13 +619,13 @@
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <double>6000.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>2000.000000000000000</double>
+        <double>500.000000000000000</double>
        </property>
        <property name="value">
         <double>5000.000000000000000</double>
@@ -641,7 +641,7 @@
      <x>10</x>
      <y>210</y>
      <width>571</width>
-     <height>301</height>
+     <height>281</height>
     </rect>
    </property>
    <property name="title">
@@ -979,8 +979,8 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>330</x>
-     <y>500</y>
+     <x>340</x>
+     <y>490</y>
      <width>239</width>
      <height>31</height>
     </rect>
@@ -1013,6 +1013,125 @@
       </property>
       <property name="text">
        <string>Save</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>490</y>
+     <width>291</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>磁滞环</string>
+   </property>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>271</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>StartPos</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="HYS_StartPos">
+       <property name="maximum">
+        <number>999999999</number>
+       </property>
+       <property name="value">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>StepSize</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="HYS_StepSize">
+       <property name="maximum">
+        <number>999999999</number>
+       </property>
+       <property name="value">
+        <number>2000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>EndPos</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="HYS_EndPos">
+       <property name="maximum">
+        <number>2097120</number>
+       </property>
+       <property name="value">
+        <number>500000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>DelayMs</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="HYS_DelayMs">
+       <property name="maximum">
+        <number>5000</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_3">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>580</y>
+     <width>160</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <widget class="QPushButton" name="HYS_Start">
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="HYS_Stop">
+      <property name="text">
+       <string>Stop</string>
       </property>
      </widget>
     </item>

@@ -57,6 +57,8 @@ class UIAction():
         self.proControl = proControl
         self._translate = QtCore.QCoreApplication.translate
         self.ShowUnit_mv()
+        self.HYS_IsRunning = False
+        self.PWMSetValue = 0;
         
     def CheckSumCalc(self,buf):
         checkSum = 0;
@@ -277,6 +279,7 @@ class UIAction():
         PWM_Output = ret[1]          
         vCh0 = self.GetShowValue(ret[3])
         vCh1 = self.GetShowValue(ret[4])
+        
         kp = ret[5]
         ki = ret[6]
         kd = ret[7]
@@ -386,7 +389,20 @@ class UIAction():
         value = value%(256*256)
         buf[offset+2] = int(value/256)
         buf[offset+1] = int(value%256)
-        
+    def RecaculatePIDParam(self):           
+       
+            Kp = self.proControl.PID_KpH.value()
+            Kp = self.proControl.PID_KpM.value()
+            Kp = self.proControl.PID_KpL.value()
+            temp = Kp*3.5/2.45
+            if temp>6553.5:
+                temp = 6553.5
+            self.proControl.PID_Ki.setProperty("value", float(temp))
+            temp = KpH*1.25/2.45
+            if temp>6553.5:
+                temp = 6553.5
+            self.proControl.PID_Kd.setProperty("value", float(temp))
+            
     
     def SetPIDParam(self):#  $N< totalLen,CMD,[data]
         self.error._what = 'SetPIDParam'
@@ -399,13 +415,13 @@ class UIAction():
         buf[3]= offset
         buf[4]= self._CMD_SetPIDParam
          
-        self.Int16_t2Bytes(buf,self.proControl.PID_Kp.value()*100)
-        self.Int16_t2Bytes(buf,self.proControl.PID_Ki.value()*100)
-        self.Int16_t2Bytes(buf,self.proControl.PID_Kd.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_Kp.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_Ki.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_Kd.value())
         
-        self.Int16_t2Bytes(buf,self.proControl.PID_KpF.value()*100)
-        self.Int16_t2Bytes(buf,self.proControl.PID_KiF.value()*100)
-        self.Int16_t2Bytes(buf,self.proControl.PID_KdF.value()*100)
+        self.Int16_t2Bytes(buf,self.proControl.PID_KpF.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_KiF.value())
+        self.Int16_t2Bytes(buf,self.proControl.PID_KdF.value())
         
         self.Int16_t2Bytes(buf,self.proControl.PID_eL.value())
         self.Int16_t2Bytes(buf,self.proControl.PID_eM.value())
@@ -415,9 +431,9 @@ class UIAction():
         self.Int16_t2Bytes(buf,self.proControl.PID_ecM.value())
         self.Int16_t2Bytes(buf,self.proControl.PID_ecS.value())
         
-        self.Int16_t2Bytes(buf,self.proControl.PID_Cutoff.value()*10)
+        self.Int16_t2Bytes(buf,self.proControl.PID_Cutoff.value())
         self.Int16_t2Bytes(buf,self.proControl.PID_SampleCycle.value())
-        self.Int16_t2Bytes(buf,self.proControl.PID_DeadZone.value()*10)
+        self.Int16_t2Bytes(buf,self.proControl.PID_DeadZone.value())
         
         self.Int32_t2Bytes(buf,self.proControl.PWM_MAX.value())
         self.Int32_t2Bytes(buf,self.proControl.PWM_MIN.value())
@@ -468,13 +484,13 @@ class UIAction():
             res[ii]= ret[ii]
         res[3] = offset
         #32byte
-        self.proControl.PID_Kp.setProperty("value", float(self.Bytes2Int16_t(res)/100))
-        self.proControl.PID_Ki.setProperty("value", float(self.Bytes2Int16_t(res)/100))
-        self.proControl.PID_Kd.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_Kp.setProperty("value", float(self.Bytes2Int16_t(res)))
+        self.proControl.PID_Ki.setProperty("value", float(self.Bytes2Int16_t(res)))
+        self.proControl.PID_Kd.setProperty("value", float(self.Bytes2Int16_t(res)))
 
-        self.proControl.PID_KpF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
-        self.proControl.PID_KiF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
-        self.proControl.PID_KdF.setProperty("value", float(self.Bytes2Int16_t(res)/100))
+        self.proControl.PID_KpF.setProperty("value", float(self.Bytes2Int16_t(res)))
+        self.proControl.PID_KiF.setProperty("value", float(self.Bytes2Int16_t(res)))
+        self.proControl.PID_KdF.setProperty("value", float(self.Bytes2Int16_t(res)))
      
         self.proControl.PID_eL.setProperty("value", self.Bytes2Int16_t(res))
         self.proControl.PID_eM.setProperty("value", self.Bytes2Int16_t(res))
@@ -484,9 +500,9 @@ class UIAction():
         self.proControl.PID_ecM.setProperty("value", self.Bytes2Int16_t(res))
         self.proControl.PID_ecS.setProperty("value", self.Bytes2Int16_t(res))
  
-        self.proControl.PID_Cutoff.setProperty("value", float(self.Bytes2Int16_t(res)/10))
+        self.proControl.PID_Cutoff.setProperty("value", float(self.Bytes2Int16_t(res)))
         self.proControl.PID_SampleCycle.setProperty("value", float(self.Bytes2Int16_t(res)))
-        self.proControl.PID_DeadZone.setProperty("value", float(self.Bytes2Int16_t(res)/10))
+        self.proControl.PID_DeadZone.setProperty("value", float(self.Bytes2Int16_t(res)))
  
         
         self.proControl.PWM_MAX.setProperty("value", self.Bytes2Int32_t(res))
@@ -507,22 +523,27 @@ class UIAction():
         buf[4]=  self._CMD_SetRunParam 
         self.getRandomMid = self.proControl.PID_SetPoint.value()
         self.Int16_t2Bytes(buf,self.proControl.PID_SetPoint.value())
-        self.Int16_t2Bytes(buf,self.proControl.BackForward_End.value())
+        self.Int16_t2Bytes(buf,self.proControl.PWMDudy.value())
+        self.Int32_t2Bytes(buf,self.PWMSetValue)
         
         cmdLen = buf[3]+1
         dataLen = cmdLen -4#4 bytes head 
         buf[3]=dataLen                   
         sendBuf =  bytearray(cmdLen)  
         for x in range(0,cmdLen):
-            sendBuf[x]=  buf[x]       
-        self.thirdUIControl.mplCanvas.pausePlot(True);
-        time.sleep(0.05) 
-        ret= self.SendCommandWithData(bytes(sendBuf))
-        self.thirdUIControl.mplCanvas.startPlot();
+            sendBuf[x]=  buf[x]    
+        if not self.HYS_IsRunning:   
+            self.thirdUIControl.mplCanvas.pausePlot(True);
+            time.sleep(0.05) 
+            ret= self.SendCommandWithData(bytes(sendBuf))
+            self.thirdUIControl.mplCanvas.startPlot();
+        else:
+            ret= self.SendCommandWithData(bytes(sendBuf))
         if ret is None:
             self.logMessage(self._ERROR)
         else:
-            self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
+            pass
+            #self.logMessage(self._MSG, str(ret.decode(encoding='utf-8')))
   
     def FuzzySave(self):
         pass
@@ -598,7 +619,7 @@ class UIAction():
             #06 05 04 06 06 04 05 06 03 05 06 03 04 06 03 03 06 04 03 05 04 68
             for cols_index in range(7):#e
                 t = str(dic[v[cols_index*3 ]])+','+str(dic[v[cols_index*3+1 ]])+','+str(dic[v[cols_index*3 +2]])
-                print(t)
+      
                 newItem = QTableWidgetItem(t)
                 table.setItem(rows_index, cols_index, newItem)
                 
@@ -612,7 +633,7 @@ class UIAction():
         buf[3]= 2
         buf[4]= self._CMD_GetRunParam
         buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,39) 
+        res = self.SendCommandWitAnswer(buf,39+12) 
         
         if res is  None:
             return None    
@@ -635,15 +656,129 @@ class UIAction():
         currentVol0 = self.Bytes2Int16_t(res)/10; 
         currentVol1 = self.Bytes2Int16_t(res)/10+self.thirdUIControl.SetPoint.value();
         
-        PID_kp = self.Bytes2Int16_t(res)/100; 
-        PID_ki = self.Bytes2Int16_t(res)/100; 
-        PID_kd = self.Bytes2Int16_t(res)/100; 
+        PID_kp = (self.Bytes2Int16_t(res)-10000)/1000; 
+        PID_ki = (self.Bytes2Int16_t(res)-10000)/1000
+        PID_kd = (self.Bytes2Int16_t(res)-10000)/1000
               
+       
+        timersInfo  =[self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res)];        
+        
+        debug = [PWM_Output,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res),self.Bytes2Int16_t(res),PID_kp,PID_ki,PID_kd]; 
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,PID_kp,PID_ki,PID_kd]
-        timersInfo  =[self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res)]; 
-        print(timersInfo)
+        #print(timersInfo)
+        print(debug)
         return ret
+    def HYS_Start(self):
+        self.HYS_IsRunning = True
+ 
+        pwmForward = []
+        votageForward = []
+        pwmBackward = []
+        votageBackward = []
+        
+        pl.cla()
+        pl.grid() #开启网格
+        ax = pl.gca()
+        pl.xlabel("PWM")
+        pl.ylabel("Votage")
+        pl.title("PWM => Votage")
+        pl.legend()
+        pl.show()
+        start = int(self.proControl.HYS_StartPos.value())
+        end = int(self.proControl.HYS_EndPos.value())
+        stepsize = int(self.proControl.HYS_StepSize.value())
+        delayMs = self.proControl.HYS_DelayMs.value()/1000
+        while end>start:
+            pl.hold(True)
+            pwmForward = []
+            votageForward = []
+            pwmBackward = []
+            votageBackward = []
+            for x in range(start,end,stepsize):
+                if not self.HYS_IsRunning :
+                    return  
+                self.PWMSetValue = x 
+                self.SetRuningParam()
+                pl.pause(delayMs)
+                res = self.readRunningParam()
+                if res is None:
+                    continue
+                ret = res[3]
      
+                pwmForward.append(x)
+                votageForward.append(ret)
+                pl.plot(pwmForward, votageForward, '-r*')
+                #pl.plot(x, ret, '-r*')
+            
+            
+            
+            for x in range(end,start,-1*stepsize):
+                if not self.HYS_IsRunning :
+                    return 
+                self.PWMSetValue = x 
+                self.SetRuningParam()
+                pl.pause(delayMs)
+                res = self.readRunningParam()
+                if res is None:
+                    continue
+                ret = res[3]
+     
+                pwmBackward.append(x)
+                votageBackward.append(ret)
+                pl.plot(pwmBackward, votageBackward, '-b*')
+                #pl.plot(x, ret, '-b*')
+            start = start+stepsize
+            end = end-stepsize
+        return
+        pwmForwardFit = []
+        votageForwardFit = []
+        pwmBackwardFit = []
+        votageBackwardFit = []
+        vmax =5000
+        vmin= 0
+        ind= 0
+
+        for x in votageForward:
+            if x >vmin and x<vmax:
+                pwmForwardFit.append(pwmForward[ind])
+                votageForwardFit.append(votageForward[ind])
+            ind= ind+1
+        ind= 0 
+        for x in votageBackward:
+            if x >vmin and x<vmax:
+                pwmBackwardFit.append(pwmBackward[ind])
+                votageBackwardFit.append(votageBackward[ind])
+            ind= ind+1
+        pl.plot(pwmForwardFit, votageForwardFit, 'k-')
+        pl.plot(pwmBackwardFit, votageBackwardFit, 'k-')
+
+        ForwardFunc = np.polyfit(np.array(votageForwardFit),np.array(pwmForwardFit) , 2)#用2次多项式拟合
+        BackwardFunc = np.polyfit(np.array(votageBackwardFit), np.array(pwmBackwardFit), 2)#用2次多项式拟合     
+        
+        print(ForwardFunc)
+        print(BackwardFunc)
+        
+        self.sPVFD.SetForwardA = ForwardFunc[0]
+        self.sPVFD.SetForwardB = ForwardFunc[1]
+        self.sPVFD.SetForwardC = ForwardFunc[2]
+
+        
+        self.sPVFD.SetBackwardA = BackwardFunc[0]
+        self.sPVFD.SetBackwardB = BackwardFunc[1]
+        self.sPVFD.SetBackwardC = BackwardFunc[2]
+  
+        fitX = range(20,2700,200)  
+              
+        fitBackwardPWM=np.polyval(BackwardFunc,fitX)
+        fitForwardPWM=np.polyval(ForwardFunc,fitX)
+        
+        pl.plot(fitForwardPWM,fitX,'r-')
+        pl.plot(fitBackwardPWM,fitX,'b-')
+
+        pl.pause(1)
+         
+    def HYS_Stop(self):
+        self.HYS_IsRunning = False
     def logMessage(self,flag,msg=None):# debug
         if msg is None:
             msg = self.error._what+'\r\n'+self.error._why

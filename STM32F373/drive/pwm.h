@@ -2,7 +2,7 @@
 #define __TIMER_H
 #include "../prosses/tasks.h"
 
-#define     PWM_DUTY        48000          
+#define     PWM_DUTY        65535          
  
 #define __PWM_DITHER_MODE_
 //#define __PWM_NONMAL_MODE_

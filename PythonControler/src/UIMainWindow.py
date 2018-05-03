@@ -65,7 +65,8 @@ class UIMainWindow(QDialog):
         self.thirdUIControl.Clear.clicked.connect(self.Clear)
         self.thirdUIControl.Exit.clicked.connect(self.Exit)
         
-    
+        self.UIControlProf.HYS_Start.clicked.connect(self.uiAction.HYS_Start)
+        self.UIControlProf.HYS_Stop.clicked.connect(self.uiAction.HYS_Stop)
    
         self.UIControlProf.SetPIDParam.clicked.connect(self.uiAction.SetPIDParam)
         self.UIControlProf.FuzzyRead.clicked.connect(self.uiAction.FuzzyRead)
@@ -84,7 +85,7 @@ class UIMainWindow(QDialog):
         #self.uiAction.Connect()
         pass
     def Exit(self):
-        self.thirdUIControl.mplCanvas.releasePlot()
+        self.thirdUIControl.mplCanvas.pausePlot(False)
         self.uiAction.Disconnect()
         #exit()
         sys.exit("goodbye!");
@@ -126,7 +127,7 @@ mainApp=UIMainWindow(app,timers)
 ret = False#mainApp.uiAction.TryConnect()
 if ret == False:
     ret = []
-    for i in range(9,10):
+    for i in range(2,10):
     #'38400','56000','57600',
         for x in(['115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
             comm = 'COM'+str(i)   

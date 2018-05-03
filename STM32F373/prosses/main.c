@@ -37,26 +37,28 @@ void toggle(uint8_t index)
 }
 int main(void)
 { 
+	  uint16_t a=10;
+		float b=3,c=3.0,d=3.0f;
 		Bsp_Int();		 
 		while(1)
 		{		
 				if(Counters[0]>=50)//1000Hz
 				{							
-						toggle(0);	
+						//toggle(0);	
 						Counters[0] = 0;							
 						VOL_IIR_Filter();//40us									
 
 				}				
 				if(Counters[1]>=20)//500Hz
 				{		
-						toggle(1);
+						//toggle(1);
 						ParseMsgRecvQueue();//9 us	
 						//VOL_IIR_Filter();//40us			
 						Counters[1] = 0;								
 				}
 				if(Counters[2]>=Get_ControlCycle()*10)//5Hz
 				{
-						toggle(2);
+						//toggle(2);
 						Counters[2] = 0;						
 						if (PID_isRunning()) PID_Start();	//80us											 
 				} 

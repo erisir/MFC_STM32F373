@@ -61,18 +61,18 @@ PIDº¯Êý
  *************************************************/ 
 /*************PID**********************************/
 struct _PID {
-	float kpid[3]; // kp ki kd
-	float kpidF[3]; // kp ki kd factor	
+	int kpid[3]; // kp ki kd
+	int kpidF[3]; // kp ki kd factor	
 	uint16_t eFuzzyRule[3]; //  high middle low
 	uint16_t ecFuzzyRule[3]; //  high middle low
  	
-	float PID_Cutoff;
+	int PID_Cutoff;
 	uint16_t PID_ControlCycle;
-	float PID_DeadZone;
+	int PID_DeadZone;
 	 
 
-	float LastError; // Error[-1]
-	float PrevError; // Error[-2]
+	int LastError; // Error[-1]
+	int PrevError; // Error[-2]
 	int32_t SumError;
 	
 	uint32_t PWM_MAX;
@@ -81,6 +81,8 @@ struct _PID {
 	
 };
 extern struct _PID spid;
+
+void SetHysteresis(uint8_t pe,uint8_t pec);
 
 void PID_Init (void);  
 void EEPROM_INIT(void);
@@ -101,7 +103,7 @@ void Get_FuzzyMap_Param(uint8_t *buf,uint8_t row);
 void Valve_Close(void);
 void Valve_Open(void);
 void Valve_PID_Ctrl(void);
-
+void LoadPWMTemp(uint32_t value);
 
 uint8_t PID_isRunning(void);
 uint16_t abs( int val);

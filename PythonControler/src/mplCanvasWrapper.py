@@ -7,6 +7,7 @@ from array import array
 import time
 import win32api
 import random
+import os
 import threading
 from datetime import datetime
 from matplotlib.dates import  date2num, MinuteLocator, SecondLocator, DateFormatter
@@ -26,7 +27,7 @@ Y_MIN = 1
 PlotThreadInterval = 50
 getDataThreadInterval = 50
  
-MAXCOUNTER = 500
+MAXCOUNTER = 100
 
 AutoRange =True
 Debug = True
@@ -197,18 +198,15 @@ class  MyDynamicMplCanvas(QWidget):
         pg.setConfigOptions(antialias=True)
         pg.setConfigOption('foreground', 'w')
         
-        axis = DateAxis(orientation='bottom')
-        vb = CustomViewBox()
-        axis1 = DateAxis(orientation='bottom')
-        vb1 = CustomViewBox()
-        axis2 = DateAxis(orientation='bottom')
-        vb2 = CustomViewBox()
-        
-        self.p1 = self.win.addPlot(viewBox=vb,axisItems={'bottom': axis})
+        axis = [DateAxis(orientation='bottom'),DateAxis(orientation='bottom'),DateAxis(orientation='bottom'),DateAxis(orientation='bottom'),DateAxis(orientation='bottom')]
+        vb = [CustomViewBox(),CustomViewBox(),CustomViewBox(),CustomViewBox(),CustomViewBox(),CustomViewBox()]
+        self.p1 = self.win.addPlot(viewBox=vb[0],axisItems={'bottom': axis[0]})
         self.win.nextRow()
-        self.p2 = self.win.addPlot(viewBox=vb1,axisItems={'bottom': axis1})
-        #self.win.nextRow()
-        #self.p3 = self.win.addPlot(viewBox=vb2,axisItems={'bottom': axis2})
+        self.p2 = self.win.addPlot(viewBox=vb[1],axisItems={'bottom': axis[1]})
+        self.win.nextRow()
+        self.p3 = self.win.addPlot(viewBox=vb[2],axisItems={'bottom': axis[2]})
+         
+        
         self.canvas = MplCanvas()
         self.vbl = QVBoxLayout()
         #self.ntb = NavigationToolbar(self.canvas, parent)
@@ -227,8 +225,6 @@ class  MyDynamicMplCanvas(QWidget):
         
         self.ydataPWMOut = []
         
-      
-        
     def InitGUI(self,action,getpoint,getpointbar,setpointbar,appHandle):
         self.app = appHandle
         self.UIAction = action
@@ -245,7 +241,13 @@ class  MyDynamicMplCanvas(QWidget):
         
         if self.fileHandle is  None:
             self.startTime = date2num(datetime.now())
-            self.fileHandle=open('data/'+time.strftime("%y%m%d%H%M%S",time.localtime())+'.txt', 'a')
+            dateStr = time.strftime("20%y-%m-%d",time.localtime())
+            if not os.path.isdir('data'):
+                os.mkdir('data');
+            if not os.path.isdir('data/'+dateStr):
+                os.mkdir('data/'+dateStr);
+ 
+            self.fileHandle=open('data/'+dateStr+'/'+time.strftime("%H-%M-%S",time.localtime())+'.txt', 'a')
             self.fileHandle.write('time/s,vCh0,vCh1,Voltage_Set_Point,PWM_Output,kp,ki,kd\r\n')
         try:     
             if not self.timers[0].isActive():
@@ -301,11 +303,11 @@ class  MyDynamicMplCanvas(QWidget):
     def plotThread(self):  
         try:     
             self.UI_getpoint.display(str(self.getpoint_Value))
-            if self.getpoint_Value>100:
+            if self.getpoint_Value>0:
                 getpoint =int((self.getpoint_Value)/50)
             else:
                 getpoint=self.getpoint_Value
-            if self.setpoint_Value>100:
+            if self.setpoint_Value>0:
                 setpoint =int((self.setpoint_Value)/50)
             else :
                 setpoint = self.setpoint_Value 
@@ -324,9 +326,9 @@ class  MyDynamicMplCanvas(QWidget):
                 #.p2.plot(x=self.dataX, y=self.ydataVCh1, pen=(0,0,255),clear=True) 
               
                  
-                #self.p3.plot(x=self.dataX, y=self.kp, pen=(0,0,255),clear=True)
-                #self.p3.plot(x=self.dataX, y=self.ki, pen=(0,255,0))        
-                #self.p3.plot(x=self.dataX, y=self.kd, pen=(255,0,0))    
+                #self.p3.plot(x=self.dataX, y=self.kp, pen=(255,0,0),clear=True)
+                self.p3.plot(x=self.dataX, y=self.ki, pen=(0,255,0),clear=True)        
+                #self.p3.plot(x=self.dataX, y=self.kd, pen=(0,0,255))    
                     
                 #ret = self.getPlotRange(self.ydataVCh1,2,2,3000)  
                 #self.p2.vb.setRange(yRange=[ret[0],ret[1]])

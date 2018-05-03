@@ -110,8 +110,9 @@ void PWW_DMA_Init(void){
 /**************** 计算PWM重装值函数 *******************/
 //注意：TIM_SetCompare4的4为ch4的寄存器（PA3）-TIM2 CH4
 void    LoadPWM(uint32_t pwmval)
-{
-	uint8_t i= 0;
+{	
+	uint8_t i;
+ 
 	#ifdef __PWM_DITHER_MODE_
 	duty_Cycle = (uint16_t)(pwmval/DitherBit);//取整
 	Dither_Index = (uint16_t)(pwmval%DitherBit) ;//余数

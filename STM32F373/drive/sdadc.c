@@ -136,7 +136,7 @@ void VOL_IIR_Filter()
 	ch0VoltageBufII[filterCounter] =temp;//(float)(2.0f* (((temp  + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
 	temp =(sum_voltage.ch1>>FilterWindowSHIFT)& 0xFFFF;
 	ch1VoltageBufII[filterCounter] =temp;// (float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));	
- /*
+
 	filterCounter++;
 	if(filterCounter>=FilterWindowLenII){
 		filterCounter = 0;
