@@ -10,6 +10,17 @@
   ******************************************************************************
   */ 
 #include "tasks.h" 
+/* ----------------------- Modbus includes ----------------------------------*/
+#include "mb.h"
+#include "mbport.h"
+/*
+// ----------------------- Defines ------------------------------------------
+#define REG_INPUT_START 1000
+#define REG_INPUT_NREGS 10
+
+// ----------------------- Static variables ---------------------------------
+static USHORT   usRegInputStart = REG_INPUT_START;
+static USHORT   usRegInputBuf[REG_INPUT_NREGS];*/
 
 extern uint16_t Counters[CounterNum];
 extern uint8_t commERROR;
@@ -37,11 +48,17 @@ void toggle(uint8_t index)
 }
 int main(void)
 { 
-	  uint16_t a=10;
-		float b=3,c=3.0,d=3.0f;
+	 // uint16_t a=10;
+		eMBErrorCode    eStatus;
 		Bsp_Int();		 
-		while(1)
+		eStatus = eMBInit(MB_RTU, 0x01, 0, 9600, MB_PAR_EVEN);
+		//eStatus = eMBInit(MB_ASCII, 0x01, 0, 9600, MB_PAR_EVEN);
+
+    /* Enable the Modbus Protocol Stack. */
+    eStatus = eMBEnable();
+		while(eStatus ==MB_ENOERR)
 		{		
+			  (void)eMBPoll();	
 				if(Counters[0]>=50)//1000Hz
 				{							
 						//toggle(0);	
@@ -52,8 +69,9 @@ int main(void)
 				if(Counters[1]>=20)//500Hz
 				{		
 						//toggle(1);
-						ParseMsgRecvQueue();//9 us	
-						//VOL_IIR_Filter();//40us			
+						//ParseMsgRecvQueue();//9 us	
+						//VOL_IIR_Filter();//40us		
+											
 						Counters[1] = 0;								
 				}
 				if(Counters[2]>=Get_ControlCycle()*10)//5Hz
@@ -71,3 +89,65 @@ int main(void)
 				}
 		}
 }
+/*
+eMBErrorCode
+eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs )
+{
+    eMBErrorCode    eStatus = MB_ENOERR;
+    int             iRegIndex;
+	static u16 i;	///
+
+    if( ( usAddress >= REG_INPUT_START )
+        && ( usAddress + usNRegs <= REG_INPUT_START + REG_INPUT_NREGS ) )
+    {
+        iRegIndex = ( int )( usAddress - usRegInputStart );
+        while( usNRegs > 0 )
+        {
+						usRegInputBuf[iRegIndex] = i++;	 ///
+            *pucRegBuffer++ = ( unsigned char )( usRegInputBuf[iRegIndex] >> 8 );
+            *pucRegBuffer++ = ( unsigned char )( usRegInputBuf[iRegIndex] & 0xFF );
+            iRegIndex++;
+            usNRegs--;
+        }
+    }
+    else
+    {
+        eStatus = MB_ENOREG;
+    }
+ 
+    return eStatus;
+}
+
+eMBErrorCode
+eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs, eMBRegisterMode eMode )
+{
+    ( void )pucRegBuffer;
+    ( void )usAddress;
+    ( void )usNRegs;
+    ( void )eMode;
+		 
+    return MB_ENOERR;
+}
+
+
+eMBErrorCode
+eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNCoils, eMBRegisterMode eMode )
+{
+    ( void )pucRegBuffer;
+    ( void )usAddress;
+    ( void )usNCoils;
+    ( void )eMode;
+		 
+    return MB_ENOERR;
+}
+
+eMBErrorCode
+eMBRegDiscreteCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNDiscrete )
+{
+    ( void )pucRegBuffer;
+    ( void )usAddress;
+    ( void )usNDiscrete;
+		 
+    return MB_ENOERR;
+}*/
+

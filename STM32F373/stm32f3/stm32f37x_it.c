@@ -29,7 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f37x_it.h"
-
+#include "port.h"
 /** @addtogroup STM32F37x_StdPeriph_Examples
   * @{
   */
@@ -156,12 +156,30 @@ void ADC1_IRQHandler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f37x.s).                                               */
 /******************************************************************************/
- 
-void TIM2_IRQHandler(void)//use for PWM interrupt everytime counter reach ARR the max duty cycle
+void USART1_IRQHandler(void)
+{
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+	{
+		//USART_SendData(USART1, 'a');
+		//USART_ReceiveData(USART1);
+		//USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+		prvvUARTRxISR();
+	}
+
+	if(USART_GetITStatus(USART1, USART_IT_TC) == SET)
+	{
+		//USART_SendData(USART1, 'f');
+		//USART_ClearITPendingBit(USART1, USART_IT_TXE);
+		//USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
+		prvvUARTTxReadyISR();
+	}
+}
+void TIM2_IRQHandler(void)//
 {	
-	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)	//TIM_IT_Update
- 	{					
-		TIM_ClearITPendingBit (TIM2, TIM_IT_Update);	 
+	if(TIM2->SR & TIM_IT_Update)
+	{     
+		TIM2->SR = ~TIM_FLAG_Update;//清除中断标志			
+		TIMERExpiredISR();
 	}
 }
  

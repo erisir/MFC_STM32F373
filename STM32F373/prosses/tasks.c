@@ -33,7 +33,8 @@ void Bsp_Int(void )
 	delay_init();
 	LED_Init();		  
 	LED_ON_OFF();
-	rs485_DMA_Init(115200);
+ 
+	//rs485_DMA_Init(115200);
 	RS485_PrintString("1:\tRS485_Init\n");
 	KEY_Init();
   RS485_PrintString("2:\tKEY_Init\n");
@@ -77,14 +78,14 @@ void NVIC_Configuration(void)
 		NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //2bit 抢占，2bit响应 抢占优先，值小则优先 													
     
 		/* USART1 Interrupt */
-		/*
+		 
 		NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;	 //USART1
 		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init(&NVIC_InitStructure);
-		*/
-    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel5_IRQn;//USART1 DMA Rx
+		 
+   /* NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel5_IRQn;//USART1 DMA Rx
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; 
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0; 
     NVIC_InitStructure.NVIC_IRQChannelCmd= ENABLE; 
@@ -94,23 +95,33 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd =ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_Init(&NVIC_InitStructure);*/
     
 		/* Counter Interrupt */
 		NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;	  
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
+		
+		/* UART1 Timeout */
+		NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+
+		NVIC_Init(&NVIC_InitStructure);
 
 		/* PWM Interrupt */
 		#ifdef __PWM_DITHER_MODE_
 		NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel7_IRQn;
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init( &NVIC_InitStructure );
 		#endif
+		
+
 }
 void GPIO_Configuration(void)
 {

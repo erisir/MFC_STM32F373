@@ -109,7 +109,7 @@ void USART1_Start_DMA_Recv(void * recvBuf, uint32_t bufLen)
  
 void RS485_PrintString(uint8_t * sendBuf)
 {		
-	  USART1_Start_DMA_Send((void *)sendBuf,strlen((char *)sendBuf));		
+	  //USART1_Start_DMA_Send((void *)sendBuf,strlen((char *)sendBuf));		
 }
 void USART1_Start_DMA_Send(void * sendBuf, uint32_t bufLen)
 {

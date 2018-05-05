@@ -106,7 +106,7 @@ void Valve_PID_Ctrl(void);
 void LoadPWMTemp(uint32_t value);
 
 uint8_t PID_isRunning(void);
-uint16_t abs( int val);
+uint16_t myabs( int val);
 uint16_t Get_ControlCycle(void);
 
 void Inc_PID_Calc(void);

@@ -311,7 +311,7 @@ void Inc_PID_Calc(void)
 	//当前误差
 	iError = Voltage_Set_Point - NextPoint;
 	Fuzzy_Kpid(iError, iError-spid.LastError) ;
-	if(abs(iError)<spid.PID_DeadZone){
+	if(myabs(iError)<spid.PID_DeadZone){
 	iIncpid = 0;
 	}else{//在中间
 		Debug[0]=10000+hysteresis;
@@ -659,7 +659,7 @@ void Valve_PID_Ctrl()
 uint8_t PID_isRunning(void){
 	return isRunning;
 } 
-uint16_t abs( int val){
+uint16_t myabs( int val){
 	return val>0?val:(-1*val);
 }
 //**********************************end of file**************************************
