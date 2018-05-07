@@ -32,9 +32,9 @@ float Byte2Float(unsigned char* buf,int offset)
 void ParseData(uint8_t *buf){
 	//$ N > len-5 FLAG 【DATA】 Xlen(checksum)
 	//uint8_t len = buf[3];
-  uint16_t  data = 0;
+ 
 	uint8_t len = 0;
-	uint8_t i=0;
+ 
 	uint32_t pwmValue =0;
 	
 	if( buf[0] != '$' )	return;	//数据校验
@@ -44,19 +44,7 @@ void ParseData(uint8_t *buf){
 	commERROR = 0;
  
 	switch(buf[4]){
-	case _CMD_SetFuzzyMap:
-		Set_FuzzyMap_Param(buf);
-		sprintf((char*)RS485_TX_BUF,"SetFuzzyMap:OK\n");
-		RS485_PrintString(RS485_TX_BUF);
-		break;
- 
-	case _CMD_ReadFuzzyMap:
-		  for(i=0;i<7;i++){
-			Get_FuzzyMap_Param(RS485_TX_BUF,i);
-			USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
-			delay_ms(50);
-			}
-			break;
+	
   case _U_DEBUG:
 		pBuf = (uint8_t*)SDADC_ValueTable;
 		memcpy((uint8_t *)tempBuf,pBuf,512);	
@@ -72,12 +60,7 @@ void ParseData(uint8_t *buf){
 		sprintf((char*)RS485_TX_BUF,"Set_Running_Param:OK\n");
 		RS485_PrintString(RS485_TX_BUF);
 		break;//
-	case _U_SetVOut:
-		data = buf[5]*256+buf[6];
-		sprintf((char*)RS485_TX_BUF,"_U_SetVOut[%d]:OK\n",data);
-		RS485_PrintString(RS485_TX_BUF);
-		AD5761_SetVotage(data);
-		break;//
+
 	
 	case _CMD_SetPIDParam:
 		Set_PID_Param(buf);
@@ -96,23 +79,7 @@ void ParseData(uint8_t *buf){
 		USART1_Start_DMA_Send(RS485_TX_BUF,(uint8_t)RS485_TX_BUF[3]);
 	 break;//
 
-	case _CMD_SetVClose:
-		Valve_Close();
-		sprintf((char*)RS485_TX_BUF,"SetVClose OK\n");
-		RS485_PrintString(RS485_TX_BUF);
-break;
 
-	case _U_SetVOpen:
-		Valve_Open();
-		sprintf((char*)RS485_TX_BUF,"SetVOpen OK\n");
-		RS485_PrintString(RS485_TX_BUF);
-break;
-
-	case _U_SetVPID:
-		Valve_PID_Ctrl();
-		sprintf((char*)RS485_TX_BUF,"SetVPIDCtrl OK\n");
-		RS485_PrintString(RS485_TX_BUF);
-break;
 
 	default:
 		sprintf((char*)RS485_TX_BUF,"unknow cmd unknow cmd unknow cmd unknow cmd unknow cmd\n");

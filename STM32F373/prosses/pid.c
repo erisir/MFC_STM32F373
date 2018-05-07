@@ -17,7 +17,12 @@ uint16_t data_x,data_y,data_z;
 uint32_t PWM_Output;
 uint16_t Voltage_Set_Point;
 extern uint32_t tocTimers[4];
-
+extern USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]         ;
+#if S_COIL_NCOILS%8
+extern UCHAR    ucSCoilBuf[S_COIL_NCOILS/8+1]              ;
+#else
+extern UCHAR    ucSCoilBuf[S_COIL_NCOILS/8]                ;
+#endif
 uint16_t Debug[6]={0};
 uint8_t debugFlag = 0;
 uint8_t PID_Votage_Chanel = 0;
@@ -127,19 +132,19 @@ uint16_t Bytes2Int16_t(uint8_t * buf,uint8_t offset)
 }
 void Int32_t2Bytes(uint32_t val,uint8_t * buf,uint8_t offset)
 {
-		buf[offset] =  val & 0xFF ;
-		buf[offset+1] = (val >> 8) & 0xFF;
-		buf[offset+2] = (val >> 16)  & 0xFF ;
-		buf[offset+3] = (val >> 24) & 0xFF;
+		buf[offset] =  (uint8_t)val & 0xFF ;
+		buf[offset+1] = (uint8_t)(val >> 8);
+		buf[offset+2] = (uint8_t)(val >> 16)  ;
+		buf[offset+3] = (uint8_t)(val >> 24);
 }
 void Int16_t2Bytes(uint16_t val,uint8_t * buf,uint8_t offset)
 {
-		buf[offset] =  val & 0xFF ;
-		buf[offset+1] = (val >> 8) & 0xFF;
+		buf[offset] = (uint8_t) val & 0xFF ;
+		buf[offset+1] =(uint8_t) (val >> 8);
 }
-void Set_PID_Param(uint8_t *buf)
+void Set_PID_Param(uint8_t *buf)//42bit
 {
-	int offset = 5;
+	int offset = 8;
 	spid.kpid[0]=Bytes2Int16_t(buf,offset);  offset+=2;
 	spid.kpid[1]=Bytes2Int16_t(buf,offset);  offset+=2;
 	spid.kpid[2]=Bytes2Int16_t(buf,offset);  offset+=2;
@@ -189,12 +194,7 @@ void Init_FuzzyMap(void)
 	ecFuzzyRule[6] =  spid.ecFuzzyRule[0];
 }
 uint8_t Get_PID_Param(uint8_t *buf){
-	int offset = 5;
-	buf[0] = '$';
-	buf[1] = 'N';
-	buf[2] = '>';//发给上位机
-	buf[4] = _CMD_GetPIDParam;
-	 
+	int offset = 0;
   Int16_t2Bytes(spid.kpid[0], buf,offset);offset+=2;
 	Int16_t2Bytes(spid.kpid[1], buf,offset);offset+=2;
 	Int16_t2Bytes(spid.kpid[2], buf,offset);offset+=2;
@@ -219,14 +219,12 @@ uint8_t Get_PID_Param(uint8_t *buf){
 	Int32_t2Bytes(spid.PWM_MIN , buf,offset);offset+=4;
 	Int32_t2Bytes(spid.PWM_STEP , buf,offset);offset+=4;
 	
-	buf[offset] = Get_Checksum(buf);offset+=1;
-	buf[3] = offset+1;
-	return offset+1;
+	return offset;
 } 
 
-void Set_Running_Param(uint8_t *buf)
+void Set_Running_Param(uint8_t *buf)//8bit
 {
-	int offset = 5;
+	int offset = 0;
 	Voltage_Set_Point=Bytes2Int16_t(buf,offset);offset+=2;
 	PWM_Mode_Config(Bytes2Int16_t(buf,offset));offset+=2;
 	if (PID_isRunning()==0){
@@ -236,16 +234,10 @@ void Set_Running_Param(uint8_t *buf)
 }
 uint8_t Get_Running_Param(uint8_t *buf)
 {
-	int offset = 5;
-	buf[0] = '$';
-	buf[1] = 'N';
-	buf[2] = '>';//发给上位机
-	buf[4] = _CMD_GetRunParam;
-
+	int offset = 21*2;
+	 
 	Int16_t2Bytes(Voltage_Set_Point , buf,offset);offset+=2;
-	Int32_t2Bytes(PWM_Output , buf,offset);offset+=4;
-	Int16_t2Bytes(Voltage_Set_Point-spid.LastError , buf,offset);offset+=2;
-	
+	Int32_t2Bytes(PWM_Output , buf,offset);offset+=4;		
 	Int16_t2Bytes(GetADCVoltage(0)*10.f , buf,offset);offset+=2;
 	Int16_t2Bytes(GetADCVoltage(1)*10.f , buf,offset);offset+=2;
 	 
@@ -255,20 +247,20 @@ uint8_t Get_Running_Param(uint8_t *buf)
 	Int16_t2Bytes(Kpid_calcu[1]*1000 +10000 , buf,offset);offset+=2;
   Int16_t2Bytes(Kpid_calcu[2]*1000 +10000 , buf,offset);offset+=2;
 	
-	Int32_t2Bytes(tocTimers[0] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[1] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[2] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[3] , buf,offset);offset+=4;
+
 	
 	Int16_t2Bytes(Debug[0], buf,offset);offset+=2;
 	Int16_t2Bytes(Debug[1], buf,offset);offset+=2;
 	Int16_t2Bytes(Debug[2], buf,offset);offset+=2;
+	
 	Int16_t2Bytes(Debug[3], buf,offset);offset+=2;
 	Int16_t2Bytes(Debug[4], buf,offset);offset+=2;
 	Int16_t2Bytes(Debug[5], buf,offset);offset+=2;
 	
-	buf[offset] = Get_Checksum(buf);offset+=1;
-	buf[3] = offset+1;
+	Int32_t2Bytes(tocTimers[0] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[1] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[2] , buf,offset);offset+=4;
+	Int32_t2Bytes(tocTimers[3] , buf,offset);offset+=4;
 	return offset+1;
 }
 /*********************************************************** 
@@ -629,8 +621,8 @@ void PID_Param_Reset(void)
 	spid.PID_DeadZone=5;
 	 
  
-	spid.PWM_MAX=5000000;
-	spid.PWM_MIN=100000;
+	spid.PWM_MAX=500000;
+	spid.PWM_MIN=100;
 	spid.PWM_STEP=5000;
 	
 	EEPROM_SAVE_PID();

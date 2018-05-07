@@ -10,10 +10,11 @@
   ******************************************************************************
   */ 
 #include "sdadc.h"
+#include "mb.h"
  
 #define SDADC1_DR_Address             0x40016060
-#define ADCMeanWindow  1024//偶数
-#define ADCMeanWindowShift  10//偶数
+#define ADCMeanWindow  8//1024//偶数
+#define ADCMeanWindowShift  3//偶数
  
 #define FilterWindowSHIFT 3   //
 #define FilterWindowLen  10   //LEN=2^SHIFT+2 
@@ -58,6 +59,8 @@ void VOL_IIR_Filter()
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
 	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
 	 
+	eMBRegInputCBUpdate(0,(USHORT) (filter_voltage.ch0*10));//filter_voltage.ch0*10);
+	eMBRegInputCBUpdate(1,(USHORT) (filter_voltage.ch1*10));//filter_voltage.ch1*10);
 	return;
 	
 	pmaxCh0 =pminCh0=SDADC_ValueTable[0];

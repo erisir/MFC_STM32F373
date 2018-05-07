@@ -127,9 +127,9 @@ mainApp=UIMainWindow(app,timers)
 ret = False#mainApp.uiAction.TryConnect()
 if ret == False:
     ret = []
-    for i in range(2,10):
+    for i in range(13,14):
     #'38400','56000','57600',
-        for x in(['115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
+        for x in(['9600','115200','194000']):#['9600','14400','19200','38400','56000','57600','115200','194000']):
             comm = 'COM'+str(i)   
             ret = mainApp.uiAction.AutoConnect(comm,x)
             progressBar.setValue(i*5+10)            

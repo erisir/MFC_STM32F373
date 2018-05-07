@@ -58,7 +58,7 @@ int main(void)
     eStatus = eMBEnable();
 		while(eStatus ==MB_ENOERR)
 		{		
-			  (void)eMBPoll();	
+			  	
 				if(Counters[0]>=50)//1000Hz
 				{							
 						//toggle(0);	
@@ -66,12 +66,12 @@ int main(void)
 						VOL_IIR_Filter();//40us									
 
 				}				
-				if(Counters[1]>=20)//500Hz
+				if(Counters[1]>=1)//500Hz
 				{		
 						//toggle(1);
 						//ParseMsgRecvQueue();//9 us	
 						//VOL_IIR_Filter();//40us		
-											
+						eMBPoll();					
 						Counters[1] = 0;								
 				}
 				if(Counters[2]>=Get_ControlCycle()*10)//5Hz

@@ -11,6 +11,7 @@ import numpy as np
 from sympy.strategies.core import switch
 from struct import pack,unpack
 from PyQt5 import QtCore, QtGui, QtWidgets
+import crcmod
 
 class ErrorMsg():
     _when = ""
@@ -18,6 +19,8 @@ class ErrorMsg():
     _what = ""
     
 class UIAction():     
+    DataParseCur = 0
+    boardAddr = 1
     firstUIComm = None
     secondUIDetail= None
     thirdUIControl= None
@@ -31,15 +34,15 @@ class UIAction():
     config = {}
     stopVoltageVsPWMCurse = False
     getRandomMid = 1000
-    _CMD_SetRunParam = 0
-    _CMD_SetPIDParam = 1
-    _CMD_GetRunParam = 2
-    _CMD_GetPIDParam = 3
-    _CMD_SetVClose   = 4
-    _CMD_SetVOpen    = 5
-    _CMD_SetVPID     = 6
-    _CMD_SetFuzzyMap = 7
-    _CMD_ReadFuzzyMap = 8
+    _CMD_ReadCoils = 1
+    _CMD_ReadDiscreteInputs = 2
+    _CMD_ReadHoldingReg = 3
+    _CMD_ReadInputReg = 4
+    _CMD_WriteSingleCoil   = 5
+    _CMD_WriteSingleReg    = 6
+    _CMD_WriteMulCoils     = 15
+    _CMD_WriteMulReg = 16
+    
     
     _DEBUG = 0
     _MSG = 1
@@ -61,8 +64,12 @@ class UIAction():
         self.PWMSetValue = 0;
         
     def CheckSumCalc(self,buf):
-        checkSum = 0;
-        return checkSum;
+        ret = [0x00,0x00]
+        crc16 = crcmod.mkCrcFun(0x18005, rev=True, initCrc=0xFFFF, xorOut=0x0000)
+        crc_calc = crc16(bytes(buf)) #计算得到的CRC
+        ret[0]=(int)(crc_calc/256)
+        ret[1]=crc_calc%256
+        return ret
     def SendToComAndRead(self,buf,timeout=10,expectLen=-1):
         self.error._what += '\t->SendToComAndRead'
         if self.isDeviceReady == False  :
@@ -368,13 +375,14 @@ class UIAction():
             self.comm.close()
         self.isDeviceReady = False  
     def Bytes2Int32_t(self,buf):
-        offset = buf[3]
-        buf[3] +=4
-        return buf[offset+3]*256*256*256+buf[offset+2]*256*256+buf[offset+1]*256+buf[offset]
+        #CD AB
+        offset = self.DataParseCur
+        self.DataParseCur +=4
+        return buf[offset+2]*256*256*256+buf[offset+3]*256*256+buf[offset]*256+buf[offset+1]
     def Bytes2Int16_t(self,buf):
-        offset = buf[3]
-        buf[3] +=2
-        return buf[offset+1]*256+buf[offset]
+        offset = self.DataParseCur
+        self.DataParseCur +=2
+        return buf[offset]*256+buf[offset+1]
     def Int16_t2Bytes(self,buf,value):
         offset = buf[3]
         buf[offset+2] = int(value/256)
@@ -457,32 +465,32 @@ class UIAction():
         
     def readPIDParam(self):
         self.error._what+='\t->readPIDParam'
-        buf = bytearray( 6 )
-        buf[0] = ord('$') 
-        buf[1]=ord('N' )
-        buf[2]= ord('<' )
-        buf[3]= 6-4
-        buf[4]= self._CMD_GetPIDParam
-        buf[5]= ord('X' )
-        ret = self.SendCommandWitAnswer(buf,45)
-        
+        startAddr = 0;
+        startNReg = 20;
+        buf =bytearray( 6 )
+        buf[0] = self.boardAddr
+        buf[1] = self._CMD_ReadHoldingReg
+        buf[2]= (int)(startAddr/256)
+        buf[3]= startAddr%256
+        buf[4]= (int)(startNReg/256)
+        buf[5]= startNReg%256
+        CRC = self.CheckSumCalc(buf)#C4 0B
+        buf.append(CRC[1])
+        buf.append(CRC[0])
+        ret = self.SendCommandWitAnswer(buf,startNReg*2+5)
+       
+        CRC = [ret.pop(len(ret)-1),ret.pop(len(ret)-1)]
+  
         if ret is  None:
             return False
-        if True:
-            if ret[0] != ord('$') :
+        if self.CheckSumCalc(ret) !=CRC:            
                 return False
-            if ret[1] != ord('N' ):
-                return False
-            if ret[2] != ord('>' ):
-                return False
-            if ret[4] != self._CMD_GetPIDParam:
-                return False
-        offset = 5
         res = bytearray( 64 )
-         
+       
         for ii in range(0,len(ret)):
             res[ii]= ret[ii]
-        res[3] = offset
+        self.DataParseCur= 3
+    
         #32byte
         self.proControl.PID_Kp.setProperty("value", float(self.Bytes2Int16_t(res)))
         self.proControl.PID_Ki.setProperty("value", float(self.Bytes2Int16_t(res)))
@@ -626,47 +634,47 @@ class UIAction():
  
  
     def readRunningParam(self):
-        buf = bytearray( 6 )
-        buf[0] = ord('$') 
-        buf[1]=ord('N' )
-        buf[2]= ord('<' )
-        buf[3]= 2
-        buf[4]= self._CMD_GetRunParam
-        buf[5]= ord('X' )
-        res = self.SendCommandWitAnswer(buf,39+12) 
-        
-        if res is  None:
-            return None    
-        if True:
-            if res[0] != ord('$') :
-                return None
-            if res[1] != ord('N' ):
-                return None
-            if res[2] != ord('>' ):
-                return None
-            if res[4] != self._CMD_GetRunParam:
-                return None    
+        self.error._what+='\t->readRunningParam'
+        startAddr = 0;
+        startNReg = 2;
+        buf =bytearray( 6 )
+        buf[0] = self.boardAddr
+        buf[1] = self._CMD_ReadInputReg
+        buf[2]= (int)(startAddr/256)
+        buf[3]= startAddr%256
+        buf[4]= (int)(startNReg/256)
+        buf[5]= startNReg%256
+        CRC = self.CheckSumCalc(buf)#C4 0B
+        buf.append(CRC[1])
+        buf.append(CRC[0])
+        ret = self.SendCommandWitAnswer(buf,startNReg*2+5)
        
-        offset = 5
-        res[3]= offset
-        Voltage_Set_Point =self.Bytes2Int16_t(res); 
-        PWM_Output = self.Bytes2Int32_t(res); 
-        lastVoltage = self.Bytes2Int16_t(res); 
+        CRC = [ret.pop(len(ret)-1),ret.pop(len(ret)-1)]
+  
+        if ret is  None:
+            return False
+        if self.CheckSumCalc(ret) !=CRC:            
+                return False
+       
+        self.DataParseCur = 3
+        Voltage_Set_Point = 0#self.Bytes2Int16_t(res); 
+        PWM_Output =  0#self.Bytes2Int32_t(res); 
+        lastVoltage =  0#self.Bytes2Int16_t(res); 
         
-        currentVol0 = self.Bytes2Int16_t(res)/10; 
-        currentVol1 = self.Bytes2Int16_t(res)/10+self.thirdUIControl.SetPoint.value();
+        currentVol0 = self.Bytes2Int16_t(ret)/10; 
+        currentVol1 = self.Bytes2Int16_t(ret)/10+self.thirdUIControl.SetPoint.value();
         
-        PID_kp = (self.Bytes2Int16_t(res)-10000)/1000; 
-        PID_ki = (self.Bytes2Int16_t(res)-10000)/1000
-        PID_kd = (self.Bytes2Int16_t(res)-10000)/1000
+        PID_kp = 0#(self.Bytes2Int16_t(res)-10000)/1000; 
+        PID_ki = 0# (self.Bytes2Int16_t(res)-10000)/1000
+        PID_kd = 0# (self.Bytes2Int16_t(res)-10000)/1000
               
        
-        timersInfo  =[self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res)];        
+        #timersInfo  =[self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res),self.Bytes2Int32_t(res)];        
         
-        debug = [PWM_Output,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res),self.Bytes2Int16_t(res),PID_kp,PID_ki,PID_kd]; 
+        #debug = [PWM_Output,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res)-10000,self.Bytes2Int16_t(res),self.Bytes2Int16_t(res),PID_kp,PID_ki,PID_kd]; 
         ret = [Voltage_Set_Point,PWM_Output,lastVoltage,currentVol0,currentVol1,PID_kp,PID_ki,PID_kd]
         #print(timersInfo)
-        print(debug)
+        #print(debug)
         return ret
     def HYS_Start(self):
         self.HYS_IsRunning = True
@@ -794,3 +802,8 @@ class UIAction():
             self.thirdUIControl.DebugMsg.setText(msg)
             self.fourUIOther.LogMsg.setText(msg)
         
+
+if __name__ == '__main__':
+    action = UIAction(None,None,None,None,None)    
+    action.AutoConnect("COM13","9600")
+    action.Disconnect()

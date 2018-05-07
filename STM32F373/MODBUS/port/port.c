@@ -31,11 +31,11 @@ int             VIC_Temp;
 void
 EnterCriticalSection(  )
 {
-	//__SETPRIMASK();
+	 __set_PRIMASK(1); 
 }
 
 void
 ExitCriticalSection(  )
 {
-	//__RESETPRIMASK();
+	 __set_PRIMASK(0); 
 }

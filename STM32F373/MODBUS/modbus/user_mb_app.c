@@ -19,28 +19,29 @@
  * File: $Id: user_mb_app.c,v 1.60 2013/11/23 11:49:05 Armink $
  */
 #include "user_mb_app.h"
+#include "../../prosses/tasks.h"
 
 /*------------------------Slave mode use these variables----------------------*/
 //Slave mode:DiscreteInputs variables
 USHORT   usSDiscInStart                               = S_DISCRETE_INPUT_START;
 #if S_DISCRETE_INPUT_NDISCRETES%8
-UCHAR    ucSDiscInBuf[S_DISCRETE_INPUT_NDISCRETES/8+1]={0};
+UCHAR    ucSDiscInBuf[S_DISCRETE_INPUT_NDISCRETES/8+1];
 #else
-UCHAR    ucSDiscInBuf[S_DISCRETE_INPUT_NDISCRETES/8]={0}  ;
+UCHAR    ucSDiscInBuf[S_DISCRETE_INPUT_NDISCRETES/8]  ;
 #endif
 //Slave mode:Coils variables
 USHORT   usSCoilStart                                 = S_COIL_START;
 #if S_COIL_NCOILS%8
-UCHAR    ucSCoilBuf[S_COIL_NCOILS/8+1]={0xff}                ;
+UCHAR    ucSCoilBuf[S_COIL_NCOILS/8+1]              ;
 #else
-UCHAR    ucSCoilBuf[S_COIL_NCOILS/8]={0xff}                  ;
+UCHAR    ucSCoilBuf[S_COIL_NCOILS/8]                ;
 #endif
 //Slave mode:InputRegister variables
 USHORT   usSRegInStart                                = S_REG_INPUT_START;
-USHORT   usSRegInBuf[S_REG_INPUT_NREGS]={1,2,3,4,5,6,7,8,9,10}               ;
+USHORT   usSRegInBuf[S_REG_INPUT_NREGS]              ;
 //Slave mode:HoldingRegister variables
 USHORT   usSRegHoldStart                              = S_REG_HOLDING_START;
-USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]={11,12,13,14,15,16,17,18,19,20}           ;
+USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]          ;
 
 /**
  * Modbus slave input register callback function.
@@ -72,7 +73,7 @@ eMBErrorCode eMBRegInputCB(UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNReg
             && (usAddress + usNRegs <= REG_INPUT_START + REG_INPUT_NREGS))
     {
         iRegIndex = usAddress - usRegInStart;
-        while (usNRegs > 0)
+       while (usNRegs > 0)
         {
             *pucRegBuffer++ = (UCHAR) (pusRegInputBuf[iRegIndex] >> 8);
             *pucRegBuffer++ = (UCHAR) (pusRegInputBuf[iRegIndex] & 0xFF);
@@ -88,6 +89,49 @@ eMBErrorCode eMBRegInputCB(UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNReg
     return eStatus;
 }
 
+/**
+ * Modbus slave holding register callback function.
+ *保持寄存器回调接口 16-bit整型	　 写
+ * @param pucRegBuffer holding register buffer
+ * @param usAddress holding register address
+ * @param usNRegs holding register number
+ * @param eMode read or write
+ *
+ * @return result
+ */
+eMBErrorCode eMBRegInputCBUpdate( USHORT usAddress,
+        USHORT value)
+{
+    eMBErrorCode    eStatus = MB_ENOERR;
+    USHORT          iRegIndex;
+    USHORT *        pusRegInputBuf;
+    USHORT          REG_INPUT_START;
+    USHORT          REG_INPUT_NREGS;
+    USHORT          usRegInStart;
+
+    pusRegInputBuf = usSRegInBuf;
+    REG_INPUT_START = S_REG_INPUT_START;
+    REG_INPUT_NREGS = S_REG_INPUT_NREGS;
+    usRegInStart = usSRegInStart;
+
+    /* it already plus one in modbus function method. */
+    usAddress--;
+
+    if ((usAddress >= REG_INPUT_START)
+            && (usAddress <= REG_INPUT_START + REG_INPUT_NREGS))
+    {
+        iRegIndex = usAddress - usRegInStart;
+        
+				pusRegInputBuf[iRegIndex] =value;
+             
+    }
+    else
+    {
+        eStatus = MB_ENOREG;
+    }
+
+    return eStatus;
+}
 /**
  * Modbus slave holding register callback function.
  *保持寄存器回调接口 16-bit整型	　 读写
@@ -124,6 +168,12 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
         {
         /* read current register values from the protocol stack. */
         case MB_REG_READ:
+					  if(usAddress<21){//pid
+							Get_PID_Param((UCHAR*)pusRegHoldingBuf);
+						}
+						if(usAddress>=21){
+							Get_Running_Param((UCHAR*)pusRegHoldingBuf);//8 bit 2Voltage_Set_Point 2PWM_Mode_Config 4LoadPWM
+						}
             while (usNRegs > 0)
             {
                 *pucRegBuffer++ = (UCHAR) (pusRegHoldingBuf[iRegIndex] >> 8);
@@ -142,6 +192,12 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 iRegIndex++;
                 usNRegs--;
             }
+						if(usAddress<21){//pid
+							Set_PID_Param((uint8_t *)pusRegHoldingBuf);//
+						}
+						if(usAddress>=21){
+							Set_Running_Param((uint8_t *)pusRegHoldingBuf);//8 bit 2Voltage_Set_Point 2PWM_Mode_Config 4LoadPWM
+						}
             break;
         }
     }
@@ -171,6 +227,7 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
     USHORT          COIL_START;
     USHORT          COIL_NCOILS;
     USHORT          usCoilStart;
+		UCHAR	          CoilValue=0;
     iNReg =  usNCoils / 8 + 1;
 
     pucCoilBuf = ucSCoilBuf;
@@ -220,6 +277,15 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 xMBUtilSetBits(&pucCoilBuf[iRegIndex++], iRegBitIndex, usNCoils,
                         *pucRegBuffer++);
             }
+						CoilValue = pucCoilBuf[0]&0xff;
+						if(1==CoilValue){
+							Valve_Close();							
+							}else if(2 ==CoilValue){
+						Valve_Open();
+							}else if(4 ==CoilValue){
+						Valve_PID_Ctrl();
+						}
+
             break;
         }
     }
