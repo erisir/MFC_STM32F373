@@ -20,12 +20,12 @@ extern u8 RS485_TX_BUF[64];
 void OnResetFlowDown(void)
 {
 	LED_Blink(2);
-	RS485_PrintString("0:\tOnResetFlowDown\n");
+	 
 }
 void Bsp_Int(void )
 {
 	
-	RCC_ClocksTypeDef RCC_Clocks;
+	//RCC_ClocksTypeDef RCC_Clocks;
 	RCC_Configuration();
 	GPIO_Configuration();
 	NVIC_Configuration();
@@ -34,25 +34,16 @@ void Bsp_Int(void )
 	LED_Init();		  
 	LED_ON_OFF();
  
-	//rs485_DMA_Init(115200);
-	RS485_PrintString("1:\tRS485_Init\n");
 	KEY_Init();
-  RS485_PrintString("2:\tKEY_Init\n");
-	TIM4_Init();
-  RS485_PrintString("3:\tTIM4_Init\n");
-	PWM_Init();
-  RS485_PrintString("4:\tPWM_Init\n");
-	PID_Init() ;
-  RS485_PrintString("5:\tPID_Init\n");
-	ADC1_Init();
-	//Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
-  RS485_PrintString("6:\tADC_Init\n");
+	TIM4_Init(); 
+	PWM_Init(); 
+	PID_Init() ;  
+	ADC1_Init();  
 	AD5761_Init() ;
-  RS485_PrintString("7:\tAD5761_Init\n");
+  //Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
  
-	RCC_GetClocksFreq(&RCC_Clocks);
-	sprintf((char *)RS485_TX_BUF,"\n***ClocksFreq***[%d]\n",RCC_Clocks.HCLK_Frequency);
-  RS485_PrintString(RS485_TX_BUF);
+  //	RCC_GetClocksFreq(&RCC_Clocks);
+ 
 	
 	Bsp_Int_Ok = 1;
 }

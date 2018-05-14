@@ -34,7 +34,7 @@
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
-
+#include "led.h"
 /* ----------------------- Modbus includes ----------------------------------*/
 
 #include "mb.h"
@@ -357,6 +357,7 @@ eMBErrorCode eMBPoll( void )
             break;
 
         case EV_FRAME_RECEIVED:
+					LED_Toggle();
             eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
             if( eStatus == MB_ENOERR )
             {
@@ -398,6 +399,7 @@ eMBErrorCode eMBPoll( void )
                 }
                 eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
             }
+						
             break;
 
         case EV_FRAME_SENT:

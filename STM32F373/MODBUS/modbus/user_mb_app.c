@@ -19,7 +19,7 @@
  * File: $Id: user_mb_app.c,v 1.60 2013/11/23 11:49:05 Armink $
  */
 #include "user_mb_app.h"
-#include "../../prosses/tasks.h"
+
 
 /*------------------------Slave mode use these variables----------------------*/
 //Slave mode:DiscreteInputs variables
@@ -42,7 +42,8 @@ USHORT   usSRegInBuf[S_REG_INPUT_NREGS]              ;
 //Slave mode:HoldingRegister variables
 USHORT   usSRegHoldStart                              = S_REG_HOLDING_START;
 USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]          ;
-
+struct REG_INPUTs * REG_INPUTsAddr = (struct REG_INPUTs *)usSRegInBuf;
+struct REG__HOLDINGs * REG__HOLDINGssAddr =(struct REG__HOLDINGs *)usSRegHoldBuf;
 /**
  * Modbus slave input register callback function.
  *输入寄存器回调接口 16-bit整型	　 只读
@@ -89,49 +90,7 @@ eMBErrorCode eMBRegInputCB(UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNReg
     return eStatus;
 }
 
-/**
- * Modbus slave holding register callback function.
- *保持寄存器回调接口 16-bit整型	　 写
- * @param pucRegBuffer holding register buffer
- * @param usAddress holding register address
- * @param usNRegs holding register number
- * @param eMode read or write
- *
- * @return result
- */
-eMBErrorCode eMBRegInputCBUpdate( USHORT usAddress,
-        USHORT value)
-{
-    eMBErrorCode    eStatus = MB_ENOERR;
-    USHORT          iRegIndex;
-    USHORT *        pusRegInputBuf;
-    USHORT          REG_INPUT_START;
-    USHORT          REG_INPUT_NREGS;
-    USHORT          usRegInStart;
-
-    pusRegInputBuf = usSRegInBuf;
-    REG_INPUT_START = S_REG_INPUT_START;
-    REG_INPUT_NREGS = S_REG_INPUT_NREGS;
-    usRegInStart = usSRegInStart;
-
-    /* it already plus one in modbus function method. */
-    usAddress--;
-
-    if ((usAddress >= REG_INPUT_START)
-            && (usAddress <= REG_INPUT_START + REG_INPUT_NREGS))
-    {
-        iRegIndex = usAddress - usRegInStart;
-        
-				pusRegInputBuf[iRegIndex] =value;
-             
-    }
-    else
-    {
-        eStatus = MB_ENOREG;
-    }
-
-    return eStatus;
-}
+ 
 /**
  * Modbus slave holding register callback function.
  *保持寄存器回调接口 16-bit整型	　 读写
@@ -163,17 +122,12 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
     if ((usAddress >= REG_HOLDING_START)
             && (usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS))
     {
-        iRegIndex = usAddress - usRegHoldStart;
+        iRegIndex = usAddress - usRegHoldStart;			 
         switch (eMode)
         {
         /* read current register values from the protocol stack. */
         case MB_REG_READ:
-					  if(usAddress<21){//pid
-							Get_PID_Param((UCHAR*)pusRegHoldingBuf);
-						}
-						if(usAddress>=21){
-							Get_Running_Param((UCHAR*)pusRegHoldingBuf);//8 bit 2Voltage_Set_Point 2PWM_Mode_Config 4LoadPWM
-						}
+					 
             while (usNRegs > 0)
             {
                 *pucRegBuffer++ = (UCHAR) (pusRegHoldingBuf[iRegIndex] >> 8);
@@ -192,12 +146,8 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 iRegIndex++;
                 usNRegs--;
             }
-						if(usAddress<21){//pid
-							Set_PID_Param((uint8_t *)pusRegHoldingBuf);//
-						}
-						if(usAddress>=21){
-							Set_Running_Param((uint8_t *)pusRegHoldingBuf);//8 bit 2Voltage_Set_Point 2PWM_Mode_Config 4LoadPWM
-						}
+						if(usAddress==1)
+							Set_PID_Param();//
             break;
         }
     }
@@ -227,7 +177,6 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
     USHORT          COIL_START;
     USHORT          COIL_NCOILS;
     USHORT          usCoilStart;
-		UCHAR	          CoilValue=0;
     iNReg =  usNCoils / 8 + 1;
 
     pucCoilBuf = ucSCoilBuf;
@@ -277,14 +226,11 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 xMBUtilSetBits(&pucCoilBuf[iRegIndex++], iRegBitIndex, usNCoils,
                         *pucRegBuffer++);
             }
-						CoilValue = pucCoilBuf[0]&0xff;
-						if(1==CoilValue){
-							Valve_Close();							
-							}else if(2 ==CoilValue){
-						Valve_Open();
-							}else if(4 ==CoilValue){
-						Valve_PID_Ctrl();
-						}
+						if(0==usAddress){
+							SetValveMode(pucCoilBuf[0]&0xff);
+						}else if(3==usAddress){
+							SetContrlResource((pucCoilBuf[0]>>3)&0xff);
+						}						
 
             break;
         }

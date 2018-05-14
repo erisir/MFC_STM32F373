@@ -10,50 +10,50 @@
   ******************************************************************************
   */ 
 #include "pid.h"
-struct _PID spid;
- 
-uint16_t data_x,data_y,data_z;
 
+struct _PID * spid;
+struct _FuzzyCtrlRuleMap *FuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
+uint16_t *Voltage_Set_PointCur;
+
+uint16_t data_x,data_y,data_z;
 uint32_t PWM_Output;
-uint16_t Voltage_Set_Point;
-extern uint32_t tocTimers[4];
-extern USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]         ;
-#if S_COIL_NCOILS%8
-extern UCHAR    ucSCoilBuf[S_COIL_NCOILS/8+1]              ;
-#else
-extern UCHAR    ucSCoilBuf[S_COIL_NCOILS/8]                ;
-#endif
-uint16_t Debug[6]={0};
-uint8_t debugFlag = 0;
+int16_t LastError; // Error[-1]
+int16_t PrevError; // Error[-2]
+int32_t SumError;
+
+
+
 uint8_t PID_Votage_Chanel = 0;
 uint8_t PID_Ctrl_Votage_Chanel = 1;
 uint8_t isRunning=0;
-uint32_t pwmTemp[10];
-uint8_t pwmDebugCounter = 0;
-uint8_t pwmDebugIndex=0;
-uint8_t pwmReveser = 0;
-uint8_t pwmStateForward = 0;
-uint8_t pwmStateBackward = 0;
+ 
+
 
 float  eFuzzyRule[7]={-3000,-2000,-1000,0,1000,2000,3000};   
 float  ecFuzzyRule[7]={-300,-200,-100,0,100,200,300};
-
 float Kpid_calcu[3]={0.0,0.0,0.0};
-
 float eFuzzy[]={0.0,0.0};       
 float ecFuzzy[]={0.0,0.0};  
-
 float deFuzzyFactor[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+
 int8_t hysteresis = 0;
 int8_t hysteresisCounter = 0;
 uint8_t reactHysteresis = 0;
 uint8_t PWMReverse = 0;
+uint8_t pwmReveser = 0;
+uint8_t pwmStateForward = 0;
+uint8_t pwmStateBackward = 0;
+
+extern uint32_t tocTimers[4];
+uint16_t Debug[6]={0};
+uint8_t debugFlag = 0;
 
 int8_t  DefuzzyRuleMap[3][7]={
 								{-3,-2,-1,0.0,1,2,3}, 
 								{-3,-2,-1,0.0,1,2,3},
 								{-3,-2,-1,0.0,1,2,3}}; 
-int8_t  FuzzyCtrlRuleMap[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->步进电机*/
+
+int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->步进电机*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
 /*NL*/        {{PL,PL,PL },{PL,PL,PM },{PM,PL,PL },{PM,NM,PL },{PM,NM,PL },{PS,ZE,ZE },{ZE,ZE,NL}} ,
 /*NM*/    		{{PL,PL,PM },{PL,PL,PS },{PM,PM,PM },{PM,NS,PM },{PM,NS,PM },{ZE,ZE,NS },{ZE,PS,NL}} ,
@@ -63,7 +63,7 @@ int8_t  FuzzyCtrlRuleMap[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->�
 /*PM*/    		{{ZE,PS,NL },{ZE,ZE,NS },{ZE,NS,PM },{NS,NS,PM },{NM,PM,PM },{NM,PL,PS },{NM,PL,PM}} ,
 /*PL*/    		{{ZE,ZE,NL },{NS,ZE,ZE },{NS,NM,PL },{NS,NM,PL },{NM,PL,PL },{NM,PL,PM },{NL,PL,PL}}
     		};
-int8_t  FuzzyCtrlRuleMap3[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
+int8_t  FuzzyCtrlRuleMap1[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
 /*NL*/        {{PL,NL,PS },{PL,NL,PS },{PM,NL,ZE },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PS,NL}} ,
 /*NM*/    		{{PL,NL,NS },{PL,NL,NS },{PM,NM,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PM,NL }} ,
@@ -83,37 +83,43 @@ int8_t  FuzzyCtrlRuleMap2[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->
 /*PM*/    		{{ZE,ZE,NM },{ZE,ZE,NS },{NS,PS,NS },{NM,PM,NS },{NM,PM,ZE },{NM,PL,PS },{NL,PL,PS}} ,
 /*PL*/    		{{ZE,ZE,PS },{NS,ZE,PS },{NS,PS,ZE },{NM,PM,ZE },{NM,PL,ZE },{NL,PL,PL },{NL,PL,PL}}
     		};
-//int8_t  FuzzyCtrlRuleMap[7][7][3] = {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3};
-void Set_FuzzyMap_Param(uint8_t *buf)
+void SetValveMode(uint8_t mode)
 {
-	uint8_t i = 0;
-	for(i=0;i<7;i++){
-		FuzzyCtrlRuleMap[buf[5]][i][0]=buf[6+3*i];
-		FuzzyCtrlRuleMap[buf[5]][i][1]=buf[6+3*i+1];
-		FuzzyCtrlRuleMap[buf[5]][i][2]=buf[6+3*i+2];
+	switch(mode){
+		case 1:
+			Valve_Close();			
+		break;
+		case 2:
+			Valve_Open();
+		break;
+		case 4:
+			Valve_PID_Ctrl();
+		break;
+		default:
+			Valve_Close();			
+		break;
+			
 	}
 }
-void Get_FuzzyMap_Param(uint8_t *buf,uint8_t row)
+			 
+void SetContrlResource(uint8_t mode)
 {
-	int offset = 5;
-	uint8_t i = 0;
-	buf[0] = '$';
-	buf[1] = 'N';
-	buf[2] = '>';//发给上位机
-	buf[4] = _CMD_ReadFuzzyMap;
-	for(i=0;i<7;i++){
-		buf[offset+i*3] = FuzzyCtrlRuleMap[row][i][0];
-		buf[offset+i*3+1] = FuzzyCtrlRuleMap[row][i][1];
-		buf[offset+i*3+2] = FuzzyCtrlRuleMap[row][i][2];
+		switch(mode){
+		case 1:
+			Voltage_Set_PointCur=(uint16_t *)REG__HOLDINGssAddr->PIDparam;
+					
+		break;
+		case 2:
+			Voltage_Set_PointCur = &REG_INPUTsAddr->voltageCh1;	
+		break;
 		
+		default:
+			Voltage_Set_PointCur=(uint16_t *)REG__HOLDINGssAddr->PIDparam;
+		break;
 	}
-	offset+=3*7;
-	buf[offset] = Get_Checksum(buf);offset+=1;
-	buf[3] = offset+1;
-	
 }
 uint16_t Get_ControlCycle(void){
-	return spid.PID_ControlCycle;
+	return spid->PID_ControlCycle;
 }
 
 uint16_t VirtAddVarTab[NumbOfVar] = {
@@ -122,176 +128,48 @@ uint16_t VirtAddVarTab[NumbOfVar] = {
 	0x9A15,0x9A16,0x9A17,0x9A18,0x9A19,0x9A1A
 };//VirtAddVarTab
 
-uint32_t Bytes2Int32_t(uint8_t * buf,uint8_t offset)
-{
-	return ((uint32_t)(buf[offset+3])  << 24)|((uint32_t)(buf[offset+2])  << 16)|((uint32_t)(buf[offset+1])  << 8)|buf[offset];
-}
-uint16_t Bytes2Int16_t(uint8_t * buf,uint8_t offset)
-{
-	return ( (uint16_t)(buf[offset+1])  << 8 ) | buf[offset];
-}
-void Int32_t2Bytes(uint32_t val,uint8_t * buf,uint8_t offset)
-{
-		buf[offset] =  (uint8_t)val & 0xFF ;
-		buf[offset+1] = (uint8_t)(val >> 8);
-		buf[offset+2] = (uint8_t)(val >> 16)  ;
-		buf[offset+3] = (uint8_t)(val >> 24);
-}
-void Int16_t2Bytes(uint16_t val,uint8_t * buf,uint8_t offset)
-{
-		buf[offset] = (uint8_t) val & 0xFF ;
-		buf[offset+1] =(uint8_t) (val >> 8);
-}
-void Set_PID_Param(uint8_t *buf)//42bit
-{
-	int offset = 8;
-	spid.kpid[0]=Bytes2Int16_t(buf,offset);  offset+=2;
-	spid.kpid[1]=Bytes2Int16_t(buf,offset);  offset+=2;
-	spid.kpid[2]=Bytes2Int16_t(buf,offset);  offset+=2;
-	
-	spid.kpidF[0] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.kpidF[1] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.kpidF[2] = Bytes2Int16_t(buf,offset); offset+=2;
-	
-	spid.eFuzzyRule[0] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.eFuzzyRule[1] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.eFuzzyRule[2] = Bytes2Int16_t(buf,offset); offset+=2;
-	
-	spid.ecFuzzyRule[0] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.ecFuzzyRule[1] = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.ecFuzzyRule[2] = Bytes2Int16_t(buf,offset); offset+=2;
-	
-	spid.PID_Cutoff = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.PID_ControlCycle = Bytes2Int16_t(buf,offset); offset+=2;
-	spid.PID_DeadZone = Bytes2Int16_t(buf,offset); offset+=2;
-	
-	spid.PWM_MAX = Bytes2Int32_t(buf,offset); offset+=4;
-	spid.PWM_MIN = Bytes2Int32_t(buf,offset); offset+=4;
-	spid.PWM_STEP = Bytes2Int32_t(buf,offset); offset+=4;
- 	
+ 
+void Set_PID_Param()//42bit
+{ 	
 	Init_FuzzyMap();	
-	//Calculate_FilteringCoefficient(spid.PID_Cutoff );
-	 
+	//Calculate_FilteringCoefficient(spid->PID_Cutoff ); 
 	EEPROM_SAVE_PID();
 }
+
 void Init_FuzzyMap(void)
 {
 	  // l m s
-	eFuzzyRule[0] = -1*spid.eFuzzyRule[0];
-	eFuzzyRule[1] = -1*spid.eFuzzyRule[1];
-	eFuzzyRule[2] = -1*spid.eFuzzyRule[2];
+	eFuzzyRule[0] = -1*spid->eFuzzyRule[0];
+	eFuzzyRule[1] = -1*spid->eFuzzyRule[1];
+	eFuzzyRule[2] = -1*spid->eFuzzyRule[2];
 	eFuzzyRule[3]=0;
-	eFuzzyRule[4] =  spid.eFuzzyRule[2];
-	eFuzzyRule[5] =  spid.eFuzzyRule[1];
-	eFuzzyRule[6] =  spid.eFuzzyRule[0];
+	eFuzzyRule[4] =  spid->eFuzzyRule[2];
+	eFuzzyRule[5] =  spid->eFuzzyRule[1];
+	eFuzzyRule[6] =  spid->eFuzzyRule[0];
 	
-	ecFuzzyRule[0] = -1*spid.ecFuzzyRule[0];
-	ecFuzzyRule[1] = -1*spid.ecFuzzyRule[1];
-	ecFuzzyRule[2] = -1*spid.ecFuzzyRule[2];
+	ecFuzzyRule[0] = -1*spid->ecFuzzyRule[0];
+	ecFuzzyRule[1] = -1*spid->ecFuzzyRule[1];
+	ecFuzzyRule[2] = -1*spid->ecFuzzyRule[2];
 	ecFuzzyRule[3]=0;
-	ecFuzzyRule[4] =  spid.ecFuzzyRule[2];
-	ecFuzzyRule[5] =  spid.ecFuzzyRule[1];
-	ecFuzzyRule[6] =  spid.ecFuzzyRule[0];
+	ecFuzzyRule[4] =  spid->ecFuzzyRule[2];
+	ecFuzzyRule[5] =  spid->ecFuzzyRule[1];
+	ecFuzzyRule[6] =  spid->ecFuzzyRule[0];
 }
-uint8_t Get_PID_Param(uint8_t *buf){
-	int offset = 0;
-  Int16_t2Bytes(spid.kpid[0], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.kpid[1], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.kpid[2], buf,offset);offset+=2;
-	
-	Int16_t2Bytes(spid.kpidF[0], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.kpidF[1], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.kpidF[2], buf,offset);offset+=2;
-	
-	Int16_t2Bytes(spid.eFuzzyRule[0], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.eFuzzyRule[1], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.eFuzzyRule[2], buf,offset);offset+=2;
-	
-	Int16_t2Bytes(spid.ecFuzzyRule[0], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.ecFuzzyRule[1], buf,offset);offset+=2;
-	Int16_t2Bytes(spid.ecFuzzyRule[2], buf,offset);offset+=2;
-	
-	Int16_t2Bytes(spid.PID_Cutoff , buf,offset);offset+=2;
-	Int16_t2Bytes(spid.PID_ControlCycle, buf,offset);offset+=2;
-	Int16_t2Bytes(spid.PID_DeadZone, buf,offset);offset+=2;
-	
-	Int32_t2Bytes(spid.PWM_MAX  , buf,offset);offset+=4;
-	Int32_t2Bytes(spid.PWM_MIN , buf,offset);offset+=4;
-	Int32_t2Bytes(spid.PWM_STEP , buf,offset);offset+=4;
-	
-	return offset;
-} 
+ 
 
-void Set_Running_Param(uint8_t *buf)//8bit
-{
-	int offset = 0;
-	Voltage_Set_Point=Bytes2Int16_t(buf,offset);offset+=2;
-	PWM_Mode_Config(Bytes2Int16_t(buf,offset));offset+=2;
-	if (PID_isRunning()==0){
-		LoadPWM(Bytes2Int32_t(buf,offset));
-	}
-	
-}
-uint8_t Get_Running_Param(uint8_t *buf)
-{
-	int offset = 21*2;
-	 
-	Int16_t2Bytes(Voltage_Set_Point , buf,offset);offset+=2;
-	Int32_t2Bytes(PWM_Output , buf,offset);offset+=4;		
-	Int16_t2Bytes(GetADCVoltage(0)*10.f , buf,offset);offset+=2;
-	Int16_t2Bytes(GetADCVoltage(1)*10.f , buf,offset);offset+=2;
-	 
 
-	
-	Int16_t2Bytes(Kpid_calcu[0]*1000 +10000, buf,offset);offset+=2;
-	Int16_t2Bytes(Kpid_calcu[1]*1000 +10000 , buf,offset);offset+=2;
-  Int16_t2Bytes(Kpid_calcu[2]*1000 +10000 , buf,offset);offset+=2;
-	
-
-	
-	Int16_t2Bytes(Debug[0], buf,offset);offset+=2;
-	Int16_t2Bytes(Debug[1], buf,offset);offset+=2;
-	Int16_t2Bytes(Debug[2], buf,offset);offset+=2;
-	
-	Int16_t2Bytes(Debug[3], buf,offset);offset+=2;
-	Int16_t2Bytes(Debug[4], buf,offset);offset+=2;
-	Int16_t2Bytes(Debug[5], buf,offset);offset+=2;
-	
-	Int32_t2Bytes(tocTimers[0] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[1] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[2] , buf,offset);offset+=4;
-	Int32_t2Bytes(tocTimers[3] , buf,offset);offset+=4;
-	return offset+1;
-}
+ 
 /*********************************************************** 
               PID控制动作函数
  ***********************************************************/ 
 void PID_Start() 		 
 { 
 	Inc_PID_Calc();
-	if(PWM_Output >spid.PWM_MAX)
-		PWM_Output = spid.PWM_MAX; 
-	if(PWM_Output <spid.PWM_MIN)
-		PWM_Output = spid.PWM_MIN;  
+	if(PWM_Output >spid->PWM_MAX)
+		PWM_Output = spid->PWM_MAX; 
+	if(PWM_Output <spid->PWM_MIN)
+		PWM_Output = spid->PWM_MIN;  
 	LoadPWM(PWM_Output);	
-}
-void LoadPWMTemp(uint32_t value)
-{
-	uint8_t i = pwmDebugIndex%10;
-	int32_t delta = 0;
-	pwmTemp[i]=value;
-	pwmDebugCounter ++;
-	if(i==0){
-		delta = value-pwmTemp[9];
-		pwmDebugCounter=10;
-	}else{
-		delta = value-pwmTemp[i-1];
-	}
-	if(delta<0 ){ 			
-		pwmTemp[i]=value-5000;
-	}
-	PWM_Output=pwmTemp[i-3<=0?(i-3):(i+6)];
-	LoadPWM(PWM_Output) ;
 }
 
 //增量式PID控制设计
@@ -301,25 +179,25 @@ void Inc_PID_Calc(void)
  	register int32_t iIncpid;
 	int NextPoint = GetADCVoltage(PID_Votage_Chanel);
 	//当前误差
-	iError = Voltage_Set_Point - NextPoint;
-	Fuzzy_Kpid(iError, iError-spid.LastError) ;
-	if(myabs(iError)<spid.PID_DeadZone){
+	iError = *Voltage_Set_PointCur - NextPoint;
+	Fuzzy_Kpid(iError, iError-LastError) ;
+	if(myabs(iError)<spid->PID_DeadZone){
 	iIncpid = 0;
 	}else{//在中间
 		Debug[0]=10000+hysteresis;
-		Debug[1]=10000+iError-spid.LastError;
+		Debug[1]=10000+iError-LastError;
 		Debug[2]=10000+iError;
-		Debug[3]=10000+iError-2*spid.LastError+spid.PrevError;
+		Debug[3]=10000+iError-2*LastError+PrevError;
 		
-		iIncpid = (spid.kpid[0]+Kpid_calcu[0]*spid.kpidF[0]) * (iError-spid.LastError) //E[k]项
-						+ (spid.kpid[1]+Kpid_calcu[1]*spid.kpidF[1]) * iError //E[k－1]项
-						+ (spid.kpid[2]+Kpid_calcu[2]*spid.kpidF[2]) * (iError-2*spid.LastError+spid.PrevError); //E[k－2]项
+		iIncpid = (spid->kpid[0]+Kpid_calcu[0]*spid->kpidF[0]) * (iError-LastError) //E[k]项
+						+ (spid->kpid[1]+Kpid_calcu[1]*spid->kpidF[1]) * iError //E[k－1]项
+						+ (spid->kpid[2]+Kpid_calcu[2]*spid->kpidF[2]) * (iError-2*LastError+PrevError); //E[k－2]项
 						 						
 	}
   tocTimers[3]= (100000+(iIncpid));
 	//存储误差，用于下次计算
-	spid.PrevError = spid.LastError;
-	spid.LastError = iError;
+	PrevError = LastError;
+	LastError = iError;
 	if(iIncpid>0){
 		pwmStateForward=1;
 		if(pwmStateBackward ==1){
@@ -335,7 +213,7 @@ void Inc_PID_Calc(void)
 		pwmStateForward=0;
 	}
  
-	PWM_Output += (iIncpid/100+ hysteresis*spid.PID_Cutoff);
+	PWM_Output += (iIncpid/100+ hysteresis*spid->PID_Cutoff);
 }
 void SetHysteresis(uint8_t pe,uint8_t pec){
 	hysteresis = 0; 
@@ -379,53 +257,53 @@ void EEPROM_INIT(void)//
 void EEPROM_SAVE_PID(void)	 
 {
 	 __set_PRIMASK(1); 
-	data_x = (int16_t) (spid.kpid[0]);
-	data_y = (int16_t) (spid.kpid[1]);
-	data_z = (int16_t) (spid.kpid[2]);
+	data_x = (int16_t) (spid->kpid[0]);
+	data_y = (int16_t) (spid->kpid[1]);
+	data_z = (int16_t) (spid->kpid[2]);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_P], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_I], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_D], data_z);
 	
-	data_x = (int16_t) (spid.kpidF[0]);
-	data_y = (int16_t) (spid.kpidF[1]);
-	data_z = (int16_t) (spid.kpidF[2]);
+	data_x = (int16_t) (spid->kpidF[0]);
+	data_y = (int16_t) (spid->kpidF[1]);
+	data_z = (int16_t) (spid->kpidF[2]);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_PF], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_IF], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_DF], data_z);
 	
-	data_x = (int16_t) (spid.eFuzzyRule[0]);
-	data_y = (int16_t) (spid.eFuzzyRule[1]);
-	data_z = (int16_t) (spid.eFuzzyRule[2]);
+	data_x = (int16_t) (spid->eFuzzyRule[0]);
+	data_y = (int16_t) (spid->eFuzzyRule[1]);
+	data_z = (int16_t) (spid->eFuzzyRule[2]);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_EFRL], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_EFRM], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_EFRS], data_z);
 	
-	data_x = (int16_t) (spid.ecFuzzyRule[0]);
-	data_y = (int16_t) (spid.ecFuzzyRule[1]);
-	data_z = (int16_t) (spid.ecFuzzyRule[2]);
+	data_x = (int16_t) (spid->ecFuzzyRule[0]);
+	data_y = (int16_t) (spid->ecFuzzyRule[1]);
+	data_z = (int16_t) (spid->ecFuzzyRule[2]);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_ECFRL], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_ECFRM], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_ECFRS], data_z);
 	
-	data_x = (int16_t) (spid.PID_Cutoff);
-	data_y = (int16_t) (spid.PID_ControlCycle);
-	data_z = (int16_t) (spid.PID_DeadZone);
+	data_x = (int16_t) (spid->PID_Cutoff);
+	data_y = (int16_t) (spid->PID_ControlCycle);
+	data_z = (int16_t) (spid->PID_DeadZone);
 	
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_CUTOFF_FREQ], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_CONTROL_CYCLE], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PID_DEADZONE], data_z);
 	
-	data_x = (int16_t) (spid.PWM_MAX/65535);
-	data_y = (int16_t) (spid.PWM_MIN/65535);
-	data_z = (int16_t) (spid.PWM_STEP/65535);
+	data_x = (int16_t) (spid->PWM_MAX/65535);
+	data_y = (int16_t) (spid->PWM_MIN/65535);
+	data_z = (int16_t) (spid->PWM_STEP/65535);
 	
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PWM_MAX_HIGH], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PWM_MIN_HIGH], data_y);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PWM_STEP_HIGH], data_z);
 	
-	data_x = (int16_t) (spid.PWM_MAX%65535);
-	data_y = (int16_t) (spid.PWM_MIN%65535);
-	data_z = (int16_t) (spid.PWM_STEP%65535);
+	data_x = (int16_t) (spid->PWM_MAX%65535);
+	data_y = (int16_t) (spid->PWM_MIN%65535);
+	data_z = (int16_t) (spid->PWM_STEP%65535);
 	
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PWM_MAX_LOW], data_x);
 	EE_WriteVariable(VirtAddVarTab[EEPROM_PWM_MIN_LOW], data_y);
@@ -440,54 +318,55 @@ void EEPROM_READ_PID(void)	//
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_P], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_I], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_D], &data_z);
-	spid.kpid[0] = (float) data_x;
-	spid.kpid[1] = (float) data_y;
-	spid.kpid[2] = (float) data_z;
 	
+	spid->kpid[0] = (float) data_x;
+	spid->kpid[1] = (float) data_y;
+	spid->kpid[2] = (float) data_z;
+	 
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_PF], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_IF], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_DF], &data_z);
-	spid.kpidF[0] = (float) data_x;
-	spid.kpidF[1] = (float) data_y;
-	spid.kpidF[2] = (float) data_z;
+	spid->kpidF[0] = (float) data_x;
+	spid->kpidF[1] = (float) data_y;
+	spid->kpidF[2] = (float) data_z;
 	
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_EFRL], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_EFRM], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_EFRS], &data_z);
-	spid.eFuzzyRule[0] = (float) data_x;
-	spid.eFuzzyRule[1] = (float) data_y;
-	spid.eFuzzyRule[2] = (float) data_z;
+	spid->eFuzzyRule[0] = (float) data_x;
+	spid->eFuzzyRule[1] = (float) data_y;
+	spid->eFuzzyRule[2] = (float) data_z;
 	
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_ECFRL], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_ECFRM], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_ECFRS], &data_z);
-	spid.ecFuzzyRule[0] = (float) data_x;
-	spid.ecFuzzyRule[1] = (float) data_y;
-	spid.ecFuzzyRule[2] = (float) data_z;
+	spid->ecFuzzyRule[0] = (float) data_x;
+	spid->ecFuzzyRule[1] = (float) data_y;
+	spid->ecFuzzyRule[2] = (float) data_z;
 	
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_CUTOFF_FREQ], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_CONTROL_CYCLE], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PID_DEADZONE], &data_z);
 	
-	spid.PID_Cutoff =   data_x;
-	spid.PID_ControlCycle =   data_y;
-	spid.PID_DeadZone =   data_z;
+	spid->PID_Cutoff =   data_x;
+	spid->PID_ControlCycle =   data_y;
+	spid->PID_DeadZone =   data_z;
 	
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_MAX_HIGH], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_MIN_HIGH], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_STEP_HIGH], &data_z);
 	
-	spid.PWM_MAX =   data_x*65535;
-	spid.PWM_MIN =   data_y*65535;
-	spid.PWM_STEP =   data_z*65535;
+	spid->PWM_MAX =   data_x*65535;
+	spid->PWM_MIN =   data_y*65535;
+	spid->PWM_STEP =   data_z*65535;
 	
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_MAX_LOW], &data_x);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_MIN_LOW], &data_y);
 	EE_ReadVariable(VirtAddVarTab[EEPROM_PWM_STEP_LOW], &data_z);
 	
-	spid.PWM_MAX +=   data_x;
-	spid.PWM_MIN +=   data_y;
-	spid.PWM_STEP +=   data_z;
+	spid->PWM_MAX +=   data_x;
+	spid->PWM_MIN +=   data_y;
+	spid->PWM_STEP +=   data_z;
  
 	  
 }
@@ -558,16 +437,16 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 	for(KpidSelect=0;KpidSelect<3;KpidSelect++){
 		memset(deFuzzyFactor,0,7*sizeof(float));
 
-		num =FuzzyCtrlRuleMap[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
+		num =FuzzyCtrlRuleMap->data[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[0]; 
 
-		num =FuzzyCtrlRuleMap[pec+1][pe][KpidSelect];   
+		num =FuzzyCtrlRuleMap->data[pec+1][pe][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[1];  
 
-		num =FuzzyCtrlRuleMap[pec][pe+1][KpidSelect];   
+		num =FuzzyCtrlRuleMap->data[pec][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[0]; 
 
-		num =FuzzyCtrlRuleMap[pec+1][pe+1][KpidSelect];   
+		num =FuzzyCtrlRuleMap->data[pec+1][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[1];  
 
 		/********加权平均法解模糊********///DefuzzyRuleMap = [-3,-2,-1,0,1,2,3]
@@ -592,38 +471,46 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 void PID_Init() 
 { 
 	 FLASH_Unlock();
-	 EEPROM_INIT();// 
+	 spid  = (struct _PID *)REG__HOLDINGssAddr->PIDparam;
+	 FuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
+	 EEPROM_INIT();
 	 Init_FuzzyMap();
+	 FuzzyMap_Param_Reset();
 }
-
+void FuzzyMap_Param_Reset()
+{
+	memset((uint8_t *)FuzzyCtrlRuleMap->data,0,147); 	// Initialize Structure 
+	memcpy(FuzzyCtrlRuleMap->data,FuzzyCtrlRuleMap2,147); 
+}
 void PID_Param_Reset(void) 
 {
-	memset (&spid,0,sizeof(struct _PID)); 	// Initialize Structure 
-	spid.kpid[0] = 100;
-	spid.kpid[1] = 150;
-	spid.kpid[2] = 50;
+	memset ((uint8_t *)spid,0,sizeof(struct _PID)); 	// Initialize Structure 
+	spid->Voltage_Set_Point=0;
+	spid->kpid[0] = 100;
+	spid->kpid[1] = 150;
+	spid->kpid[2] = 50;
 	
-	spid.kpidF[0] = 33;
-	spid.kpidF[1] = 50;
-	spid.kpidF[2] = 17;
+	spid->kpidF[0] = 33;
+	spid->kpidF[1] = 50;
+	spid->kpidF[2] = 17;
+	 
+  spid->eFuzzyRule[0] = 2000;//
+	spid->eFuzzyRule[1] = 800;
+	spid->eFuzzyRule[2] = 20;
 	
-  spid.eFuzzyRule[0] = 2000;
-	spid.eFuzzyRule[1] = 800;
-	spid.eFuzzyRule[2] = 20;
-	
-	spid.ecFuzzyRule[0] = 300;
-	spid.ecFuzzyRule[1] = 100;
-	spid.ecFuzzyRule[2] = 10;
+	spid->ecFuzzyRule[0] = 300;
+	spid->ecFuzzyRule[1] = 100;
+	spid->ecFuzzyRule[2] = 10;
  
  	
-	spid.PID_Cutoff=30000;
-	spid.PID_ControlCycle=100;
-	spid.PID_DeadZone=5;
+	spid->PID_Cutoff=30000;
+	spid->PID_ControlCycle=100;
+	spid->PID_DeadZone=5;
+
 	 
- 
-	spid.PWM_MAX=500000;
-	spid.PWM_MIN=100;
-	spid.PWM_STEP=5000;
+	spid->PWM_MAX=500000;
+	spid->PWM_MIN=100;
+	spid->PWM_STEP=5000;
 	
 	EEPROM_SAVE_PID();
 }
@@ -631,7 +518,7 @@ void PID_Param_Reset(void)
 void  Valve_Close(void)
 {
 	isRunning = 0;
-	PWM_Output = spid.PWM_MIN;
+	PWM_Output = spid->PWM_MIN;
 	LoadPWM(PWM_Output) ;
 	reactHysteresis=0;	
 	//LoadPWMTemp(PWM_Output);
@@ -639,7 +526,7 @@ void  Valve_Close(void)
 void Valve_Open(void)
 {
 	isRunning = 0;
-	PWM_Output = spid.PWM_MAX;
+	PWM_Output = spid->PWM_MAX;
 	reactHysteresis=0;	
 	LoadPWM(PWM_Output) ;
 	//LoadPWMTemp(PWM_Output);

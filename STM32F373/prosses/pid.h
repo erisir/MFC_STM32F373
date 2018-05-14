@@ -60,63 +60,59 @@ PID函数
 
  *************************************************/ 
 /*************PID**********************************/
-struct _PID {
-	int kpid[3]; // kp ki kd
-	int kpidF[3]; // kp ki kd factor	
+struct _PID {//21 ints
+  uint16_t Voltage_Set_Point;
+	uint16_t kpid[3]; // kp ki kd
+	uint16_t kpidF[3]; // kp ki kd factor	
 	uint16_t eFuzzyRule[3]; //  high middle low
 	uint16_t ecFuzzyRule[3]; //  high middle low
  	
-	int PID_Cutoff;
+	uint16_t PID_Cutoff;
 	uint16_t PID_ControlCycle;
-	int PID_DeadZone;
-	 
-
-	int LastError; // Error[-1]
-	int PrevError; // Error[-2]
-	int32_t SumError;
+	uint16_t PID_DeadZone;	
 	
+	//内存分配以32bit为单位。之间如果前面uint16为奇数个，则在此会自动添加一个0的uint16补齐
 	uint32_t PWM_MAX;
 	uint32_t PWM_MIN;
 	uint32_t PWM_STEP;
-	
 };
-extern struct _PID spid;
+
+struct _FuzzyCtrlRuleMap{
+	int8_t data[7][7][3];
+};
+extern struct _PID *  spid;
 
 void SetHysteresis(uint8_t pe,uint8_t pec);
 
 void PID_Init (void);  
+void Init_FuzzyMap(void);
 void EEPROM_INIT(void);
+
 void EEPROM_READ_PID(void);
 void EEPROM_SAVE_PID(void);
 
 void PID_Param_Reset(void);
+void FuzzyMap_Param_Reset(void);
+
 void PID_Start(void); 		
+void Inc_PID_Calc(void);
 
-void Set_Running_Param(uint8_t *buf);
-uint8_t Get_Running_Param(uint8_t *buf);
+void SetValveMode(uint8_t mode);
+void SetContrlResource(uint8_t mode);
+void Set_PID_Param(void); 
 
-void Set_PID_Param(uint8_t *buf); 
-uint8_t Get_PID_Param(uint8_t *buf); 
-
-void Set_FuzzyMap_Param(uint8_t *buf);
-void Get_FuzzyMap_Param(uint8_t *buf,uint8_t row);
 void Valve_Close(void);
 void Valve_Open(void);
 void Valve_PID_Ctrl(void);
-void LoadPWMTemp(uint32_t value);
+ 
 
 uint8_t PID_isRunning(void);
 uint16_t myabs( int val);
 uint16_t Get_ControlCycle(void);
 
-void Inc_PID_Calc(void);
+
  
 void Fuzzy_Kpid(int16_t e, int16_t ec) ;
-void Init_FuzzyMap(void);
-uint32_t Bytes2Int32_t(uint8_t * buf,uint8_t offset);
-uint16_t Bytes2Int16_t(uint8_t * buf,uint8_t offset);
-
-void Int32_t2Bytes(uint32_t val,uint8_t * buf,uint8_t offset);
-void Int16_t2Bytes(uint16_t val,uint8_t * buf,uint8_t offset);
+ 
 #endif
 /*********************************************END OF FILE**********************/

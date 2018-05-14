@@ -444,19 +444,9 @@
               <FilePath>..\prosses\readme.txt</FilePath>
             </File>
             <File>
-              <FileName>protocol.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\prosses\protocol.c</FilePath>
-            </File>
-            <File>
               <FileName>tasks.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\prosses\tasks.c</FilePath>
-            </File>
-            <File>
-              <FileName>protocol.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\prosses\protocol.h</FilePath>
             </File>
             <File>
               <FileName>user_mb_app.c</FileName>
@@ -494,11 +484,6 @@
               <FilePath>..\drive\sdadc.c</FilePath>
             </File>
             <File>
-              <FileName>rs485.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\drive\rs485.c</FilePath>
-            </File>
-            <File>
               <FileName>pwm.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\drive\pwm.c</FilePath>
@@ -522,16 +507,6 @@
               <FileName>spi.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\drive\spi.h</FilePath>
-            </File>
-            <File>
-              <FileName>rs485_DMA.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\drive\rs485_DMA.c</FilePath>
-            </File>
-            <File>
-              <FileName>rs485_DMA.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\drive\rs485_DMA.h</FilePath>
             </File>
           </Files>
         </Group>

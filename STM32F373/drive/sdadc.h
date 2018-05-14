@@ -41,7 +41,6 @@ void ADC1_Init(void);
 uint8_t SDADC1_Config(void);
  
 void VOL_IIR_Filter(void);
-void VOL_IIR_FilterII(void);
 float GetADCVoltage(unsigned char ch);
  
 #endif /* __ADC_H */

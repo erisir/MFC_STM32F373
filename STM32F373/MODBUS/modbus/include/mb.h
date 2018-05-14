@@ -311,8 +311,7 @@ eMBErrorCode    eMBRegisterCB( UCHAR ucFunctionCode,
  */
 eMBErrorCode    eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNRegs );
-eMBErrorCode eMBRegInputCBUpdate( USHORT usAddress,
-        USHORT value);
+ 
 /*! \ingroup modbus_registers
  * \brief Callback function used if a <em>Holding Register</em> value is
  *   read or written by the protocol stack. The starting register address

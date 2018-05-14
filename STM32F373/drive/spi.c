@@ -49,8 +49,7 @@ void AD5761_ReadConfig(void){
 	SPI3_Write_Reg(CMD_RD_CTRL_REG,0);
   buf[0]=CMD_NOP;
 	SPI3_WriteRead_Buff(buf,3);
-	sprintf((char*)buf,"SPI_RecieveData[%d %d %d ]\n",buf[0],buf[1],buf[2]);
-	RS485_PrintString(buf);
+ 
 }
  
 
@@ -60,9 +59,7 @@ void SPI3_Init()
   SPI_InitTypeDef  SPI_InitStructure;
   SPI_Cmd(SPI3, DISABLE); //Õ£÷πSPIÕ‚…Ë
 	
-	
- 		
-
+	 
   
 	//AD5761 rising edge À¯¥Ê latched £ªfalling edge  transferred in
 	// SDO Data is clocked out on the rising edge of SCLK and is valid on the falling edge of SCLK.

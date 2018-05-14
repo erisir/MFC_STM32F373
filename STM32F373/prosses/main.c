@@ -68,9 +68,7 @@ int main(void)
 				}				
 				if(Counters[1]>=1)//500Hz
 				{		
-						//toggle(1);
-						//ParseMsgRecvQueue();//9 us	
-						//VOL_IIR_Filter();//40us		
+						//toggle(1);	
 						eMBPoll();					
 						Counters[1] = 0;								
 				}
