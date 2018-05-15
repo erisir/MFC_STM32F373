@@ -38,6 +38,7 @@ void toc(uint8_t index)
 {
 	ticFlag[index]=0;
 	tocTimers[index]=runningCounter-ticTimers[index];
+	REG_INPUTsAddr->DEBUG32[index]=tocTimers[index]; 
 }
 void toggle(uint8_t index)
 {
@@ -61,25 +62,26 @@ int main(void)
 			  	
 				if(Counters[0]>=50)//1000Hz
 				{							
-						//toggle(0);	
+						toggle(0);	
 						Counters[0] = 0;							
 						VOL_IIR_Filter();//40us									
 
 				}				
-				if(Counters[1]>=1)//500Hz
+				if(Counters[1]>=50)//200Hz
 				{		
-						//toggle(1);	
+						toggle(1);	
 						eMBPoll();					
 						Counters[1] = 0;								
 				}
 				if(Counters[2]>=Get_ControlCycle()*10)//5Hz
 				{
-						//toggle(2);
+						toggle(2);
 						Counters[2] = 0;						
 						if (PID_isRunning()) PID_Start();	//80us											 
 				} 
 				if(Counters[3]>=5000)
 				{			
+					 
 					Counters[3] = 0;			
 					if(IsFlowReset()){
 								OnResetFlowDown();

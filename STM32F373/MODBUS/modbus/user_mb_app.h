@@ -32,22 +32,9 @@ struct REG_INPUTs{
 	uint16_t voltageCh0;  
 	uint16_t voltageCh1; 
 	
-	uint16_t DEBUG0;  
-	uint16_t DEBUG1; 
-	uint16_t DEBUG2; 
-	
-	uint16_t DEBUG3;
-	uint16_t DEBUG4;
-	uint16_t DEBUG5;
-	
-	uint16_t DEBUG6;
-	uint16_t DEBUG7;
-	uint16_t DEBUG8;
-	
-	uint32_t DEBUG9;
-	uint32_t DEBUGA;
-	uint32_t DEBUGB;
-	uint32_t DEBUGC;//22 int
+	uint16_t DEBUG16[6];  
+	uint32_t DEBUG32[4];
+//22 int
 };
 struct REG__HOLDINGs{
 	int16_t	PIDparam[22];
