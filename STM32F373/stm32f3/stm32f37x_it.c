@@ -179,7 +179,7 @@ void TIM2_IRQHandler(void)//
 	if(TIM2->SR & TIM_IT_Update)
 	{     
 		TIM2->SR = ~TIM_FLAG_Update;//清除中断标志			
-		TIMERExpiredISR();
+	
 	}
 }
  
@@ -187,7 +187,8 @@ void TIM3_IRQHandler(void)
 {	
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)	//TIM_IT_Update
  	{					
-		TIM_ClearITPendingBit (TIM3, TIM_IT_Update);	 
+		TIM_ClearITPendingBit (TIM3, TIM_IT_Update);	
+		TIMERExpiredISR();		
 	}
 }
 

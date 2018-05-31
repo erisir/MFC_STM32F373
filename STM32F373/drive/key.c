@@ -17,7 +17,7 @@ void KEY_Init(void)
 	GPIO_SetBits(GPIOA, GPIO_Pin_13);
 }
 uint8_t IsFlowReset(void){
-    return KEY_Down(GPIOA, GPIO_Pin_13);
+    return 0;//KEY_Down(GPIOA, GPIO_Pin_13);
 }
 
 uint8_t KEY_Down(GPIO_TypeDef* GPIOx,uint16_t GPIO_Pin)

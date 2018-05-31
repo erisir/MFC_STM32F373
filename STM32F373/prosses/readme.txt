@@ -33,5 +33,5 @@ PF6 PF7 PA14 PA15
 剩余
 1、 modbus协议 可参考例子，FreeModbus..
 2、分段PID实现
-
+modbus timer:TIM3
 期望控制周期 1s-1Hz，控制频率为1Hz*20 ~ 20Hz。采样100Hz，取平均。

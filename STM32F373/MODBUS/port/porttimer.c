@@ -36,9 +36,9 @@ xMBPortTimersInit( USHORT usTim1Timerout50us )
 	TIM_TimeBaseStructure.TIM_Prescaler = 0x3;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0x0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
 	//TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-    TIM_Cmd(TIM2, ENABLE);
+  TIM_Cmd(TIM3, ENABLE);
     return TRUE;
 }
 
@@ -46,18 +46,18 @@ xMBPortTimersInit( USHORT usTim1Timerout50us )
 void
 vMBPortTimersEnable(  )
 {	
-	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-	TIM_SetCounter(TIM2, 0);
+	TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+	TIM_SetCounter(TIM3, 0);
 	//TIM_Cmd(TIM2, ENABLE);
-	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 }
 
 void
 vMBPortTimersDisable(  )
 {
-	TIM_SetCounter(TIM2, 0);
+	TIM_SetCounter(TIM3, 0);
 	//TIM_Cmd(TIM2, DISABLE);
-	TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+	TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
 }
 
 void

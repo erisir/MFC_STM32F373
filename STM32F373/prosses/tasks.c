@@ -57,6 +57,7 @@ void RCC_Configuration(void)
 			RCC_AHBPeriphClockCmd( RCC_AHBPeriph_DMA1,ENABLE);  // Sdadc PWM_dma
 			 
 		  RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE);   //PWM
+			RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM3, ENABLE);   //PWM
 			RCC_APB1PeriphClockCmd(	RCC_APB1Periph_SPI3,  ENABLE );//SPI3
 			RCC_APB2PeriphClockCmd( RCC_APB2Periph_USART1, ENABLE );//USART1				
 						
@@ -94,10 +95,16 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
+		/* Counter Interrupt */
+		NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;	  
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 		
 		/* UART1 Timeout */
 		NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 
@@ -106,8 +113,8 @@ void NVIC_Configuration(void)
 		/* PWM Interrupt */
 		#ifdef __PWM_DITHER_MODE_
 		NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel7_IRQn;
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init( &NVIC_InitStructure );
 		#endif
@@ -127,7 +134,7 @@ void GPIO_Configuration(void)
 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 ;
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 		GPIO_Init(GPIOA, &GPIO_InitStructure);
 		
 		/* LED*/			
