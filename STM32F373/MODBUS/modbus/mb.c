@@ -399,7 +399,7 @@ eMBErrorCode eMBPoll( void )
                 }
                 eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
             }
-						
+						LED_Toggle();
             break;
 
         case EV_FRAME_SENT:

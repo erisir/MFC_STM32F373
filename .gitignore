@@ -4,3 +4,16 @@
 /STM32F373/bin
 /PythonControler/src/data
 PythonControler\src\__pycache__
+
+*.hex
+*.lnp
+*.map
+*.sct
+*.dep
+*.o
+*.d
+*.crf
+*.axf
+*.lst
+*.hex
+MFCF373.hex
