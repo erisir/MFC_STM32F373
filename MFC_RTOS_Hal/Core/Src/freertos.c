@@ -29,6 +29,9 @@
 #include "mb.h"
 #include "mbport.h"
 #include "user_mb_app.h"
+
+#include "sdadc.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -160,8 +163,8 @@ void StartIIR_Filter(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
-		usRegInputBuf[0]++;
+		VOL_IIR_Filter();
+    osDelay(500);	
   }
   /* USER CODE END StartIIR_Filter */
 }
@@ -180,8 +183,7 @@ void StarteMBPoll(void const * argument)
   for(;;)
   {
 		 osDelay(10);
-		 eMBPoll( );
-		 //REG_INPUTsAddr->voltageCh0++;		 
+		 eMBPoll( );		 
   }
   /* USER CODE END StarteMBPoll */
 }
@@ -200,8 +202,7 @@ void StartPID(void const * argument)
   for(;;)
   {
     osDelay(1000);
-		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);		
-		usRegInputBuf[0]=33;
+			
   }
   /* USER CODE END StartPID */
 }

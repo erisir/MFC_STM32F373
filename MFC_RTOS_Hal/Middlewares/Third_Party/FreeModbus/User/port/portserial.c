@@ -32,6 +32,8 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
     /* If xRXEnable enable serial receive interrupts. If xTxENable enable
      * transmitter empty interrupts.
      */
+		 	//xRxEnable = TRUE;
+			//xTxEnable = TRUE;
 		 if (xRxEnable)
 			{
 				__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
@@ -98,6 +100,6 @@ void prvvUARTTxReadyISR( void )
  */
 void prvvUARTRxISR( void )
 {
-	  		
+	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
     pxMBFrameCBByteReceived(  );
 }

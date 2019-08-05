@@ -32,11 +32,7 @@
 #define ENTER_CRITICAL_SECTION( )   
 #define EXIT_CRITICAL_SECTION( ) 
 
-#define REG_INPUT_START 1000
-#define REG_INPUT_NREGS 4
-
-
-
+ 
 typedef uint8_t BOOL;
 
 typedef unsigned char UCHAR;
@@ -48,8 +44,7 @@ typedef int16_t SHORT;
 typedef uint32_t ULONG;
 typedef int32_t LONG;
 
-static USHORT   usRegInputStart = REG_INPUT_START;
-static USHORT   usRegInputBuf[REG_INPUT_NREGS];
+ 
 
 void prvvUARTTxReadyISR(void);
 void prvvUARTRxISR(void);

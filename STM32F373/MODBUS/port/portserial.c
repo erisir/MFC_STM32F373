@@ -27,6 +27,7 @@
 /* ----------------------- Start implementation -----------------------------*/
 void vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 {
+
 	if(TRUE==xRxEnable)
 	{
 		USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);

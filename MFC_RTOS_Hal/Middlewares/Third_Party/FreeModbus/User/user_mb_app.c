@@ -19,7 +19,7 @@
  * File: $Id: user_mb_app.c,v 1.60 2013/11/23 11:49:05 Armink $
  */
 #include "user_mb_app.h"
-
+ 
 
 /*------------------------Slave mode use these variables----------------------*/
 //Slave mode:DiscreteInputs variables
@@ -42,6 +42,7 @@ USHORT   usSRegInBuf[S_REG_INPUT_NREGS]              ;
 //Slave mode:HoldingRegister variables
 USHORT   usSRegHoldStart                              = S_REG_HOLDING_START;
 USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]          ;
+
 struct REG_INPUTs * REG_INPUTsAddr = (struct REG_INPUTs *)usSRegInBuf;
 struct REG__HOLDINGs * REG__HOLDINGssAddr =(struct REG__HOLDINGs *)usSRegHoldBuf;
 /**
@@ -69,7 +70,7 @@ eMBErrorCode eMBRegInputCB(UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNReg
 
     /* it already plus one in modbus function method. */
     usAddress--;
-
+	 
     if ((usAddress >= REG_INPUT_START)
             && (usAddress + usNRegs <= REG_INPUT_START + REG_INPUT_NREGS))
     {

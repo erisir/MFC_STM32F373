@@ -2,6 +2,9 @@
 
 #ifndef    USER_APP
 #define USER_APP
+
+#include "main.h"
+
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbconfig.h"

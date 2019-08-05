@@ -21,7 +21,19 @@
 #include "sdadc.h"
 
 /* USER CODE BEGIN 0 */
+#include "user_mb_app.h"
 
+#define SDADC1_DR_Address             0x40016060
+#define ADCMeanWindow  1024//1024//偶数
+#define ADCMeanWindowShift  10//偶数
+
+int16_t bufLength = ADCMeanWindow*2;
+
+int16_t SDADC_ValueTable[ADCMeanWindow*2]={0};
+ 
+struct _VoltageRaw voltage;
+struct _Voltage filter_voltage;
+struct _VoltageSum sum_voltage;
 /* USER CODE END 0 */
 
 SDADC_HandleTypeDef hsdadc1;
@@ -61,7 +73,7 @@ void MX_SDADC1_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_SDADC_InjectedConfigChannel(&hsdadc1, SDADC_CHANNEL_7, SDADC_CONTINUOUS_CONV_OFF) != HAL_OK)
+  if (HAL_SDADC_InjectedConfigChannel(&hsdadc1, SDADC_CHANNEL_7|SDADC_CHANNEL_8, SDADC_CONTINUOUS_CONV_ON) != HAL_OK)
   {
     Error_Handler();
   }
@@ -81,9 +93,15 @@ void MX_SDADC1_Init(void)
   {
     Error_Handler();
   }
+  /** Configure the Injected Channel 
+  */
+  if (HAL_SDADC_AssociateChannelConfig(&hsdadc1, SDADC_CHANNEL_8, SDADC_CONF_INDEX_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /** Configure the Regular Channel 
   */
-  if (HAL_SDADC_ConfigChannel(&hsdadc1, SDADC_CHANNEL_7, SDADC_CONTINUOUS_CONV_OFF) != HAL_OK)
+  if (HAL_SDADC_ConfigChannel(&hsdadc1, SDADC_CHANNEL_7, SDADC_CONTINUOUS_CONV_ON) != HAL_OK)
   {
     Error_Handler();
   }
@@ -130,7 +148,28 @@ void HAL_SDADC_MspInit(SDADC_HandleTypeDef* sdadcHandle)
     __HAL_LINKDMA(sdadcHandle,hdma,hdma_sdadc1);
 
   /* USER CODE BEGIN SDADC1_MspInit 1 */
-
+	
+	
+  /* Start Calibration in polling mode */
+if(HAL_SDADC_CalibrationStart(&hsdadc1, SDADC_CALIBRATION_SEQ_1) != HAL_OK)
+{
+/* An error occurs duringthe starting phase of the calibration */
+Error_Handler();
+}
+/* Pool for the end ofcalibration */
+if(HAL_SDADC_PollForCalibEvent(&hsdadc1, HAL_MAX_DELAY) != HAL_OK)
+{
+/* An error occurs whilewaiting for the end of the calibration */
+Error_Handler();
+}
+/* Start injected conversionin interrupt mode */
+if(HAL_SDADC_InjectedStart_DMA(&hsdadc1, (uint32_t*)SDADC_ValueTable,bufLength) != HAL_OK)
+{
+/* An error occurs duringthe configuration of the injected conversion in interrupt mode */
+Error_Handler();
+}
+ 
+ 
   /* USER CODE END SDADC1_MspInit 1 */
   }
 }
@@ -162,6 +201,36 @@ void HAL_SDADC_MspDeInit(SDADC_HandleTypeDef* sdadcHandle)
 
 /* USER CODE BEGIN 1 */
 
+void VOL_IIR_Filter()
+{
+	uint16_t i = 0;
+	int16_t temp = 0;
+	sum_voltage.ch0 = 0;
+	sum_voltage.ch1 = 0;
+	for(i=0;i<ADCMeanWindow;i++){
+		sum_voltage.ch0 +=SDADC_ValueTable[2*i+1];
+		sum_voltage.ch1 +=SDADC_ValueTable[2*i+0];
+	}
+	
+	temp =sum_voltage.ch0>>ADCMeanWindowShift;
+  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =sum_voltage.ch1>>ADCMeanWindowShift;
+	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+ 
+	REG_INPUTsAddr->voltageCh0=123;// (uint16_t)filter_voltage.ch0*10.0; 	
+	REG_INPUTsAddr->voltageCh1= 345;// (uint16_t)filter_voltage.ch1*10.0; 
+	//AD5761_SetVotage(filter_voltage.ch0*13.1072);
+	printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0*10.0,filter_voltage.ch1*10.0);
+ 
+}
+ 
+
+float  GetADCVoltage(unsigned char ch){//PID调用
+	if(ch == 0)
+		 return filter_voltage.ch0;
+	 else
+		 return  filter_voltage.ch1;
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
