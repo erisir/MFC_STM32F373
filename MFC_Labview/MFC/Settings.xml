@@ -11,15 +11,15 @@
 <Name>Log File Base Path</Name>
 <Val>C:\Users\Administrator\Documents\LabVIEW Data</Val>
 </Path>
-<Refnum>
-<Name>TDMS File Reference</Name>
-<RefKind>TDMS File</RefKind>
-<Val>0x00000000</Val>
-</Refnum>
 <Boolean>
 <Name>save file</Name>
 <Val>0</Val>
 </Boolean>
+<Refnum>
+<Name>refnum out</Name>
+<RefKind>Byte Stream File</RefKind>
+<Val>0x00000000</Val>
+</Refnum>
 </Cluster>
 <Cluster>
 <Name>Hardware Config</Name>
@@ -31,7 +31,7 @@
 <Refnum>
 <Name>VISA</Name>
 <RefKind>VISA</RefKind>
-<Val>COM4</Val>
+<Val>COM6</Val>
 </Refnum>
 </Cluster>
 <Cluster>
@@ -39,35 +39,35 @@
 <NumElts>18</NumElts>
 <DBL>
 <Name>PWM_Step</Name>
-<Val>4999.99999999999999</Val>
+<Val>500.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>PWM_MIN</Name>
-<Val>7999.99999999999999</Val>
+<Val>20.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>PWM_MAX</Name>
-<Val>5000000.00000000000000</Val>
+<Val>65500000.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>DeadZone(mv)</Name>
-<Val>2.00000000000000</Val>
+<Val>1.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>SamCycle(ms)</Name>
-<Val>25.00000000000000</Val>
+<Val>20.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Bang-BangTerm</Name>
-<Val>10.00000000000000</Val>
+<Val>1.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>ecS</Name>
-<Val>50.00000000000000</Val>
+<Val>10.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>ecM</Name>
-<Val>100.00000000000000</Val>
+<Val>50.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>ecL</Name>
@@ -75,39 +75,39 @@
 </DBL>
 <DBL>
 <Name>eS</Name>
-<Val>500.00000000000000</Val>
+<Val>20.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>eM</Name>
-<Val>1000.00000000000000</Val>
+<Val>80.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>eL</Name>
-<Val>3000.00000000000000</Val>
+<Val>1000.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Kd F</Name>
-<Val>2.00000000000000</Val>
+<Val>0.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Ki F</Name>
-<Val>2.00000000000000</Val>
+<Val>0.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Kp F</Name>
-<Val>2.00000000000000</Val>
+<Val>0.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Kd</Name>
-<Val>120.00000000000000</Val>
+<Val>4.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Ki</Name>
-<Val>350.00000000000000</Val>
+<Val>16.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Kp</Name>
-<Val>240.00000000000000</Val>
+<Val>8.00000000000000</Val>
 </DBL>
 </Cluster>
 <Cluster>
@@ -323,7 +323,7 @@
 <Choice>1</Choice>
 <Choice>2</Choice>
 <Choice>4</Choice>
-<Val>2</Val>
+<Val>1</Val>
 </EL>
 </Cluster>
 </Cluster>
