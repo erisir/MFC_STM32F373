@@ -38,9 +38,10 @@ inline void
 vMBPortTimersEnable(  )
 {
     /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
+		
 		__HAL_TIM_CLEAR_FLAG(&htim3,TIM_FLAG_UPDATE);
 	  __HAL_TIM_SET_COUNTER(&htim3,0);
-		HAL_NVIC_EnableIRQ(TIM3_IRQn); 
+		HAL_TIM_Base_Start_IT(&htim3);		
 }
 
 inline void
@@ -48,7 +49,7 @@ vMBPortTimersDisable(  )
 {
     /* Disable any pending timers. */
 		__HAL_TIM_SET_COUNTER(&htim3,0);
-		HAL_NVIC_DisableIRQ(TIM3_IRQn);          //??ITM3?? 
+		HAL_TIM_Base_Stop_IT(&htim3);		           
 }
 
 /* Create an ISR which is called whenever the timer has expired. This function
@@ -58,5 +59,6 @@ vMBPortTimersDisable(  )
 void prvvTIMERExpiredISR( void )
 {
     ( void )pxMBPortCBTimerExpired(  );
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);		
 }
 
