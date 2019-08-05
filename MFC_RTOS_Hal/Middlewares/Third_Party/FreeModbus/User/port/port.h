@@ -30,8 +30,9 @@
 #define	PR_END_EXTERN_C             }
 
 #define ENTER_CRITICAL_SECTION( )   
-#define EXIT_CRITICAL_SECTION( )    
+#define EXIT_CRITICAL_SECTION( ) 
 
+ 
 typedef uint8_t BOOL;
 
 typedef unsigned char UCHAR;
@@ -42,6 +43,10 @@ typedef int16_t SHORT;
 
 typedef uint32_t ULONG;
 typedef int32_t LONG;
+
+void prvvUARTTxReadyISR(void);
+void prvvUARTRxISR(void);
+void prvvTIMERExpiredISR(void);
 
 #ifndef TRUE
 #define TRUE            1

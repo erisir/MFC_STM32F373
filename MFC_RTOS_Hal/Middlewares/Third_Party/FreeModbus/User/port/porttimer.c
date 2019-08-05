@@ -21,19 +21,16 @@
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
-
+#include "tim.h"
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
-
-/* ----------------------- static functions ---------------------------------*/
-static void prvvTIMERExpiredISR( void );
 
 /* ----------------------- Start implementation -----------------------------*/
 BOOL
 xMBPortTimersInit( USHORT usTim1Timerout50us )
 {
-    return FALSE;
+    return TRUE;
 }
 
 
@@ -41,19 +38,24 @@ inline void
 vMBPortTimersEnable(  )
 {
     /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
+		__HAL_TIM_CLEAR_FLAG(&htim3,TIM_FLAG_UPDATE);
+	  __HAL_TIM_SET_COUNTER(&htim3,0);
+		HAL_NVIC_EnableIRQ(TIM3_IRQn); 
 }
 
 inline void
 vMBPortTimersDisable(  )
 {
     /* Disable any pending timers. */
+		__HAL_TIM_SET_COUNTER(&htim3,0);
+		HAL_NVIC_DisableIRQ(TIM3_IRQn);          //??ITM3?? 
 }
 
 /* Create an ISR which is called whenever the timer has expired. This function
  * must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
  * the timer has expired.
  */
-static void prvvTIMERExpiredISR( void )
+void prvvTIMERExpiredISR( void )
 {
     ( void )pxMBPortCBTimerExpired(  );
 }

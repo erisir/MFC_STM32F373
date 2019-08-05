@@ -26,7 +26,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-
+#include "mb.h"
+#include "mbport.h"
+#include "user_mb_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -176,7 +178,10 @@ void StarteMBPoll(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		 osDelay(10);
+		 eMBPoll( );
+		 //REG_INPUTsAddr->voltageCh0++;
+     osDelay(1);
   }
   /* USER CODE END StarteMBPoll */
 }
