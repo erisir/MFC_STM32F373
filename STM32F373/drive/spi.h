@@ -31,7 +31,7 @@ void AD5761_Config(void);
 void AD5761_ReadConfig(void);
 void AD5761_SetVotage(uint16_t reg_data);
 
-void SPI3_SetSpeed(uint8_t SpeedSet); 
+//void SPI3_SetSpeed(uint8_t SpeedSet); 
 
 uint8_t SPI3_RW(uint8_t data);
 

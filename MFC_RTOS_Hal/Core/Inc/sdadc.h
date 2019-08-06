@@ -76,6 +76,7 @@ extern struct _Voltage filter_voltage;
 extern struct _VoltageSum sum_voltage;
  
 void VOL_IIR_Filter(void);
+void SDADC_Config(void);
 float GetADCVoltage(unsigned char ch);
 /* USER CODE END Prototypes */
 

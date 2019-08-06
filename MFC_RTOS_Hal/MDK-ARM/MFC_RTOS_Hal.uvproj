@@ -357,7 +357,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F373xC,USE_HAL_DRIVER,STM32F373xC</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F3xx_HAL_Driver/Inc;../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F3xx/Include;../Drivers/CMSIS/Include;..\Middlewares\Third_Party\FreeModbus\Drivers\include;..\Middlewares\Third_Party\FreeModbus\User\port;..\Middlewares\Third_Party\FreeModbus\Drivers\ascii;..\Middlewares\Third_Party\FreeModbus\Drivers\functions;..\Middlewares\Third_Party\FreeModbus\Drivers\rtu;..\Middlewares\Third_Party\FreeModbus\Drivers\tcp;..\Middlewares\Third_Party\FreeModbus\User</IncludePath>
+              <IncludePath>../Core/Inc;      ../Drivers/STM32F3xx_HAL_Driver/Inc;      ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy;      ../Middlewares/Third_Party/FreeRTOS/Source/include;      ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;      ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;      ../Drivers/CMSIS/Device/ST/STM32F3xx/Include;      ../Drivers/CMSIS/Include;      ..\Middlewares\Third_Party\FreeModbus\Drivers\include;      ..\Middlewares\Third_Party\FreeModbus\User\port;      ..\Middlewares\Third_Party\FreeModbus\Drivers\ascii;      ..\Middlewares\Third_Party\FreeModbus\Drivers\functions;      ..\Middlewares\Third_Party\FreeModbus\Drivers\rtu;      ..\Middlewares\Third_Party\FreeModbus\Drivers\tcp;      ..\Middlewares\Third_Party\FreeModbus\User</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -424,6 +424,26 @@
           <GroupName>Application/User/Core</GroupName>
           <Files>
             <File>
+              <FileName>portevent.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\portevent.c</FilePath>
+            </File>
+            <File>
+              <FileName>portserial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\portserial.c</FilePath>
+            </File>
+            <File>
+              <FileName>porttimer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\porttimer.c</FilePath>
+            </File>
+            <File>
+              <FileName>user_mb_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\user_mb_app.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -462,26 +482,6 @@
               <FileName>usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>portevent.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\portevent.c</FilePath>
-            </File>
-            <File>
-              <FileName>portserial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\portserial.c</FilePath>
-            </File>
-            <File>
-              <FileName>porttimer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\porttimer.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_mb_app.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Middlewares\Third_Party\FreeModbus\User\user_mb_app.c</FilePath>
             </File>
           </Files>
         </Group>

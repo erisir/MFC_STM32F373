@@ -163,7 +163,8 @@ void StartIIR_Filter(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		VOL_IIR_Filter();
+		//VOL_IIR_Filter();
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
     osDelay(500);	
   }
   /* USER CODE END StartIIR_Filter */
@@ -183,7 +184,7 @@ void StarteMBPoll(void const * argument)
   for(;;)
   {
 		 osDelay(10);
-		 eMBPoll( );		 
+		 //eMBPoll( );		 
   }
   /* USER CODE END StarteMBPoll */
 }
@@ -201,8 +202,8 @@ void StartPID(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
-			
+		//GetADCVoltage(0);
+    osDelay(3000);		
   }
   /* USER CODE END StartPID */
 }

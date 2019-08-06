@@ -104,7 +104,8 @@ int main(void)
   MX_SPI3_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-	
+	SDADC_Config();
+	AD5761_Config();	
   eMBInit( MB_RTU, 0x01, 1, 9600, MB_PAR_NONE );
 
 	 //eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity ASCII
