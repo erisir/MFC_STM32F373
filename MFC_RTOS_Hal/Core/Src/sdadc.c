@@ -52,13 +52,22 @@ void MX_SDADC1_Init(void)
   hsdadc1.Init.FastConversionMode = SDADC_FAST_CONV_DISABLE;
   hsdadc1.Init.SlowClockMode = SDADC_SLOW_CLOCK_DISABLE;
   hsdadc1.Init.ReferenceVoltage = SDADC_VREF_EXT;
+  hsdadc1.InjectedTrigger = SDADC_SOFTWARE_TRIGGER;
   if (HAL_SDADC_Init(&hsdadc1) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure The Regular Mode 
+  /** Configure the Injected Mode 
   */
-  if (HAL_SDADC_SelectRegularTrigger(&hsdadc1, SDADC_SOFTWARE_TRIGGER) != HAL_OK)
+  if (HAL_SDADC_SelectInjectedDelay(&hsdadc1, SDADC_INJECTED_DELAY_NONE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_SDADC_SelectInjectedTrigger(&hsdadc1, SDADC_SOFTWARE_TRIGGER) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_SDADC_InjectedConfigChannel(&hsdadc1, SDADC_CHANNEL_7|SDADC_CHANNEL_8, SDADC_CONTINUOUS_CONV_ON) != HAL_OK)
   {
     Error_Handler();
   }
@@ -78,15 +87,9 @@ void MX_SDADC1_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_SDADC_ConfigChannel(&hsdadc1, SDADC_CHANNEL_7, SDADC_CONTINUOUS_CONV_ON) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  /** Configure the Injected Channel 
+  */
   if (HAL_SDADC_AssociateChannelConfig(&hsdadc1, SDADC_CHANNEL_8, SDADC_CONF_INDEX_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_SDADC_ConfigChannel(&hsdadc1, SDADC_CHANNEL_8, SDADC_CONTINUOUS_CONV_ON) != HAL_OK)
   {
     Error_Handler();
   }
@@ -167,17 +170,18 @@ void HAL_SDADC_MspDeInit(SDADC_HandleTypeDef* sdadcHandle)
 
 void SDADC_Config()
 {
-HAL_SDADC_CalibrationStart(&hsdadc1, SDADC_CALIBRATION_SEQ_1);
+	HAL_SDADC_CalibrationStart(&hsdadc1, SDADC_CALIBRATION_SEQ_1);
  
-   if (HAL_SDADC_PollForCalibEvent(&hsdadc1, 50) != HAL_OK)
+  if (HAL_SDADC_PollForCalibEvent(&hsdadc1, 50) != HAL_OK)
   {
     Error_Handler();
   }
-  if(HAL_SDADC_SelectRegularTrigger(&hsdadc1, SDADC_SOFTWARE_TRIGGER) != HAL_OK)
+  if(HAL_SDADC_SelectInjectedTrigger(&hsdadc1, SDADC_SOFTWARE_TRIGGER) != HAL_OK)
   {
     Error_Handler();
   }
-	HAL_SDADC_Start_DMA(&hsdadc1, (uint32_t *)SDADC_ValueTable, bufLength);
+	HAL_SDADC_InjectedStart_DMA(&hsdadc1, (uint32_t*)SDADC_ValueTable,bufLength);
+
 }
 void VOL_IIR_Filter()
 {
@@ -203,7 +207,7 @@ void VOL_IIR_Filter()
  
 
 float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ
-		printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0*10.0,filter_voltage.ch1*10.0);
+		//printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0*10.0,filter_voltage.ch1*10.0);
 
 	if(ch == 0)
 		 return filter_voltage.ch0;
