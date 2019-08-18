@@ -25,6 +25,8 @@
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "mb.h"
+#include "mbport.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -212,7 +214,10 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-
+	if(__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE) != RESET && __HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_UPDATE) !=RESET) {
+    __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
+      pxMBPortCBTimerExpired();
+	}
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
@@ -240,7 +245,16 @@ void TIM4_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
+  if((__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXNE) != RESET) && (__HAL_UART_GET_IT_SOURCE(&huart1, UART_IT_RXNE) != RESET)) {
+    pxMBFrameCBByteReceived();
+    __HAL_UART_CLEAR_PEFLAG(&huart1);    
+    return;
+  }
+  //此处一定要用TC中断，否则会出现发送不全导致TimeOut
+  if((__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TC) != RESET) &&(__HAL_UART_GET_IT_SOURCE(&huart1, UART_IT_TC) != RESET)) {
+    pxMBFrameCBTransmitterEmpty();    
+    return ;
+  }
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */

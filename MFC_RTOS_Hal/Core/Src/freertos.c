@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-
+#include "mb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -180,10 +180,14 @@ void StartSDADCIIRFilter(void const * argument)
 void StarteMBPoll(void const * argument)
 {
   /* USER CODE BEGIN StarteMBPoll */
+	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
+	eMBInit( MB_RTU, 0x01, 1, 9600, MB_PAR_NONE );
+  eMBEnable(  );
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(10);//一定要空闲等待，要不高优先级的任务不会退出导致其他任务无法执行！
+		eMBPoll( );	
   }
   /* USER CODE END StarteMBPoll */
 }
