@@ -207,7 +207,7 @@ void VOL_IIR_Filter()
  
 
 float  GetADCVoltage(unsigned char ch){//PIDµ÷ÓÃ
-		//printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0*10.0,filter_voltage.ch1*10.0);
+  //printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0,filter_voltage.ch1);
 
 	if(ch == 0)
 		 return filter_voltage.ch0;

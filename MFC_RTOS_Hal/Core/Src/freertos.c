@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */     
 #include "mb.h"
 #include "sdadc.h"
+#include "spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -168,7 +169,7 @@ void StartSDADCIIRFilter(void const * argument)
   for(;;)
   {
 		VOL_IIR_Filter();
-		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
+		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
     osDelay(10);
   }
   /* USER CODE END StartSDADCIIRFilter */
@@ -225,9 +226,15 @@ void StartCheckKeyDown(void const * argument)
 {
   /* USER CODE BEGIN StartCheckKeyDown */
   /* Infinite loop */
+	static USHORT value = 0;
   for(;;)
   {
-    osDelay(1);
+		value+= 100;
+		if(value>65335)
+			value = 0;
+		AD5761_SetVotage(value);
+		//assert_failed("AD5761_SetVotage",value);
+    osDelay(500);
   }
   /* USER CODE END StartCheckKeyDown */
 }
@@ -245,7 +252,8 @@ void StartTaskMonitor(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		GetADCVoltage(0);
+    osDelay(500);
   }
   /* USER CODE END StartTaskMonitor */
 }
