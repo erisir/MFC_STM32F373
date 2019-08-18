@@ -16,4 +16,5 @@ PythonControler\src\__pycache__
 *.axf
 *.lst
 *.hex
+/MFC_RTOS_Hal/MDK-ARM/MFC_RTOS_Hal
 MFCF373.hex
