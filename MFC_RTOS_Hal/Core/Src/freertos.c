@@ -26,11 +26,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-#include "mb.h"
-#include "mbport.h"
-#include "user_mb_app.h"
-
-#include "sdadc.h"
 
 /* USER CODE END Includes */
 
@@ -54,10 +49,11 @@
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
-osThreadId IIR_FilterHandle;
+osThreadId SDADCIIRFilterHandle;
 osThreadId eMBPollHandle;
 osThreadId PIDHandle;
 osThreadId CheckKeyDownHandle;
+osThreadId TaskMonitorHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -65,10 +61,11 @@ osThreadId CheckKeyDownHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
-void StartIIR_Filter(void const * argument);
+void StartSDADCIIRFilter(void const * argument);
 void StarteMBPoll(void const * argument);
 void StartPID(void const * argument);
 void StartCheckKeyDown(void const * argument);
+void StartTaskMonitor(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -103,9 +100,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* definition and creation of IIR_Filter */
-  osThreadDef(IIR_Filter, StartIIR_Filter, osPriorityNormal, 0, 128);
-  IIR_FilterHandle = osThreadCreate(osThread(IIR_Filter), NULL);
+  /* definition and creation of SDADCIIRFilter */
+  osThreadDef(SDADCIIRFilter, StartSDADCIIRFilter, osPriorityNormal, 0, 128);
+  SDADCIIRFilterHandle = osThreadCreate(osThread(SDADCIIRFilter), NULL);
 
   /* definition and creation of eMBPoll */
   osThreadDef(eMBPoll, StarteMBPoll, osPriorityHigh, 0, 128);
@@ -118,6 +115,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of CheckKeyDown */
   osThreadDef(CheckKeyDown, StartCheckKeyDown, osPriorityBelowNormal, 0, 128);
   CheckKeyDownHandle = osThreadCreate(osThread(CheckKeyDown), NULL);
+
+  /* definition and creation of TaskMonitor */
+  osThreadDef(TaskMonitor, StartTaskMonitor, osPriorityRealtime, 0, 128);
+  TaskMonitorHandle = osThreadCreate(osThread(TaskMonitor), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -140,6 +141,7 @@ void StartDefaultTask(void const * argument)
     
     
     
+    
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
@@ -150,24 +152,22 @@ void StartDefaultTask(void const * argument)
   /* USER CODE END StartDefaultTask */
 }
 
-/* USER CODE BEGIN Header_StartIIR_Filter */
+/* USER CODE BEGIN Header_StartSDADCIIRFilter */
 /**
-* @brief Function implementing the IIR_Filter thread.
+* @brief Function implementing the SDADCIIRFilter thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartIIR_Filter */
-void StartIIR_Filter(void const * argument)
+/* USER CODE END Header_StartSDADCIIRFilter */
+void StartSDADCIIRFilter(void const * argument)
 {
-  /* USER CODE BEGIN StartIIR_Filter */
+  /* USER CODE BEGIN StartSDADCIIRFilter */
   /* Infinite loop */
   for(;;)
   {
-		VOL_IIR_Filter();
-		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
-    osDelay(500);	
+    osDelay(1);
   }
-  /* USER CODE END StartIIR_Filter */
+  /* USER CODE END StartSDADCIIRFilter */
 }
 
 /* USER CODE BEGIN Header_StarteMBPoll */
@@ -183,8 +183,7 @@ void StarteMBPoll(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		 osDelay(10);
-		 eMBPoll( );		 
+    osDelay(1);
   }
   /* USER CODE END StarteMBPoll */
 }
@@ -202,8 +201,7 @@ void StartPID(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		//GetADCVoltage(0);
-    osDelay(3000);		
+    osDelay(1);
   }
   /* USER CODE END StartPID */
 }
@@ -224,6 +222,24 @@ void StartCheckKeyDown(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartCheckKeyDown */
+}
+
+/* USER CODE BEGIN Header_StartTaskMonitor */
+/**
+* @brief Function implementing the TaskMonitor thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTaskMonitor */
+void StartTaskMonitor(void const * argument)
+{
+  /* USER CODE BEGIN StartTaskMonitor */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTaskMonitor */
 }
 
 /* Private application code --------------------------------------------------*/

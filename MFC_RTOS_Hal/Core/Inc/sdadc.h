@@ -27,27 +27,12 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "port.h"
-#include "user_mb_app.h"
+
 /* USER CODE END Includes */
 
 extern SDADC_HandleTypeDef hsdadc1;
 
 /* USER CODE BEGIN Private defines */
-
-#define POT_GPIO_PORT        GPIOE
-   
-#define POT_SDADC            SDADC1
- 
-#define POT_SDADC_GAIN       SDADC_Gain_1   /* Internal gain 1 is seleted: 
-                                               SDADC_GAIN must be updated according to
-                                               POT_SDADC_GAIN */
-#define SDADC_GAIN           (uint32_t) 1  /* SDADC internal gain is set to 1: update this define
-                                              according to POT_SDADC_GAIN */
-#define SDADC_RESOL          (uint32_t) 65535 /* 2e16 - 1 */
-#define SDADC_INIT_TIMEOUT   30 /* ~ about two SDADC clock cycles after INIT is set */
-#define SDADC_CAL_TIMEOUT    4*30720 /*  ~5.12 ms at 6 MHz  in a single calibration sequence */
-#define SDADC_VREF           (float) 2862  /* SDADC external reference is set to 3V */
 
 /* USER CODE END Private defines */
 
@@ -55,29 +40,6 @@ void MX_SDADC1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
-struct _Voltage
-{
-float ch0;
-float ch1;
-};
-struct _VoltageRaw
-{
-int16_t ch0;
-int16_t ch1;
-};
-struct _VoltageSum
-{
-int32_t ch0;
-int32_t ch1;
-};
-
-extern struct _VoltageRaw voltage;
-extern struct _Voltage filter_voltage;
-extern struct _VoltageSum sum_voltage;
- 
-void VOL_IIR_Filter(void);
-void SDADC_Config(void);
-float GetADCVoltage(unsigned char ch);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
