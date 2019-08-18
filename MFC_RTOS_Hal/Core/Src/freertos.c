@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "mb.h"
+#include "sdadc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -162,10 +163,13 @@ void StartDefaultTask(void const * argument)
 void StartSDADCIIRFilter(void const * argument)
 {
   /* USER CODE BEGIN StartSDADCIIRFilter */
+	
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		VOL_IIR_Filter();
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
+    osDelay(10);
   }
   /* USER CODE END StartSDADCIIRFilter */
 }

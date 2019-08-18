@@ -21,7 +21,19 @@
 #include "sdadc.h"
 
 /* USER CODE BEGIN 0 */
+#include "user_mb_app.h"
 
+#define ADCMeanWindow  1024//1024//偶数
+
+#define ADCMeanWindowShift  10//偶数
+
+int16_t bufLength = ADCMeanWindow*2;
+
+int16_t SDADC_ValueTable[ADCMeanWindow*2]={0};
+ 
+struct _VoltageRaw voltage;
+struct _Voltage filter_voltage;
+struct _VoltageSum sum_voltage;
 /* USER CODE END 0 */
 
 SDADC_HandleTypeDef hsdadc1;
@@ -91,7 +103,7 @@ void HAL_SDADC_MspInit(SDADC_HandleTypeDef* sdadcHandle)
   if(sdadcHandle->Instance==SDADC1)
   {
   /* USER CODE BEGIN SDADC1_MspInit 0 */
-
+	HAL_PWREx_EnableSDADC(PWR_SDADC_ANALOG1);
   /* USER CODE END SDADC1_MspInit 0 */
     /* SDADC1 clock enable */
     __HAL_RCC_SDADC1_CLK_ENABLE();
@@ -156,6 +168,52 @@ void HAL_SDADC_MspDeInit(SDADC_HandleTypeDef* sdadcHandle)
 
 /* USER CODE BEGIN 1 */
 
+void SDADC_Config()
+{
+	HAL_SDADC_CalibrationStart(&hsdadc1, SDADC_CALIBRATION_SEQ_1);
+ 
+  if (HAL_SDADC_PollForCalibEvent(&hsdadc1, 50) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if(HAL_SDADC_SelectInjectedTrigger(&hsdadc1, SDADC_SOFTWARE_TRIGGER) != HAL_OK)
+  {
+    Error_Handler();
+  }
+	HAL_SDADC_InjectedStart_DMA(&hsdadc1, (uint32_t*)SDADC_ValueTable,bufLength);
+
+}
+void VOL_IIR_Filter()
+{
+	uint16_t i = 0;
+	int16_t temp = 0;
+	sum_voltage.ch0 = 0;
+	sum_voltage.ch1 = 0;
+	for(i=0;i<ADCMeanWindow;i++){
+		sum_voltage.ch0 +=SDADC_ValueTable[2*i+1];
+		sum_voltage.ch1 +=SDADC_ValueTable[2*i+0];
+	}
+	
+	temp =sum_voltage.ch0>>ADCMeanWindowShift;
+  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	temp =sum_voltage.ch1>>ADCMeanWindowShift;
+	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+ 
+	REG_INPUTsAddr->voltageCh0= (USHORT)(filter_voltage.ch0*10); 	
+	REG_INPUTsAddr->voltageCh1= (USHORT)(filter_voltage.ch1*10); 
+	//AD5761_SetVotage(filter_voltage.ch0*13.1072);
+ 
+}
+ 
+
+float  GetADCVoltage(unsigned char ch){//PID调用
+		//printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0*10.0,filter_voltage.ch1*10.0);
+
+	if(ch == 0)
+		 return filter_voltage.ch0;
+	 else
+		 return  filter_voltage.ch1;
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
