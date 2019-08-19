@@ -29,6 +29,7 @@
 #include "mb.h"
 #include "sdadc.h"
 #include "spi.h"
+#include "pwm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -207,10 +208,19 @@ void StarteMBPoll(void const * argument)
 void StartPID(void const * argument)
 {
   /* USER CODE BEGIN StartPID */
+	static BOOL flag = TRUE;
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		if(flag){
+			LoadPWM(PWM_MAX);
+			flag=FALSE;
+		}else{
+			LoadPWM(PWM_MIN);
+			flag=TRUE;
+		}
+		assert_failed("StartPID",flag);
+    osDelay(1000);
   }
   /* USER CODE END StartPID */
 }
@@ -233,7 +243,7 @@ void StartCheckKeyDown(void const * argument)
 		if(value>65335)
 			value = 0;
 		AD5761_SetVotage(value);
-		//assert_failed("AD5761_SetVotage",value);
+		
     osDelay(500);
   }
   /* USER CODE END StartCheckKeyDown */

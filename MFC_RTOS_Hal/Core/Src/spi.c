@@ -48,9 +48,6 @@ void MX_SPI3_Init(void)
   {
     Error_Handler();
   }
-	__HAL_SPI_ENABLE(&hspi3);                    //使能SPI5
-	SPI3_CSN_L;
-  SPI3_ReadWriteByte(0Xff);                           //启动传输
 
 }
 
@@ -83,6 +80,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_2,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3,GPIO_PIN_SET);
+	
+	__HAL_SPI_ENABLE(&hspi3);                    //使能SPI5
+	SPI3_CSN_L;
+	SPI3_ReadWriteByte(0Xff);                           //启动传输
+
   /* USER CODE END SPI3_MspInit 1 */
   }
 }
@@ -144,6 +146,7 @@ void AD5761_Config(void){
 	 
 	SPI3_Write_Reg(CMD_WR_CTRL_REG,value);
 	//SPI3_Write_Reg(CMD_SW_FULL_RESET,0);
+ 
 }
 /******************************************************************************
 函数原型：	uint8_t SPI3_Write_Reg(uint8_t reg, uint8_t value)

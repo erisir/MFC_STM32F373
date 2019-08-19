@@ -561,6 +561,11 @@
               <FileType>1</FileType>
               <FilePath>..\Middlewares\Third_Party\FreeModbus\User\port\portevent.c</FilePath>
             </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\pwm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
