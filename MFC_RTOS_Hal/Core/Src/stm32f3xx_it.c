@@ -187,7 +187,6 @@ void DMA1_Channel7_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
 
   /* USER CODE END DMA1_Channel7_IRQn 0 */
-	printf("DMA1_Channel7_IRQHandler\r\n");
   HAL_DMA_IRQHandler(&hdma_tim2_ch2_ch4);
   /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
 

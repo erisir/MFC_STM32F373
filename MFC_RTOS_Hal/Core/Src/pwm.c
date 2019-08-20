@@ -87,6 +87,7 @@ HAL_StatusTypeDef TIM1_PWM_UPDATE_DMA(TIM_HandleTypeDef *htim, uint32_t *pData, 
   
   /* Enable the TIM Update DMA request */
   __HAL_TIM_ENABLE_DMA(htim, TIM_DMA_UPDATE);	
+	__HAL_TIM_ENABLE_DMA(htim, TIM_DMA_CC2);	
 	
 	/* Return function status */
  
@@ -108,7 +109,6 @@ void HAL_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef *TimHandle)
 		vDither[i+DitherBit] = vDitherTemp[i];
 	}
 	PWM_Value_SecondPart_Changed =1;
-	printf("HAL_TIM2_PeriodElapsedCallback\r\n");
 }
 
 /**
@@ -125,7 +125,6 @@ void HalfTransferComplete(DMA_HandleTypeDef *DmaHandle)
 		vDither[i] = vDitherTemp[i];
 	}
 	PWM_Value_FirstPart_Changed = 1;
-	printf("HalfTransferComplete\r\n");
 }
 
 /**
