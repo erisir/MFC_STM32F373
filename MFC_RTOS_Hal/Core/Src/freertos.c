@@ -29,6 +29,7 @@
 #include "mb.h"
 #include "sdadc.h"
 #include "spi.h"
+#include "pid.h"
 #include "pwm.h"
 /* USER CODE END Includes */
 
@@ -208,19 +209,16 @@ void StarteMBPoll(void const * argument)
 void StartPID(void const * argument)
 {
   /* USER CODE BEGIN StartPID */
-	static BOOL flag = TRUE;
   /* Infinite loop */
   for(;;)
   {
-		if(flag){
-			LoadPWM(PWM_MAX);
-			flag=FALSE;
+		if(TRUE == PID_isRunning()){
+			PID_Start();
+			osDelay(Get_ControlCycle());
 		}else{
-			LoadPWM(PWM_MIN);
-			flag=TRUE;
+			osDelay(1000);
 		}
-		assert_failed("StartPID",flag);
-    osDelay(1000);
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
   }
   /* USER CODE END StartPID */
 }

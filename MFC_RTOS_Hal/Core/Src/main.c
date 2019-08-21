@@ -31,6 +31,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "pwm.h"
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,6 +106,7 @@ int main(void)
 	SDADC_Config();
 	AD5761_Config();
 	StartTimPwmDMA();
+	PID_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

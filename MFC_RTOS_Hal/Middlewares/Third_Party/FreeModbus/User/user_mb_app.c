@@ -19,6 +19,7 @@
  * File: $Id: user_mb_app.c,v 1.60 2013/11/23 11:49:05 Armink $
  */
 #include "user_mb_app.h"
+#include "pid.h"
  
 
 /*------------------------Slave mode use these variables----------------------*/
@@ -148,7 +149,7 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 usNRegs--;
             }
 						if(usAddress==1)
-							//Set_PID_Param();//
+							Set_PID_Param();//
             break;
         }
     }
@@ -228,9 +229,9 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
                         *pucRegBuffer++);
             }
 						if(0==usAddress){
-							//SetValveMode(pucCoilBuf[0]&0xff);
+							SetValveMode(pucCoilBuf[0]&0xff);
 						}else if(3==usAddress){
-							//SetContrlResource((pucCoilBuf[0]>>3)&0xff);
+							SetContrlResource((pucCoilBuf[0]>>3)&0xff);
 						}						
 
             break;

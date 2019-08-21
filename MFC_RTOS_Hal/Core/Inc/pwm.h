@@ -6,8 +6,8 @@
 #define     PWM_DUTY        65535  
 #define DitherBit   32
 
-#define     PWM_MAX PWM_DUTY*32
-#define     PWM_MIN PWM_DUTY
+#define     PWM_MAX_VALUE PWM_DUTY*32
+#define     PWM_MIN_MIN PWM_DUTY
 
 void StartTimPwmDMA(void); 
 
