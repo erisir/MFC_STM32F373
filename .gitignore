@@ -4,7 +4,7 @@
 /STM32F373/bin
 /PythonControler/src/data
 PythonControler\src\__pycache__
-
+ 
 *.hex
 *.lnp
 *.map
@@ -17,5 +17,5 @@ PythonControler\src\__pycache__
 *.lst
 *.hex
 /MFC_RTOS_Hal/MDK-ARM/MFC_RTOS_Hal
-/STM32F373/user
-MFCF373.hex
+/STM32F373/user/
+

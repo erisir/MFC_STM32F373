@@ -260,26 +260,6 @@ void StartTaskMonitor(void const * argument)
 	EE_Status ee_status = EE_OK;	
   for(;;)
   {
-		//GetADCVoltage(0);
-	HAL_FLASH_Unlock();
-	 /* Store 10 values of all variables in EEPROM, ascending order */
-  VarValue = 1;
-	for (Index = 0; Index < NB_OF_VARIABLES; Index++)
-	{
-		/* Wait any cleanup is completed before accessing flash again */
-		while (ErasingOnGoing == 1) { }
-
-		//ee_status = EE_WriteVariable32bits(VirtAddVarTabTest[Index], Index*VarValue);
-		//assert_failed("EE_WriteVariable32bits",ee_status);
-		ee_status = EE_ReadVariable32bits(VirtAddVarTabTest[Index], &VarDataTab[Index]);
-		assert_failed("EE_ReadVariable32bits",ee_status);
-		if (Index*VarValue != VarDataTab[Index]) {assert_failed("diffrenct result",ee_status);}
-
-
-	}
- 
-	HAL_FLASH_Lock();
-	
     osDelay(5000);
   }
   /* USER CODE END StartTaskMonitor */

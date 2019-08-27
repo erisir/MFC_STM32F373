@@ -377,8 +377,7 @@ void EEPROM_READ_PID(void)	//
 	spid->PWM_MAX +=   data_x;
 	spid->PWM_MIN +=   data_y;
 	spid->PWM_STEP +=   data_z;
- 
-	  
+
 }
 	/***********************************************          
 	 * 函数功能：PID参数Kp,Ki,Kd的计算   ********************/  

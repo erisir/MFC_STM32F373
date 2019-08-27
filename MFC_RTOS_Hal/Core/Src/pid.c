@@ -253,7 +253,6 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 
 		Kpid_calcu[KpidSelect]=temp;
 
-		//Kpid_calcu
 	}
 
 }
@@ -269,8 +268,7 @@ void PID_Init()
 	 FuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
 	 Init_FuzzyMap();
 	 FuzzyMap_Param_Reset();
-	 //PID_Param_Reset();
-	 //Valve_Open();
+
 }
 void FuzzyMap_Param_Reset()
 {
@@ -307,7 +305,7 @@ void PID_Param_Reset(void)
 	spid->PWM_MIN=100;
 	spid->PWM_STEP=5000;
 	
-	//EEPROM_SAVE_PID();
+	EEPROM_SAVE_PID();
 }
  
 void Init_FuzzyMap(void)
@@ -365,15 +363,13 @@ void EEPROM_INIT(void)//
 	
   EE_Init(VirtAddVarTab, EE_FORCED_ERASE);
 
-	
 	EEPROM_READ_PID();
 	
 	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_SUM], &data_x);
 	if(data_x != EEPROM_SUM)//
 	{
- 
 		EE_WriteVariable16bits(VirtAddVarTab[EEPROM_SUM], EEPROM_SUM);
-		PID_Param_Reset();//
+		PID_Param_Reset();
 	}
 	HAL_FLASH_Lock();
 }
