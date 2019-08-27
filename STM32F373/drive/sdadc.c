@@ -42,7 +42,7 @@ void VOL_IIR_Filter()
 	 
 	REG_INPUTsAddr->voltageCh0=(USHORT) (filter_voltage.ch0*10); 
 	REG_INPUTsAddr->voltageCh1=(USHORT) (filter_voltage.ch1*10); 
-	AD5761_SetVotage(filter_voltage.ch0*13.1072);
+	//AD5761_SetVotage(filter_voltage.ch0*13.1072);
 }
  
 

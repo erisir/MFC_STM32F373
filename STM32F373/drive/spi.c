@@ -13,7 +13,7 @@
 void AD5761_Init(void){ 
 	SPI3_Init();
 	AD5761_Config();
-	AD5761_SetVotage(0);
+	AD5761_SetVotage(65535);
 	//AD5761_ReadConfig(); 
 }
 void AD5761_Config(void){
