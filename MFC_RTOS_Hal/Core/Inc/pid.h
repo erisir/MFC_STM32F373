@@ -15,52 +15,47 @@ Copyright(C) bg8wj
 
 ///////////////////////////////////////////////////////////
  
+typedef enum{
+ EEPROM_PID_P = 1,
+ EEPROM_PID_I,
+ EEPROM_PID_D,
+ EEPROM_PID_PF,
+ EEPROM_PID_IF,
+ EEPROM_PID_DF,
+ EEPROM_PID_EFRL,
+ EEPROM_PID_EFRM,
+ EEPROM_PID_EFRS,
+ EEPROM_PID_ECFRL,
+ EEPROM_PID_ECFRM,
+ EEPROM_PID_ECFRS,
+ EEPROM_PID_CUTOFF_FREQ,
+ EEPROM_PID_CONTROL_CYCLE,
+ EEPROM_PID_DEADZONE,
+ EEPROM_PWM_MAX_HIGH,
+ EEPROM_PWM_MIN_HIGH,
+ EEPROM_PWM_STEP_HIGH,
+ EEPROM_PWM_MAX_LOW,
+ EEPROM_PWM_MIN_LOW,
+ EEPROM_PWM_STEP_LOW,
+ EEPROM_SUM,
+}EEPROM_SAVE_INDEX;
 
-#define EEPROM_PID_P		0
-#define EEPROM_PID_I		1
-#define EEPROM_PID_D		2
-
-#define EEPROM_PID_PF		3
-#define EEPROM_PID_IF		4
-#define EEPROM_PID_DF		5
-
-#define EEPROM_PID_EFRL		6
-#define EEPROM_PID_EFRM		7
-#define EEPROM_PID_EFRS		8
-
-#define EEPROM_PID_ECFRL		9
-#define EEPROM_PID_ECFRM		10
-#define EEPROM_PID_ECFRS		11
-
-
-#define EEPROM_PID_CUTOFF_FREQ		12
-#define EEPROM_PID_CONTROL_CYCLE 13
-#define EEPROM_PID_DEADZONE		14
- 
-#define EEPROM_PWM_MAX_HIGH 15
-#define EEPROM_PWM_MIN_HIGH 16
-#define EEPROM_PWM_STEP_HIGH 17
-
-#define EEPROM_PWM_MAX_LOW 18
-#define EEPROM_PWM_MIN_LOW 19
-#define EEPROM_PWM_STEP_LOW 20
-
-#define EEPROM_SUM				21
-
-#define NL 0 
-#define NM 1 
-#define NS 2 
-#define ZE 3 
-#define PS 4 
-#define PM 5 
-#define PL 6 
+typedef enum{
+ NL=0 ,
+ NM  ,
+ NS  ,
+ ZE  ,
+ PS  ,
+ PM  ,
+ PL  ,
+}FUZZY_MAP_FLAG;
 
 /************************************************
 PIDº¯Êý
 
  *************************************************/ 
 /*************PID**********************************/
-struct _PID {//21 ints
+struct _PID{//21 ints
   uint16_t Voltage_Set_Point;
 	uint16_t kpid[3]; // kp ki kd
 	uint16_t kpidF[3]; // kp ki kd factor	
@@ -75,16 +70,20 @@ struct _PID {//21 ints
 	uint32_t PWM_MAX;
 	uint32_t PWM_MIN;
 	uint32_t PWM_STEP;
-};
+}  ;
 
-struct _FuzzyCtrlRuleMap{
+struct _FuzzyCtrlRuleMap {
 	int8_t data[7][7][3];
 };
+
 extern struct _PID *  spid;
 
- 
-
 void PID_Init (void);  
+void EEPROM_INIT(void);
+
+void EEPROM_READ_PID(void);
+void EEPROM_SAVE_PID(void);
+
 
 void Init_FuzzyMap(void);
  

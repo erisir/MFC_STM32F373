@@ -9,7 +9,7 @@
   * @attention
   ******************************************************************************
   */ 
-#define NumbOfVar 26
+ 
 #include "pid.h"
 
 struct _PID * spid;
@@ -28,7 +28,7 @@ uint8_t PID_Votage_Chanel = 0;
 uint8_t PID_Ctrl_Votage_Chanel = 1;
 uint8_t isRunning=0;
  
-
+uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 
 float  eFuzzyRule[7]={-3000,-2000,-1000,0,1000,2000,3000};   
 float  ecFuzzyRule[7]={-300,-200,-100,0,100,200,300};
@@ -121,13 +121,6 @@ void SetContrlResource(uint8_t mode)
 uint16_t Get_ControlCycle(void){
 	return spid->PID_ControlCycle;
 }
-
-uint16_t VirtAddVarTab[NumbOfVar] = {
-	0x9A00,0x9A01,0x9A02,0x9A03,0x9A04,0x9A05,0x9A06,0x9A07,0x9A08,0x9A09,
-	0x9A0A,0x9A0B,0x9A0C,0x9A0D,0x9A0F,0x9A10,0x9A11,0x9A12,0x9A13,0x9A14,
-	0x9A15,0x9A16,0x9A17,0x9A18,0x9A19,0x9A1A
-};//VirtAddVarTab
-
  
 void Set_PID_Param()//42bit
 { 	
@@ -358,5 +351,145 @@ uint8_t PID_isRunning(void){
 } 
 uint16_t myabs( int val){
 	return val>0?val:(-1*val);
+}
+
+void EEPROM_INIT(void)// 
+{
+	/* Unlock the Flash Program Erase controller */
+  for (int VarValue = 0; VarValue < NB_OF_VARIABLES; VarValue++)
+  {
+    VirtAddVarTab[VarValue] = (uint16_t)(VarValue + 1);
+  }
+
+	HAL_FLASH_Unlock();
+	
+  EE_Init(VirtAddVarTab, EE_FORCED_ERASE);
+
+	
+	EEPROM_READ_PID();
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_SUM], &data_x);
+	if(data_x != EEPROM_SUM)//
+	{
+ 
+		EE_WriteVariable16bits(VirtAddVarTab[EEPROM_SUM], EEPROM_SUM);
+		PID_Param_Reset();//
+	}
+	HAL_FLASH_Lock();
+}
+void EEPROM_SAVE_PID(void)	 
+{
+	HAL_FLASH_Unlock();
+	data_x = (int16_t) (spid->kpid[0]);
+	data_y = (int16_t) (spid->kpid[1]);
+	data_z = (int16_t) (spid->kpid[2]);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_P], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_I], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_D], data_z);
+	
+	data_x = (int16_t) (spid->kpidF[0]);
+	data_y = (int16_t) (spid->kpidF[1]);
+	data_z = (int16_t) (spid->kpidF[2]);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_PF], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_IF], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_DF], data_z);
+	
+	data_x = (int16_t) (spid->eFuzzyRule[0]);
+	data_y = (int16_t) (spid->eFuzzyRule[1]);
+	data_z = (int16_t) (spid->eFuzzyRule[2]);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_EFRL], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_EFRM], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_EFRS], data_z);
+	
+	data_x = (int16_t) (spid->ecFuzzyRule[0]);
+	data_y = (int16_t) (spid->ecFuzzyRule[1]);
+	data_z = (int16_t) (spid->ecFuzzyRule[2]);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRL], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRM], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRS], data_z);
+	
+	data_x = (int16_t) (spid->PID_Cutoff);
+	data_y = (int16_t) (spid->PID_ControlCycle);
+	data_z = (int16_t) (spid->PID_DeadZone);
+	
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_CUTOFF_FREQ], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_CONTROL_CYCLE], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PID_DEADZONE], data_z);
+	
+	data_x = (int16_t) (spid->PWM_MAX/65535);
+	data_y = (int16_t) (spid->PWM_MIN/65535);
+	data_z = (int16_t) (spid->PWM_STEP/65535);
+	
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_MAX_HIGH], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_MIN_HIGH], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_STEP_HIGH], data_z);
+	
+	data_x = (int16_t) (spid->PWM_MAX%65535);
+	data_y = (int16_t) (spid->PWM_MIN%65535);
+	data_z = (int16_t) (spid->PWM_STEP%65535);
+	
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_MAX_LOW], data_x);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_MIN_LOW], data_y);
+	EE_WriteVariable16bits(VirtAddVarTab[EEPROM_PWM_STEP_LOW], data_z);
+	
+	HAL_FLASH_Lock();
+}
+void EEPROM_READ_PID(void)	// 
+{
+	HAL_FLASH_Unlock();
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_P], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_I], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_D], &data_z);
+	
+	spid->kpid[0] = (float) data_x;
+	spid->kpid[1] = (float) data_y;
+	spid->kpid[2] = (float) data_z;
+	 
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_PF], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_IF], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_DF], &data_z);
+	spid->kpidF[0] = (float) data_x;
+	spid->kpidF[1] = (float) data_y;
+	spid->kpidF[2] = (float) data_z;
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_EFRL], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_EFRM], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_EFRS], &data_z);
+	spid->eFuzzyRule[0] = (float) data_x;
+	spid->eFuzzyRule[1] = (float) data_y;
+	spid->eFuzzyRule[2] = (float) data_z;
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRL], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRM], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_ECFRS], &data_z);
+	spid->ecFuzzyRule[0] = (float) data_x;
+	spid->ecFuzzyRule[1] = (float) data_y;
+	spid->ecFuzzyRule[2] = (float) data_z;
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_CUTOFF_FREQ], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_CONTROL_CYCLE], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PID_DEADZONE], &data_z);
+	
+	spid->PID_Cutoff =   data_x;
+	spid->PID_ControlCycle =   data_y;
+	spid->PID_DeadZone =   data_z;
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_MAX_HIGH], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_MIN_HIGH], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_STEP_HIGH], &data_z);
+	
+	spid->PWM_MAX =   data_x*65535;
+	spid->PWM_MIN =   data_y*65535;
+	spid->PWM_STEP =   data_z*65535;
+	
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_MAX_LOW], &data_x);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_MIN_LOW], &data_y);
+	EE_ReadVariable16bits(VirtAddVarTab[EEPROM_PWM_STEP_LOW], &data_z);
+	
+	spid->PWM_MAX +=   data_x;
+	spid->PWM_MIN +=   data_y;
+	spid->PWM_STEP +=   data_z;
+  HAL_FLASH_Lock();
+	  
 }
 //**********************************end of file**************************************
