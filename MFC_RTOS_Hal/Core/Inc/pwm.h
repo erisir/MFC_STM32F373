@@ -1,7 +1,8 @@
 #ifndef __TIMER_H
 #define __TIMER_H
-#include "port.h"
-#include "stm32f3xx_hal.h"
+
+#include "main.h"
+ 
 
 #define     PWM_DUTY        65535  
 #define DitherBit   32

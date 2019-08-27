@@ -53,8 +53,8 @@
 #include "eeprom_emul_conf.h"
 #include "eeprom_emul_types.h"
 #include "flash_interface.h"
-//#include "stm32l4xx_ll_crc.h"
-//#include "stm32l4xx_ll_bus.h"
+#include "stm32f3xx_ll_crc.h"
+#include "stm32f3xx_ll_bus.h"
 //#if defined(RECOVERY_TEST)
 //#include "stm32l4xx_ll_rtc.h"
 //#endif
@@ -103,8 +103,8 @@
   */
 
 /* Macros to manipulate pages */
-#define PAGE_ADDRESS(__PAGE__)   (uint32_t)(FLASH_BASE + (__PAGE__) * PAGE_SIZE + ((START_PAGE_ADDRESS - FLASH_BASE) / BANK_SIZE) * BANK_SIZE) /*!< Get page address from page index */
-#define PAGE(__ADDRESS__)        (uint32_t)((((__ADDRESS__) - FLASH_BASE) % BANK_SIZE) / FLASH_PAGE_SIZE) /*!< Get page index from page address */
+#define PAGE_ADDRESS(__PAGE__)   (uint32_t)(FLASH_BASE + (__PAGE__) * PAGE_SIZE ) /*!< Get page address from page index */
+#define PAGE(__ADDRESS__)        (uint32_t)(((__ADDRESS__) - FLASH_BASE)/ FLASH_PAGE_SIZE) /*!< Get page index from page address */
 #define PREVIOUS_PAGE(__PAGE__)  (uint32_t)((((__PAGE__) - START_PAGE - 1U + PAGES_NUMBER) % PAGES_NUMBER) + START_PAGE) /*!< Get page index of previous page, among circular page list */
 #define FOLLOWING_PAGE(__PAGE__) (uint32_t)((((__PAGE__) - START_PAGE + 1U) % PAGES_NUMBER) + START_PAGE) /*!< Get page index of following page, among circular page list */
 

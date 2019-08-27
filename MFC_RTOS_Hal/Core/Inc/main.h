@@ -43,7 +43,17 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include <stdio.h>
+	
+#include "pwm.h"
+#include "pid.h"
+#include "sdadc.h"
+#include "mb.h"
+#include "spi.h"
+#include "tim.h"
+#include "eeprom_emul.h"
+#include "user_mb_app.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

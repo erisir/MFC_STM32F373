@@ -218,7 +218,7 @@ EE_Status EE_Init(uint16_t* VirtAddTab, EE_Erase_type EraseType)
   {
     return EE_INVALID_BANK_CFG;
   }
-
+	 
   /***************************************************************************/
   /* Step 0: Check parameters validity and perform initial configuration     */
   /***************************************************************************/
@@ -230,7 +230,7 @@ EE_Status EE_Init(uint16_t* VirtAddTab, EE_Erase_type EraseType)
   {
     return EE_INVALID_VIRTUALADDRESS;
   }
-
+	 
   /* Store Table of Virtual addressess */
   puhVirtAdd = VirtAddTab;
 
@@ -242,7 +242,7 @@ EE_Status EE_Init(uint16_t* VirtAddTab, EE_Erase_type EraseType)
       return EE_INVALID_VIRTUALADDRESS;
     }
   }
-
+	
   /***************************************************************************/
   /* Step 1: Read all lines of the flash pages of eeprom emulation to        */
   /*         delete corrupted lines detectable through NMI                   */
@@ -255,6 +255,7 @@ EE_Status EE_Init(uint16_t* VirtAddTab, EE_Erase_type EraseType)
       addressvalue = (*(__IO EE_ELEMENT_TYPE*)(pageaddress + varidx));
     }
   }
+ 
 
   /***************************************************************************/
   /* Step 2: Handle case of reset during transfer with no receive page       */
@@ -283,7 +284,7 @@ EE_Status EE_Init(uint16_t* VirtAddTab, EE_Erase_type EraseType)
       nbvalidpage++;
     }
   }
-
+	 
   /* Check if no active and no receive page have been detected */
   if (nbactivereceivepage == 0U)
   {
@@ -1131,7 +1132,7 @@ static uint32_t FindPage(EE_Find_type Operation)
           return EE_NO_PAGE_FOUND;   /* No active Page */
         }
       }
-      break;
+ 
 
     case FIND_READ_PAGE:  /* ---- Read operation ---- */
       if (currentpagestatus == STATE_PAGE_ACTIVE)
@@ -1149,7 +1150,7 @@ static uint32_t FindPage(EE_Find_type Operation)
           return EE_NO_PAGE_FOUND;   /* No active Page */
         }
       }
-      break;
+ 
 
     case FIND_ERASE_PAGE: /* ---- Return the erased page */
       if (followingpagestatus == STATE_PAGE_ERASED)
@@ -1160,7 +1161,7 @@ static uint32_t FindPage(EE_Find_type Operation)
       {
         return EE_NO_PAGE_FOUND;  /* No erased Page */
       }
-      break;
+     
 
     default:
       ;

@@ -73,7 +73,7 @@
   * @{
   */
 
-#define BANK_SIZE               FLASH_BANK_SIZE         /*!< Alias to FLASH_BANK_SIZE definition from HAL STM32L4 */
+#define BANK_SIZE               (0x100 << 10)         /*!< Alias to FLASH_BANK_SIZE definition from HAL STM32L4 */ 
 #define EE_ACCESS_32BITS    /*!< Enable EEPROM 32bits R/W functions, only valid for flash allowing 64bits access*/
 
 /* Page state header */

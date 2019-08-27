@@ -26,11 +26,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-#include "mb.h"
-#include "sdadc.h"
-#include "spi.h"
-#include "pid.h"
-#include "pwm.h"
+/* Virtual address Tab defined by the user: 0x0000 and 0xFFFF values are prohibited */
+uint16_t VirtAddVarTabTest[NB_OF_VARIABLES];
+uint32_t Index = 0;
+__IO uint32_t ErasingOnGoing = 0;
+uint32_t VarDataTab[NB_OF_VARIABLES] = {0};
+uint32_t VarValue=0;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -187,9 +188,7 @@ void StartSDADCIIRFilter(void const * argument)
 void StarteMBPoll(void const * argument)
 {
   /* USER CODE BEGIN StarteMBPoll */
-	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
-	eMBInit( MB_RTU, 0x01, 1, 9600, MB_PAR_NONE );
-  eMBEnable(  );
+	
   /* Infinite loop */
   for(;;)
   {
@@ -258,10 +257,30 @@ void StartTaskMonitor(void const * argument)
 {
   /* USER CODE BEGIN StartTaskMonitor */
   /* Infinite loop */
+	EE_Status ee_status = EE_OK;	
   for(;;)
   {
-		GetADCVoltage(0);
-    osDelay(500);
+		//GetADCVoltage(0);
+	HAL_FLASH_Unlock();
+	 /* Store 10 values of all variables in EEPROM, ascending order */
+  VarValue = 1;
+	for (Index = 0; Index < NB_OF_VARIABLES; Index++)
+	{
+		/* Wait any cleanup is completed before accessing flash again */
+		while (ErasingOnGoing == 1) { }
+
+		//ee_status = EE_WriteVariable32bits(VirtAddVarTabTest[Index], Index*VarValue);
+		//assert_failed("EE_WriteVariable32bits",ee_status);
+		ee_status = EE_ReadVariable32bits(VirtAddVarTabTest[Index], &VarDataTab[Index]);
+		assert_failed("EE_ReadVariable32bits",ee_status);
+		if (Index*VarValue != VarDataTab[Index]) {assert_failed("diffrenct result",ee_status);}
+
+
+	}
+ 
+	HAL_FLASH_Lock();
+	
+    osDelay(5000);
   }
   /* USER CODE END StartTaskMonitor */
 }

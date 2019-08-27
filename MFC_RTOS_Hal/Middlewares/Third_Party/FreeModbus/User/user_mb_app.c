@@ -20,7 +20,6 @@
  */
 #include "user_mb_app.h"
 #include "pid.h"
- 
 
 /*------------------------Slave mode use these variables----------------------*/
 //Slave mode:DiscreteInputs variables

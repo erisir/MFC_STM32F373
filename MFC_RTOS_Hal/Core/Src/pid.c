@@ -11,11 +11,6 @@
   */ 
 #define NumbOfVar 26
 #include "pid.h"
-#include "pwm.h"
-#include "sdadc.h"
-#include "string.h"
-#include <stdio.h>
-#include "user_mb_app.h"
 
 struct _PID * spid;
 struct _FuzzyCtrlRuleMap *FuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];

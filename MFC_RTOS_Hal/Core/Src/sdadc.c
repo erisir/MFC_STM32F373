@@ -21,7 +21,6 @@
 #include "sdadc.h"
 
 /* USER CODE BEGIN 0 */
-#include "user_mb_app.h"
 
 #define ADCMeanWindow  1024//1024//Å¼Êý
 

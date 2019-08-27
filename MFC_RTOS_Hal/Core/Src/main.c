@@ -31,8 +31,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "pwm.h"
-#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+extern uint16_t VirtAddVarTabTest[NB_OF_VARIABLES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +73,7 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	EE_Status ee_status = EE_OK;
   /* USER CODE END 1 */
   
 
@@ -109,6 +107,21 @@ int main(void)
 	AD5761_Config();
 	StartTimPwmDMA();
 	PID_Init();
+	
+	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
+	eMBInit( MB_RTU, 0x01, 1, 9600, MB_PAR_NONE );
+  eMBEnable(  );
+	
+	/* Unlock the Flash Program Erase controller */
+  for (int VarValue = 0; VarValue < NB_OF_VARIABLES; VarValue++)
+  {
+    VirtAddVarTabTest[VarValue] = (uint16_t)(10*VarValue + 1);
+  }
+
+	HAL_FLASH_Unlock();
+  ee_status = EE_Init(VirtAddVarTabTest, EE_FORCED_ERASE);
+  if(ee_status != EE_OK) {assert_failed("EE_Init ",ee_status);} 
+	HAL_FLASH_Lock();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

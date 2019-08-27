@@ -56,7 +56,6 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static uint32_t GetBankNumber(uint32_t Address);
 
 /* Exported functions --------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -76,17 +75,13 @@ EE_Status PageErase(uint32_t Page, uint16_t NbPages)
 {
   EE_Status status = EE_OK;
   FLASH_EraseInitTypeDef s_eraseinit;
-  uint32_t bank = FLASH_BANK_1, page_error = 0U;
-
-#if defined(FLASH_OPTR_BFB2)
-  bank = GetBankNumber(PAGE_ADDRESS(Page));
-#endif
-
+  uint32_t  page_error = 0U;
+ 
   s_eraseinit.TypeErase   = FLASH_TYPEERASE_PAGES;
   s_eraseinit.NbPages     = NbPages;
-  s_eraseinit.Page        = Page;
-  s_eraseinit.Banks       = bank;
+  s_eraseinit.PageAddress = PAGE_ADDRESS(Page);
 
+ 
   /* Erase the Page: Set Page status to ERASED status */
   if (HAL_FLASHEx_Erase(&s_eraseinit, &page_error) != HAL_OK)
   {
@@ -105,18 +100,14 @@ EE_Status PageErase(uint32_t Page, uint16_t NbPages)
   */
 EE_Status PageErase_IT(uint32_t Page, uint16_t NbPages)
 {
+   
   EE_Status status = EE_OK;
   FLASH_EraseInitTypeDef s_eraseinit;
-  uint32_t bank = FLASH_BANK_1;
-
-#if defined(FLASH_OPTR_BFB2)
-  bank = GetBankNumber(PAGE_ADDRESS(Page));
-#endif
+ 
 
   s_eraseinit.TypeErase   = FLASH_TYPEERASE_PAGES;
   s_eraseinit.NbPages     = NbPages;
-  s_eraseinit.Page        = Page;
-  s_eraseinit.Banks       = bank;
+  s_eraseinit.PageAddress = PAGE_ADDRESS(Page);
 
   /* Erase the Page: Set Page status to ERASED status */
   if (HAL_FLASHEx_Erase_IT(&s_eraseinit) != HAL_OK)
@@ -126,42 +117,6 @@ EE_Status PageErase_IT(uint32_t Page, uint16_t NbPages)
   return status;
 }
 
-/**
-  * @brief  Gets the bank of a given address
-  * @param  Address Address of the FLASH Memory
-  * @retval Bank_Number The bank of a given address
-  */
-static uint32_t GetBankNumber(uint32_t Address)
-{
-  uint32_t bank = 0U;
-
-  if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0U)
-  {
-    /* No Bank swap */
-    if (Address < (FLASH_BASE + FLASH_BANK_SIZE))
-    {
-      bank = FLASH_BANK_1;
-    }
-    else
-    {
-      bank = FLASH_BANK_2;
-    }
-  }
-  else
-  {
-    /* Bank swap */
-    if (Address < (FLASH_BASE + FLASH_BANK_SIZE))
-    {
-      bank = FLASH_BANK_2;
-    }
-    else
-    {
-      bank = FLASH_BANK_1;
-    }
-  }
-
-  return bank;
-}
 
 /**
   * @brief  Delete corrupted Flash address, can be called from NMI. No Timeout.
@@ -172,60 +127,7 @@ static uint32_t GetBankNumber(uint32_t Address)
   */
 EE_Status DeleteCorruptedFlashAddress(uint32_t Address)
 {
-  uint32_t dcachetoreactivate = 0U;
-  EE_Status status = EE_OK;
-
-  /* Deactivate the data cache if they are activated to avoid data misbehavior */
-  if(READ_BIT(FLASH->ACR, FLASH_ACR_DCEN) != RESET)
-  {
-    /* Disable data cache  */
-    __HAL_FLASH_DATA_CACHE_DISABLE();
-    dcachetoreactivate = 1U;
-  }
-
-  /* Set FLASH Programmation bit */
-  SET_BIT(FLASH->CR, FLASH_CR_PG);
-
-  /* Program double word of value 0 */
-  *(__IO uint32_t*)(Address) = (uint32_t)0U;
-  *(__IO uint32_t*)(Address+4U) = (uint32_t)0U;
-
-  /* Wait programmation completion */
-  while(__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY))
-  {
-  }
-
-  /* Check if error occured */
-  if((__HAL_FLASH_GET_FLAG(FLASH_FLAG_OPERR))  || (__HAL_FLASH_GET_FLAG(FLASH_FLAG_PROGERR)) ||
-     (__HAL_FLASH_GET_FLAG(FLASH_FLAG_WRPERR)) || (__HAL_FLASH_GET_FLAG(FLASH_FLAG_PGAERR))  ||
-     (__HAL_FLASH_GET_FLAG(FLASH_FLAG_SIZERR)) || (__HAL_FLASH_GET_FLAG(FLASH_FLAG_PGSERR)))
-  {
-    status = EE_DELETE_ERROR;
-  }
-
-  /* Check FLASH End of Operation flag  */
-  if (__HAL_FLASH_GET_FLAG(FLASH_FLAG_EOP))
-  {
-    /* Clear FLASH End of Operation pending bit */
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP);
-  }
-
-  /* Clear FLASH Programmation bit */
-  CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
-
-  /* Flush the caches to be sure of the data consistency */
-  if(dcachetoreactivate == 1U)
-  {
-    /* Reset data cache */
-    __HAL_FLASH_DATA_CACHE_RESET();
-    /* Enable data cache */
-    __HAL_FLASH_DATA_CACHE_ENABLE();
-  }
-
-  /* Clear FLASH ECCD bit */
-  __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ECCD);
-
-  return status;
+  return EE_OK;
 }
 
 /**
