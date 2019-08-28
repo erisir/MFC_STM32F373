@@ -34,22 +34,22 @@ extern SPI_HandleTypeDef hspi3;
 
 /* USER CODE BEGIN Private defines */
 /* Input Shift Register Commands */
-#define CMD_NOP										0x0
-#define CMD_WR_TO_INPUT_REG				0x1
-#define CMD_UPDATE_DAC_REG				0x2
+#define CMD_NOP										0x00
+#define CMD_WR_TO_INPUT_REG				0x01
+#define CMD_UPDATE_DAC_REG				0x02
 #define CMD_WR_UPDATE_DAC_REG			0x03//0011 Write and update DAC register
 #define CMD_WR_CTRL_REG						0x04//0100 Write to control register
-#define CMD_NOP_ALT_1							0x5
-#define CMD_NOP_ALT_2							0x6
-#define CMD_SW_DATA_RESET					0x7
-#define CMD_RESERVED							0x8
-#define CMD_DIS_DAISY_CHAIN				0x9
-#define CMD_RD_INPUT_REG					0xA
-#define CMD_RD_DAC_REG						0xB
-#define CMD_RD_CTRL_REG						0xC
-#define CMD_NOP_ALT_3							0xD
-#define CMD_NOP_ALT_4							0xE
-#define CMD_SW_FULL_RESET					0xF
+#define CMD_NOP_ALT_1							0x05
+#define CMD_NOP_ALT_2							0x06
+#define CMD_SW_DATA_RESET					0x07
+#define CMD_RESERVED							0x08
+#define CMD_DIS_DAISY_CHAIN				0x09
+#define CMD_RD_INPUT_REG					0x0A
+#define CMD_RD_DAC_REG						0x0B
+#define CMD_RD_CTRL_REG						0x0C
+#define CMD_NOP_ALT_3							0x0D
+#define CMD_NOP_ALT_4							0x0E
+#define CMD_SW_FULL_RESET					0x0F
 
  
 #define SPI3_CSN_H HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET)

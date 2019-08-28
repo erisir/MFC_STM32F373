@@ -38,7 +38,12 @@ void Bsp_Int(void )
 	TIM4_Init(); 
 	PWM_Init(); 
 	PID_Init() ;  
-	ADC1_Init();  
+	ADC1_Init(); 
+	eMBInit(MB_RTU, 0x01, 0, 9600, MB_PAR_EVEN);
+	//eStatus = eMBInit(MB_ASCII, 0x01, 0, 9600, MB_PAR_EVEN);
+
+	/* Enable the Modbus Protocol Stack. */
+	eMBEnable();	
 	AD5761_Init() ;
   //Calculate_FilteringCoefficient(50);//sampel time,unit second,F_cutoff
  

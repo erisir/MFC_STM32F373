@@ -34,8 +34,9 @@ void AD5761_Config(void){
 																		 6 0 to 16
 																		 7 0 to 20		*/
   value =  (CV<<9) | (OVR<<8) | (B2C<<7) | (ETS<<6) | (IRO<<5) | (PV<<3) | (RA);  
-	 
+	SPI3_Write_Reg(CMD_NOP,0);
 	SPI3_Write_Reg(CMD_WR_CTRL_REG,value);
+	SPI3_Write_Reg(CMD_NOP,0);
 	//SPI3_Write_Reg(CMD_SW_FULL_RESET,0);
 }
  
@@ -118,17 +119,19 @@ uint8_t SPI3_RW(uint8_t data)
 uint8_t SPI3_Write_Reg(uint8_t reg, uint16_t value)
 {
 	uint8_t status,data;
+
 	SPI3_CSN_L;		//选通SPI3器件
 	delay_ms(1);
 	status = SPI3_RW(reg);//写寄存器地址	
-	
+
 	data=(value & 0xFF00) >> 8;
 	
 	SPI3_RW( data);	//写数据
-	
+
 	data = (value & 0x00FF) >> 0;
-	
+
 	SPI3_RW(data);	//写数据
+
 	delay_ms(1);
 	SPI3_CSN_H;		//禁止SPI3器件
 	return 	status;

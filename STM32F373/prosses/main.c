@@ -50,14 +50,10 @@ void toggle(uint8_t index)
 int main(void)
 { 
 	 // uint16_t a=10;
-		eMBErrorCode    eStatus;
+		
 		Bsp_Int();		 
-		eStatus = eMBInit(MB_RTU, 0x01, 0, 9600, MB_PAR_EVEN);
-		//eStatus = eMBInit(MB_ASCII, 0x01, 0, 9600, MB_PAR_EVEN);
-
-    /* Enable the Modbus Protocol Stack. */
-    eStatus = eMBEnable();
-		while(eStatus ==MB_ENOERR)
+	 
+		while(1)
 		{		
 			  	
 				if(Counters[0]>=50)//1000Hz
@@ -82,7 +78,7 @@ int main(void)
 				if(Counters[3]>=5000)
 				{			
 					 
-					Counters[3] = 0;			
+					Counters[3] = 0;
 					if(IsFlowReset()){
 								OnResetFlowDown();
 						}	
