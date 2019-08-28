@@ -236,11 +236,11 @@ void StartCheckKeyDown(void const * argument)
 	static USHORT value = 0;
   for(;;)
   {
-		value+= 1000;
+		/*value+= 1000;
 		if(value>65335)
 			value = 4096;		
 		AD5761_SetVotage(value);
-		//AD5761_Config();
+		//AD5761_Config();*/
     osDelay(2000);
   }
   /* USER CODE END StartCheckKeyDown */

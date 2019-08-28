@@ -126,7 +126,7 @@ void Set_PID_Param()//42bit
 { 	
 	Init_FuzzyMap();	
 	//Calculate_FilteringCoefficient(spid->PID_Cutoff ); 
-	//EEPROM_SAVE_PID();
+	EEPROM_SAVE_PID();
 }
 
 /*********************************************************** 
