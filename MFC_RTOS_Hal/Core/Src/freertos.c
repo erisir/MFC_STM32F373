@@ -215,7 +215,7 @@ void StartPID(void const * argument)
 			PID_Start();
 			osDelay(Get_ControlCycle());
 		}else{
-			osDelay(1000);
+			osDelay(500);
 		}
 		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
   }
@@ -233,7 +233,7 @@ void StartCheckKeyDown(void const * argument)
 {
   /* USER CODE BEGIN StartCheckKeyDown */
   /* Infinite loop */
-	static USHORT value = 0;
+ 
   for(;;)
   {
 		/*value+= 1000;
@@ -241,6 +241,7 @@ void StartCheckKeyDown(void const * argument)
 			value = 4096;		
 		AD5761_SetVotage(value);
 		//AD5761_Config();*/
+		VoltageOutLinerFix();
     osDelay(2000);
   }
   /* USER CODE END StartCheckKeyDown */

@@ -39,7 +39,7 @@ extern SDADC_HandleTypeDef hsdadc1;
 
 #define SDADC_RESOL          (uint32_t) 65535 /* 2e16 - 1 */
 
-#define SDADC_VREF           (float) 2862  /* SDADC external reference is set to 3V */
+#define SDADC_VREF           (float) 2994  /* SDADC external reference is set to 3V */
 
 /* USER CODE END Private defines */
 

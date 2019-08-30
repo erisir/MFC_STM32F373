@@ -15,29 +15,42 @@ Copyright(C) bg8wj
 
 ///////////////////////////////////////////////////////////
  
+
+
 typedef enum{
- EEPROM_PID_P = 1,
- EEPROM_PID_I,
- EEPROM_PID_D,
- EEPROM_PID_PF,
- EEPROM_PID_IF,
- EEPROM_PID_DF,
- EEPROM_PID_EFRL,
- EEPROM_PID_EFRM,
- EEPROM_PID_EFRS,
- EEPROM_PID_ECFRL,
- EEPROM_PID_ECFRM,
- EEPROM_PID_ECFRS,
- EEPROM_PID_CUTOFF_FREQ,
- EEPROM_PID_CONTROL_CYCLE,
- EEPROM_PID_DEADZONE,
- EEPROM_PWM_MAX_HIGH,
- EEPROM_PWM_MIN_HIGH,
- EEPROM_PWM_STEP_HIGH,
- EEPROM_PWM_MAX_LOW,
- EEPROM_PWM_MIN_LOW,
- EEPROM_PWM_STEP_LOW,
- EEPROM_SUM,
+	EEPROM_PID_P = 1,
+	EEPROM_PID_I,
+	EEPROM_PID_D,
+	EEPROM_PID_PF,
+	EEPROM_PID_IF,
+	EEPROM_PID_DF,
+	EEPROM_PID_EFRL,
+	EEPROM_PID_EFRM,
+	EEPROM_PID_EFRS,
+	EEPROM_PID_ECFRL,
+	EEPROM_PID_ECFRM,
+	EEPROM_PID_ECFRS,
+	EEPROM_PID_CUTOFF_FREQ,
+	EEPROM_PID_CONTROL_CYCLE,
+	EEPROM_PID_DEADZONE,
+	EEPROM_PWM_MAX_HIGH,
+	EEPROM_PWM_MIN_HIGH,
+	EEPROM_PWM_STEP_HIGH,
+	EEPROM_PWM_MAX_LOW,
+	EEPROM_PWM_MIN_LOW,
+	EEPROM_PWM_STEP_LOW,
+	EEPROM_CAL_VAL_0,
+	EEPROM_CAL_VAL_10,
+	EEPROM_CAL_VAL_20,
+	EEPROM_CAL_VAL_30,
+	EEPROM_CAL_VAL_40,
+	EEPROM_CAL_VAL_50,
+	EEPROM_CAL_VAL_60,
+	EEPROM_CAL_VAL_70,
+	EEPROM_CAL_VAL_80,
+	EEPROM_CAL_VAL_90,
+	EEPROM_CAL_VAL_100,
+	EEPROM_SUM,
 }EEPROM_SAVE_INDEX;
 
 typedef enum{
@@ -75,6 +88,9 @@ struct _PID{//21 ints
 struct _FuzzyCtrlRuleMap {
 	int8_t data[7][7][3];
 };
+struct _CALVALUE {
+	int16_t value[11];
+};
 
 extern struct _PID *  spid;
 
@@ -84,12 +100,15 @@ void EEPROM_INIT(void);
 void EEPROM_READ_PID(void);
 void EEPROM_SAVE_PID(void);
 
+void EEPROM_READ_Correct(void);
+void EEPROM_SAVE_Correct(void);
 
-void Init_FuzzyMap(void);
- 
 
-void PID_Param_Reset(void);
-void FuzzyMap_Param_Reset(void);
+void FuzzyRuleInit(void);
+void PIDStructInit(void);
+void CalValueStructInit(void);
+
+void FuzzyMapInit(uint8_t mapId);
 
 void PID_Start(void); 		
 void Inc_PID_Calc(void);
@@ -97,6 +116,8 @@ void Inc_PID_Calc(void);
 void SetValveMode(uint8_t mode);
 void SetContrlResource(uint8_t mode);
 void Set_PID_Param(void); 
+void PIDSetPointChange(void);
+void Set_Correct_Param(void); 
 
 void Valve_Close(void);
 void Valve_Open(void);
@@ -107,7 +128,10 @@ uint8_t PID_isRunning(void);
 uint16_t myabs( int val);
 uint16_t Get_ControlCycle(void);
 
-
+uint16_t piecewiselinearinterp(struct _CALVALUE * xDict,struct _CALVALUE * yDict,uint16_t DictSize,uint16_t xInput);//电压层面的分段线性插值
+uint16_t VoltageToFlow(uint16_t voltage);
+uint16_t FlowToVoltage(uint16_t flow);
+void VoltageOutLinerFix(void);
  
 void Fuzzy_Kpid(int16_t e, int16_t ec) ;
  

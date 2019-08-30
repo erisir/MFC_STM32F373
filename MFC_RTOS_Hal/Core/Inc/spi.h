@@ -63,7 +63,7 @@ void MX_SPI3_Init(void);
 
 void AD5761_Config(void);
  
-void AD5761_SetVotage(uint16_t reg_data);
+void AD5761_SetVoltage(uint16_t reg_data);
 
  
 uint8_t SPI3_ReadWriteByte(uint8_t TxData);

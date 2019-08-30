@@ -111,9 +111,8 @@ int main(void)
 	SDADC_Config();
 	AD5761_Config();
 	StartTimPwmDMA();
-	PID_Init();
-	
-	//EEPROM_INIT();
+
+	PID_Init();//“¿¿µROM
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

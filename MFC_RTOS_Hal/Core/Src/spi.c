@@ -178,7 +178,8 @@ uint8_t SPI3_Write_Reg(uint8_t CMD_TYPE, uint16_t value)
 	SPI3_CSN_H;		//½ûÖ¹SPI3Æ÷¼þ
 	return 	Rxdata;
 }
-void AD5761_SetVotage(uint16_t DAC_output){
+void AD5761_SetVoltage(uint16_t voltage){
+	uint16_t DAC_output=voltage*13;
 	SPI3_Write_Reg(CMD_WR_UPDATE_DAC_REG,DAC_output);	
 }
 /* USER CODE END 1 */

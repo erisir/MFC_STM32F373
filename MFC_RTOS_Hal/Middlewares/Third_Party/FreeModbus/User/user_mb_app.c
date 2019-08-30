@@ -147,8 +147,12 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 iRegIndex++;
                 usNRegs--;
             }
+						if(usAddress==0)
+							PIDSetPointChange();
 						if(usAddress==1)
 							Set_PID_Param();//
+						if(usAddress==96)
+							Set_Correct_Param();//
             break;
         }
     }

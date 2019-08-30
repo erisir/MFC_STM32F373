@@ -33,6 +33,7 @@ int16_t SDADC_ValueTable[ADCMeanWindow*2]={0};
 struct _VoltageRaw voltage;
 struct _Voltage filter_voltage;
 struct _VoltageSum sum_voltage;
+
 /* USER CODE END 0 */
 
 SDADC_HandleTypeDef hsdadc1;
@@ -198,16 +199,12 @@ void VOL_IIR_Filter()
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
 	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
  
-	REG_INPUTsAddr->voltageCh0= (USHORT)(filter_voltage.ch0*10); 	
-	REG_INPUTsAddr->voltageCh1= (USHORT)(filter_voltage.ch1*10); 
-	//AD5761_SetVotage(filter_voltage.ch0*13.1072);
- 
+	REG_INPUTsAddr->voltageCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); 	
+	REG_INPUTsAddr->voltageCh1= (USHORT)(filter_voltage.ch1); //输出实际电压----来自流量检测的DAC输入
+	 
 }
- 
 
 float  GetADCVoltage(unsigned char ch){//PID调用
-  //printf("voltageCh0|ch1:%.2f\t%.2f\r\n",filter_voltage.ch0,filter_voltage.ch1);
-
 	if(ch == 0)
 		 return filter_voltage.ch0;
 	 else
