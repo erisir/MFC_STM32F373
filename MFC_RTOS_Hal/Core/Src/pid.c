@@ -177,7 +177,7 @@ void FuzzyMapInit(uint8_t mapId)
 void CalValueStructInit(void) 
 {	
 	scalValue->value[0] = 0;
-	scalValue->value[1] = 4.2*50;
+	/*scalValue->value[1] = 4.2*50;
 	scalValue->value[2] = 16.2*50;
 	scalValue->value[3] = 27.4*50;
 	scalValue->value[4] = 39.3*50;
@@ -186,19 +186,29 @@ void CalValueStructInit(void)
 	scalValue->value[7] = 71.3*50;
 	scalValue->value[8] = 82*50;
 	scalValue->value[9] = 93*50;
-	scalValue->value[10] = 104*50;
+	scalValue->value[10] = 104*50;*/
+	scalValue->value[1] = 5.4*50;//500sccm
+	scalValue->value[2] = 16.6*50;
+	scalValue->value[3] = 27.8*50;
+	scalValue->value[4] = 38.8*50;
+	scalValue->value[5] = 49.6*50;
+	scalValue->value[6] = 60.2*50;
+	scalValue->value[7] = 70.4*50;
+	scalValue->value[8] = 80.4*50;
+	scalValue->value[9] = 90*50;
+	scalValue->value[10] = 99.6*50;
 }
 void PIDStructInit(void) 
 {	
 	spid->Voltage_Set_Point=1500;
 
-	spid->kpid[0] = 100;
-	spid->kpid[1] = 150;
-	spid->kpid[2] = 50;
+	spid->kpid[0] = 20;//for 500sccm
+	spid->kpid[1] = 30;
+	spid->kpid[2] = 20;
 	
-	spid->kpidF[0] = 33;
-	spid->kpidF[1] = 50;
-	spid->kpidF[2] = 17;
+	spid->kpidF[0] = 2;
+	spid->kpidF[1] = 2;
+	spid->kpidF[2] = 2;
 
   spid->eFuzzyRule[0] = 2000;//
 	spid->eFuzzyRule[1] = 800;
@@ -210,12 +220,12 @@ void PIDStructInit(void)
  
  	
 	spid->PID_Cutoff=3000;
-	spid->PID_ControlCycle=100;
-	spid->PID_DeadZone=5;
+	spid->PID_ControlCycle=20;
+	spid->PID_DeadZone=2;
 	
  
-	spid->PWM_MAX=65535*30;
-	spid->PWM_MIN=4000;
+	spid->PWM_MAX=1000000;
+	spid->PWM_MIN=900000;
 	spid->PWM_STEP=5000;
 
 }
