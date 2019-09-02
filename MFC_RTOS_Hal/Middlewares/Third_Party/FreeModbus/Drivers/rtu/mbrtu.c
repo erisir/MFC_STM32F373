@@ -30,6 +30,7 @@
 /* ----------------------- System includes ----------------------------------*/
 #include "stdlib.h"
 #include "string.h"
+#include "main.h"
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
@@ -154,23 +155,22 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 
     ENTER_CRITICAL_SECTION(  );
     assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX );
-
     /* Length and CRC check */
-    if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
-        && ( usMBCRC16( ( UCHAR * ) ucRTUBuf, usRcvBufferPos ) == 0 ) )
+    if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )//loacl reference,total size of RTU recieved
+        && ( usMBCRC16( ( UCHAR * ) ucRTUBuf, usRcvBufferPos-1 ) == ucRTUBuf[usRcvBufferPos-1] ) )
     {
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
-        *pucRcvAddress = ucRTUBuf[MB_SER_PDU_ADDR_OFF];
+        *pucRcvAddress = ucRTUBuf[0];
 
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */
-        *pusLength = ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC );
+        *pusLength = ( USHORT )( usRcvBufferPos  );//total -address[1]-CRC[2]
 
         /* Return the start of the Modbus PDU to the caller. */
-        *pucFrame = ( UCHAR * ) & ucRTUBuf[MB_SER_PDU_PDU_OFF];
+        *pucFrame = ( UCHAR * ) & ucRTUBuf[0];// remove address
         xFrameReceived = TRUE;
     }
     else
@@ -196,22 +196,48 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
      */
     if( eRcvState == STATE_RX_IDLE )
     {
-        /* First byte before the Modbus-PDU is the slave address. */
-        pucSndBufferCur = ( UCHAR * ) pucFrame - 1;
+       if(usLength ==1){   // ACK    
+			/* First byte before the Modbus-PDU is the slave address. */
+        pucSndBufferCur = ( UCHAR * ) pucFrame;
         usSndBufferCount = 1;
-
+        /* Activate the transmitter. */
+        eSndState = STATE_TX_XMIT;
+        vMBPortSerialEnable( FALSE, TRUE );
+			 }else if(usLength==3)//bok
+			 {
+				 pucSndBufferCur = ( UCHAR * ) pucFrame;
+				 usSndBufferCount =0;
+				 pucSndBufferCur[usSndBufferCount++] = 0x00;
+				 pucSndBufferCur[usSndBufferCount++] = 0x02;
+				 pucSndBufferCur[usSndBufferCount++] = 0x80;
+				 pucSndBufferCur[usSndBufferCount++] = 0x04;
+				 pucSndBufferCur[usSndBufferCount++] = 0x03;
+				 pucSndBufferCur[usSndBufferCount++] = 0x01;
+				 pucSndBufferCur[usSndBufferCount++] = 0x01;
+				 pucSndBufferCur[usSndBufferCount++] = 0x20;
+				 pucSndBufferCur[usSndBufferCount++] = 0x00;
+				 pucSndBufferCur[usSndBufferCount++] = 0xAB;
+				 eSndState = STATE_TX_XMIT;
+        vMBPortSerialEnable( FALSE, TRUE );				 
+			 }else{
+			  /* First byte before the Modbus-PDU is the slave address. */
+        pucSndBufferCur = ( UCHAR * ) pucFrame ;
+        
         /* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
-        pucSndBufferCur[MB_SER_PDU_ADDR_OFF] = ucSlaveAddress;
-        usSndBufferCount += usLength;
-
+        pucSndBufferCur[0] = 0x00;//default reply address
+				usSndBufferCount = 1;
+				ucRTUBuf[usSndBufferCount++] = ( UCHAR )( 0x02 );//STX
+        usSndBufferCount += 5+usLength;//skip cmd+data
+				ucRTUBuf[usSndBufferCount++] = 00;
         /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
         usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
+        ucRTUBuf[usSndBufferCount++] = usCRC16;
+
 
         /* Activate the transmitter. */
         eSndState = STATE_TX_XMIT;
         vMBPortSerialEnable( FALSE, TRUE );
+			 }
     }
     else
     {

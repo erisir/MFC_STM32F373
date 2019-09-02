@@ -106,60 +106,64 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
         USHORT usNRegs, eMBRegisterMode eMode)
 {
     eMBErrorCode    eStatus = MB_ENOERR;
-    USHORT          iRegIndex;
-    USHORT *        pusRegHoldingBuf;
-    USHORT          REG_HOLDING_START;
-    USHORT          REG_HOLDING_NREGS;
-    USHORT          usRegHoldStart;
+		//UCHAR dataLen = pucRegBuffer[3];
+		UCHAR dataClass = pucRegBuffer[4];
+		UCHAR dataInstance = pucRegBuffer[5];
+		UCHAR dataAttribute = pucRegBuffer[6];
+		USHORT flowValue = 0;
+		USHORT low = 0x4000;
+		USHORT  hight = 0xC000;
 
-    pusRegHoldingBuf = usSRegHoldBuf;
-    REG_HOLDING_START = S_REG_HOLDING_START;
-    REG_HOLDING_NREGS = S_REG_HOLDING_NREGS;
-    usRegHoldStart = usSRegHoldStart;
+		USHORT  value = 0;
+		UCHAR lowBit = 0;
+		UCHAR hightBit = 0;
 
-    /* it already plus one in modbus function method. */
-    usAddress--;
+		switch (eMode)
+		{
+		/* read current register values from the protocol stack. */
+		case MB_REG_READ:
+			  if(dataClass == 0x68 && dataInstance==0x01 && dataAttribute==0xB9){//
+				lowBit = pucRegBuffer[7];
+				hightBit = pucRegBuffer[8];
+				value =REG_INPUTsAddr->voltageCh0*32768/5000+16384;
+					 					 					
+				pucRegBuffer[3]=5;
+			  pucRegBuffer[7]=value-value/256;
+				pucRegBuffer[8]=value/256;
+				}else{
+					pucRegBuffer[3]=5;
+				  pucRegBuffer[7]=0;
+				  pucRegBuffer[8]=0;
+				}
 
-    if ((usAddress >= REG_HOLDING_START)
-            && (usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS))
-    {
-        iRegIndex = usAddress - usRegHoldStart;			 
-        switch (eMode)
-        {
-        /* read current register values from the protocol stack. */
-        case MB_REG_READ:
-					 
-            while (usNRegs > 0)
-            {
-                *pucRegBuffer++ = (UCHAR) (pusRegHoldingBuf[iRegIndex] >> 8);
-                *pucRegBuffer++ = (UCHAR) (pusRegHoldingBuf[iRegIndex] & 0xFF);
-                iRegIndex++;
-                usNRegs--;
-            }
-            break;
+				break;
 
-        /* write current register values with new values from the protocol stack. */
-        case MB_REG_WRITE:
-            while (usNRegs > 0)
-            {
-                pusRegHoldingBuf[iRegIndex] = *pucRegBuffer++ << 8;
-                pusRegHoldingBuf[iRegIndex] |= *pucRegBuffer++;
-                iRegIndex++;
-                usNRegs--;
-            }
-						if(usAddress==0)
-							PIDSetPointChange();
-						if(usAddress==1)
-							Set_PID_Param();//
-						if(usAddress==96)
-							Set_Correct_Param();//
-            break;
-        }
-    }
-    else
-    {
-        eStatus = MB_ENOREG;
-    }
+		/* write current register values with new values from the protocol stack. */
+		case MB_REG_WRITE:
+			//ÅÐ¶Ï´óÐ¡<close >open == pid
+
+			  //SetValveMode(dataInstance);
+				if(dataClass == (UCHAR)0x69 && dataInstance==0x01 && dataAttribute==0xA4){
+				 				
+				 lowBit = pucRegBuffer[7];
+				 hightBit = pucRegBuffer[8];
+				 value =5000*(hightBit*256+lowBit-16384)/32768;
+					
+			 
+					
+				if(value<1250){
+					SetValveMode(1);
+				}
+				else if(value>3750){
+					SetValveMode(2);
+				}
+				}else{
+					SetValveMode(4);
+					REG__HOLDINGssAddr->PIDparam[0] = value;
+				}
+				break;
+		}
+
     return eStatus;
 }
 

@@ -105,7 +105,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
-	eMBInit( MB_RTU, 0x01, 1, 9600, MB_PAR_NONE );
+	eMBInit( MB_RTU, 0x20, 1, 9600, MB_PAR_NONE );
   eMBEnable(  );
 	
 	SDADC_Config();

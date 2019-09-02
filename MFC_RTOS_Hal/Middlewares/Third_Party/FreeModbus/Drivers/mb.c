@@ -30,7 +30,7 @@
 /* ----------------------- System includes ----------------------------------*/
 #include "stdlib.h"
 #include "string.h"
-
+#include "main.h"
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
 
@@ -368,8 +368,9 @@ eMBPoll( void )
             break;
 
         case EV_EXECUTE:
-            ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
+            ucFunctionCode = ucMBFrame[2];//
             eException = MB_EX_ILLEGAL_FUNCTION;
+					  				    
             for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
             {
                 /* No more function handlers registered. Abort. */
@@ -379,27 +380,25 @@ eMBPoll( void )
                 }
                 else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
                 {
-                    eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
+									  //reply with ack
+                    ucMBFrame[0] = ( UCHAR )( 0x06 );//ACK
+									  eStatus = peMBFrameSendCur( 0, ucMBFrame, 1 );//default reply address is 0[address pbuf,len]
+									 //reply with ack
+                    eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );//address removed
+									
                     break;
                 }
             }
 
             /* If the request was not sent to the broadcast address we
              * return a reply. */
-            if( ucRcvAddress != MB_ADDRESS_BROADCAST )
-            {
-                if( eException != MB_EX_NONE )
-                {
-                    /* An exception occured. Build an error frame. */
-                    usLength = 0;
-                    ucMBFrame[usLength++] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
-                    ucMBFrame[usLength++] = eException;
-                }
-                if( ( eMBCurrentMode == MB_ASCII ) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS )
-                {
-                    vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
-                }                
-                eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
+						
+						if( ucRcvAddress == MB_ADDRESS_BROADCAST){
+							 eStatus = peMBFrameSendCur( 0, ucMBFrame, 3 );
+						}
+            if( ucRcvAddress != MB_ADDRESS_BROADCAST && ucFunctionCode==0x80)//read function
+            {             
+                eStatus = peMBFrameSendCur( 0, ucMBFrame, usLength );
             }
             break;
 

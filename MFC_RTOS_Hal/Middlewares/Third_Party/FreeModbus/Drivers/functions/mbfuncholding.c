@@ -73,33 +73,22 @@ eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
 
 eMBException
-eMBFuncWriteHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
+eMBFuncWriteHoldingRegister( UCHAR * pucFrame, USHORT * usLen )//81
 {
     USHORT          usRegAddress;
     eMBException    eStatus = MB_EX_NONE;
     eMBErrorCode    eRegStatus;
-
-    if( *usLen == ( MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN ) )
-    {
-        usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF] << 8 );
-        usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF + 1] );
-        usRegAddress++;
-
+ 
         /* Make callback to update the value. */
-        eRegStatus = eMBRegHoldingCB( &pucFrame[MB_PDU_FUNC_WRITE_VALUE_OFF],
-                                      usRegAddress, 1, MB_REG_WRITE );
+		eRegStatus = eMBRegHoldingCB( &pucFrame[0],
+																	0, 1, MB_REG_WRITE );
 
-        /* If an error occured convert it into a Modbus exception. */
-        if( eRegStatus != MB_ENOERR )
-        {
-            eStatus = prveMBError2Exception( eRegStatus );
-        }
-    }
-    else
-    {
-        /* Can't be a valid request because the length is incorrect. */
-        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
-    }
+		/* If an error occured convert it into a Modbus exception. */
+		if( eRegStatus != MB_ENOERR )
+		{
+				eStatus = prveMBError2Exception( eRegStatus );
+		}
+ 
     return eStatus;
 }
 #endif
@@ -166,7 +155,7 @@ eMBFuncWriteMultipleHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
 
 eMBException
-eMBFuncReadHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
+eMBFuncReadHoldingRegister( UCHAR * pucFrame, USHORT * usLen )//80 uslen total len
 {
     USHORT          usRegAddress;
     USHORT          usRegCount;
@@ -174,55 +163,19 @@ eMBFuncReadHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
 
     eMBException    eStatus = MB_EX_NONE;
     eMBErrorCode    eRegStatus;
+		usRegCount = 1;// only one return;
 
-    if( *usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN ) )
-    {
-        usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF] << 8 );
-        usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF + 1] );
-        usRegAddress++;
+		eRegStatus = eMBRegHoldingCB( &pucFrame[0], 0, 1, MB_REG_READ );
+		/* If an error occured convert it into a Modbus exception. */
+		if( eRegStatus != MB_ENOERR )
+		{
+				eStatus = prveMBError2Exception( eRegStatus );
+		}
+		else
+		{
+				*usLen = usRegCount * 2;
+		}
 
-        usRegCount = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_REGCNT_OFF] << 8 );
-        usRegCount = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_REGCNT_OFF + 1] );
-
-        /* Check if the number of registers to read is valid. If not
-         * return Modbus illegal data value exception. 
-         */
-        if( ( usRegCount >= 1 ) && ( usRegCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
-        {
-            /* Set the current PDU data pointer to the beginning. */
-            pucFrameCur = &pucFrame[MB_PDU_FUNC_OFF];
-            *usLen = MB_PDU_FUNC_OFF;
-
-            /* First byte contains the function code. */
-            *pucFrameCur++ = MB_FUNC_READ_HOLDING_REGISTER;
-            *usLen += 1;
-
-            /* Second byte in the response contain the number of bytes. */
-            *pucFrameCur++ = ( UCHAR ) ( usRegCount * 2 );
-            *usLen += 1;
-
-            /* Make callback to fill the buffer. */
-            eRegStatus = eMBRegHoldingCB( pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
-            /* If an error occured convert it into a Modbus exception. */
-            if( eRegStatus != MB_ENOERR )
-            {
-                eStatus = prveMBError2Exception( eRegStatus );
-            }
-            else
-            {
-                *usLen += usRegCount * 2;
-            }
-        }
-        else
-        {
-            eStatus = MB_EX_ILLEGAL_DATA_VALUE;
-        }
-    }
-    else
-    {
-        /* Can't be a valid request because the length is incorrect. */
-        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
-    }
     return eStatus;
 }
 

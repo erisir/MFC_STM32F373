@@ -83,7 +83,7 @@ static const UCHAR aucCRCLo[] = {
 USHORT
 usMBCRC16( UCHAR * pucFrame, USHORT usLen )
 {
-    UCHAR           ucCRCHi = 0xFF;
+    /*UCHAR           ucCRCHi = 0xFF;
     UCHAR           ucCRCLo = 0xFF;
     int             iIndex;
 
@@ -93,5 +93,11 @@ usMBCRC16( UCHAR * pucFrame, USHORT usLen )
         ucCRCLo = ( UCHAR )( ucCRCHi ^ aucCRCHi[iIndex] );
         ucCRCHi = aucCRCLo[iIndex];
     }
-    return ( USHORT )( ucCRCHi << 8 | ucCRCLo );
+    return ( USHORT )( ucCRCHi << 8 | ucCRCLo );*/
+		UCHAR           sum = 0x00;
+		while( usLen-- )
+    {
+        sum += *( pucFrame++ );
+    }
+		return sum;
 }
