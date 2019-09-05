@@ -112,13 +112,13 @@ void PID_Init()
 	 FuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
 	 scalValue = (struct _CALVALUE*)REG__HOLDINGssAddr->stdFlowValue;
 	 scalibrateTable = (struct _CALVALUE*)calibrateTable;
-	
+	 SetValveMode(1);
 	 FuzzyMapInit(2);
 	 EEPROM_INIT();
 	 HAL_FLASH_Unlock();
 	
 	 EE_ReadVariable16bits(VirtAddVarTab[EEPROM_SUM], &data_x);
-	 if(data_x != EEPROM_SUM)//第一次开机，使用默认的PID参数而不是用户自定义的，自定义的会保存在Rom内
+	 if(data_x == EEPROM_SUM)//第一次开机，使用默认的PID参数而不是用户自定义的，自定义的会保存在Rom内
 	 {
 			EE_WriteVariable16bits(VirtAddVarTab[EEPROM_SUM], EEPROM_SUM);
 			PIDStructInit();
@@ -130,7 +130,7 @@ void PID_Init()
 		 	EEPROM_READ_Correct();
 	 }
 	 HAL_FLASH_Lock();
-
+	 PIDSetPointChange(0);//依赖PID
 	 FuzzyRuleInit();//依赖PID
 }
 void FuzzyRuleInit(void)
@@ -643,18 +643,17 @@ void VoltageOutLinerFix(void)
 	
 	REG_INPUTsAddr->DEBUG16[0]= currVoltage;
 	REG_INPUTsAddr->DEBUG16[1]= outputVoltage;
-	
-	AD5761_SetVoltage(outputVoltage);
-}
-void PIDSetPointChange()
-{
-	uint16_t temp = *Voltage_Set_PointCur;
-	Voltage_Set_Point = FlowToVoltage(temp);
-	REG_INPUTsAddr->DEBUG16[2]= temp;
+	REG_INPUTsAddr->DEBUG16[2]= *Voltage_Set_PointCur;
 	REG_INPUTsAddr->DEBUG16[3]= Voltage_Set_Point;
 	
 	REG_INPUTsAddr->DEBUG16[4]=scalValue->value[1];
 	REG_INPUTsAddr->DEBUG16[5]=scalibrateTable->value[1];
+	
+	AD5761_SetVoltage(outputVoltage);
+}
+void PIDSetPointChange(uint16_t voltage)
+{
+	Voltage_Set_Point = FlowToVoltage(voltage);
 }
 uint16_t VoltageToFlow(uint16_t voltage) 
 {

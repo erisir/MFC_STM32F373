@@ -116,7 +116,7 @@ void Inc_PID_Calc(void);
 void SetValveMode(uint8_t mode);
 void SetContrlResource(uint8_t mode);
 void Set_PID_Param(void); 
-void PIDSetPointChange(void);
+void PIDSetPointChange(uint16_t voltage);
 void Set_Correct_Param(void); 
 
 void Valve_Close(void);

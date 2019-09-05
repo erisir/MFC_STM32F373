@@ -110,10 +110,7 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
 		UCHAR dataClass = pucRegBuffer[4];
 		UCHAR dataInstance = pucRegBuffer[5];
 		UCHAR dataAttribute = pucRegBuffer[6];
-		USHORT flowValue = 0;
-		USHORT low = 0x4000;
-		USHORT  hight = 0xC000;
-
+		 
 		USHORT  value = 0;
 		UCHAR lowBit = 0;
 		UCHAR hightBit = 0;
@@ -151,15 +148,15 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
 					
 			 
 					
-				if(value<1250){
+				if(value<100){
 					SetValveMode(1);
 				}
-				else if(value>3750){
+				else if(value>5000){
 					SetValveMode(2);
 				}
 				}else{
 					SetValveMode(4);
-					REG__HOLDINGssAddr->PIDparam[0] = value;
+					PIDSetPointChange(value);
 				}
 				break;
 		}
