@@ -684,8 +684,29 @@ void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit)
 }
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
-	pucFrame[4]= 5;//data len
-	FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);
-	*usLength =2;
+	uint8_t highBit,lowBit;
+	float valueSet = 0.0;
+	uint8_t readWrite = pucFrame[2];
+	uint8_t dataLen = pucFrame[3];
+	uint8_t dataClass = pucFrame[4];
+	uint8_t dataInstance = pucFrame[5];
+	uint8_t dataAttribute = pucFrame[6];
+	if(dataLen ==5){
+		highBit = pucFrame[8];
+		lowBit = pucFrame[7];
+		UFRAC16ToFloat(highBit, lowBit,&valueSet);
+	}
+	
+	if(readWrite == 0x80){//read
+		pucFrame[3]= 5;//data len
+		FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);
+		*usLength =2;
+	}
+	if(readWrite == 0x81){//write
+
+	}
+	
+	
+ 
 }
 //**********************************end of file**************************************
