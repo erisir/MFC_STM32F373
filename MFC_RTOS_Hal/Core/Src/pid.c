@@ -113,7 +113,7 @@ void PID_Init()
 	 scalValue = (struct _CALVALUE*)REG__HOLDINGssAddr->stdFlowValue;
 	 scalibrateTable = (struct _CALVALUE*)calibrateTable;
 	
-	 FuzzyMapInit(2);
+	 FuzzyMapInit(0);
 	 EEPROM_INIT();
 	 HAL_FLASH_Unlock();
 	
@@ -644,17 +644,19 @@ void VoltageOutLinerFix(void)
 	REG_INPUTsAddr->DEBUG16[0]= currVoltage;
 	REG_INPUTsAddr->DEBUG16[1]= outputVoltage;
 	
+	REG_INPUTsAddr->DEBUG16[2]= *Voltage_Set_PointCur;
+	REG_INPUTsAddr->DEBUG16[3]= Voltage_Set_Point;
+	
+	REG_INPUTsAddr->DEBUG16[4]=scalValue->value[1];
+	REG_INPUTsAddr->DEBUG16[5]=scalibrateTable->value[1];
+	
 	AD5761_SetVoltage(outputVoltage);
 }
 void PIDSetPointChange()
 {
 	uint16_t temp = *Voltage_Set_PointCur;
 	Voltage_Set_Point = FlowToVoltage(temp);
-	REG_INPUTsAddr->DEBUG16[2]= temp;
-	REG_INPUTsAddr->DEBUG16[3]= Voltage_Set_Point;
-	
-	REG_INPUTsAddr->DEBUG16[4]=scalValue->value[1];
-	REG_INPUTsAddr->DEBUG16[5]=scalibrateTable->value[1];
+
 }
 uint16_t VoltageToFlow(uint16_t voltage) 
 {
