@@ -409,6 +409,10 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
  */
 eMBErrorCode    eMBRegDiscreteCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                   USHORT usNDiscrete );
+BOOL IsSevenStarProtocal(UCHAR * pucFrame, USHORT usLen);
+
+#define REPLY_ACK 0
+#define REPLY_ADDRESS 1
 
 #ifdef __cplusplus
 PR_END_EXTERN_C

@@ -33,7 +33,8 @@
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
-
+#include "main.h"
+#include "cmsis_os.h"
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbrtu.h"
@@ -154,29 +155,53 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 
     ENTER_CRITICAL_SECTION(  );
     assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX );
+		if(TRUE == IsSevenStarProtocal(( UCHAR * ) ucRTUBuf, usRcvBufferPos)){////sevenstar protocal
+			if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
+							&& ( usSevenStarCheckSum( ( UCHAR * ) ucRTUBuf, usRcvBufferPos-1 ) == ucRTUBuf[usRcvBufferPos-1] ) )
+					{
+							/* Save the address field. All frames are passed to the upper layed
+							 * and the decision if a frame is used is done there.
+							 */
+							*pucRcvAddress = ucRTUBuf[0];
 
-    /* Length and CRC check */
-    if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
-        && ( usMBCRC16( ( UCHAR * ) ucRTUBuf, usRcvBufferPos ) == 0 ) )
-    {
-        /* Save the address field. All frames are passed to the upper layed
-         * and the decision if a frame is used is done there.
-         */
-        *pucRcvAddress = ucRTUBuf[MB_SER_PDU_ADDR_OFF];
+							/* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
+							 * size of address field and CRC checksum.
+							 */
+							*pusLength = ( USHORT )( usRcvBufferPos );
 
-        /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
-         * size of address field and CRC checksum.
-         */
-        *pusLength = ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC );
+							/* Return the start of the Modbus PDU to the caller. */
+							*pucFrame = ( UCHAR * ) & ucRTUBuf[0];
+							xFrameReceived = TRUE;
+							HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
+					}
+					else
+					{
+							eStatus = MB_EIO;
+					}
+		}else{
+			/* Length and CRC check */
+				if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
+						&& ( usMBCRC16( ( UCHAR * ) ucRTUBuf, usRcvBufferPos ) == 0 ) )
+				{
+						/* Save the address field. All frames are passed to the upper layed
+						 * and the decision if a frame is used is done there.
+						 */
+						*pucRcvAddress = ucRTUBuf[MB_SER_PDU_ADDR_OFF];
 
-        /* Return the start of the Modbus PDU to the caller. */
-        *pucFrame = ( UCHAR * ) & ucRTUBuf[MB_SER_PDU_PDU_OFF];
-        xFrameReceived = TRUE;
-    }
-    else
-    {
-        eStatus = MB_EIO;
-    }
+						/* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
+						 * size of address field and CRC checksum.
+						 */
+						*pusLength = ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC );
+
+						/* Return the start of the Modbus PDU to the caller. */
+						*pucFrame = ( UCHAR * ) & ucRTUBuf[MB_SER_PDU_PDU_OFF];
+						xFrameReceived = TRUE;
+				}
+				else
+				{
+						eStatus = MB_EIO;
+				}
+		}
 
     EXIT_CRITICAL_SECTION(  );
     return eStatus;
@@ -195,23 +220,61 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
      * frame on the network. We have to abort sending the frame.
      */
     if( eRcvState == STATE_RX_IDLE )
-    {
-        /* First byte before the Modbus-PDU is the slave address. */
-        pucSndBufferCur = ( UCHAR * ) pucFrame - 1;
-        usSndBufferCount = 1;
+    {		
+			if(ucSlaveAddress==0){// sevenstar protocal
+					pucSndBufferCur = ( UCHAR * ) pucFrame;	
+				
+					if(usLength ==REPLY_ACK){   // ACK    			
+						pucSndBufferCur[0] = ( UCHAR )( 0x06 );//ACK
+						usSndBufferCount = 1;
+						 
+					}else if(usLength==REPLY_ADDRESS){//ADDRESS
+					 pucSndBufferCur = ( UCHAR * ) pucFrame;
+					 usSndBufferCount =0;
+					 pucSndBufferCur[usSndBufferCount++] = 0x00;
+					 pucSndBufferCur[usSndBufferCount++] = 0x02;
+					 pucSndBufferCur[usSndBufferCount++] = 0x80;
+					 pucSndBufferCur[usSndBufferCount++] = 0x04;
+					 pucSndBufferCur[usSndBufferCount++] = 0x03;
+					 pucSndBufferCur[usSndBufferCount++] = 0x01;
+					 pucSndBufferCur[usSndBufferCount++] = 0x01;
+					 pucSndBufferCur[usSndBufferCount++] = 0x20;
+					 pucSndBufferCur[usSndBufferCount++] = 0x00;
+					 pucSndBufferCur[usSndBufferCount++] = 0xAB;
+					 		 
+				 }else{
+									
+					/* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
+					pucSndBufferCur[0] = 0x00;//default reply address
+					usSndBufferCount = 1;
+					usSndBufferCount += 6+usLength;//skip cmd+data 20 [02 80 03 68 01 B9] 00 C7
+					ucRTUBuf[usSndBufferCount++] = 00;
+ 
+					usCRC16 = usSevenStarCheckSum( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
+					ucRTUBuf[usSndBufferCount++] = usCRC16;
+				 }
+				 	/* Activate the transmitter. */
+					eSndState = STATE_TX_XMIT;
+					vMBPortSerialEnable( FALSE, TRUE );
+					
+				}else{
+					/* First byte before the Modbus-PDU is the slave address. */
+					pucSndBufferCur = ( UCHAR * ) pucFrame - 1;
+					usSndBufferCount = 1;
 
-        /* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
-        pucSndBufferCur[MB_SER_PDU_ADDR_OFF] = ucSlaveAddress;
-        usSndBufferCount += usLength;
+					/* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
+					pucSndBufferCur[MB_SER_PDU_ADDR_OFF] = ucSlaveAddress;
+					usSndBufferCount += usLength;
 
-        /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
-        usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
+					/* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
+					usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
+					ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
+					ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
 
-        /* Activate the transmitter. */
-        eSndState = STATE_TX_XMIT;
-        vMBPortSerialEnable( FALSE, TRUE );
+					/* Activate the transmitter. */
+					eSndState = STATE_TX_XMIT;
+					vMBPortSerialEnable( FALSE, TRUE );
+				}
     }
     else
     {

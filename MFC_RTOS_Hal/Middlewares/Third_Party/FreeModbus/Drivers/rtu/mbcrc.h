@@ -31,5 +31,6 @@
 #define _MB_CRC_H
 
 USHORT          usMBCRC16( UCHAR * pucFrame, USHORT usLen );
+USHORT          usSevenStarCheckSum( UCHAR * pucFrame, USHORT usLen );
 
 #endif

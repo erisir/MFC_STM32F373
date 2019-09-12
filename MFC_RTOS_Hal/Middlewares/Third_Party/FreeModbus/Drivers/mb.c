@@ -52,6 +52,8 @@
 #include "mbtcp.h"
 #endif
 
+#include "pid.h"
+
 #ifndef MB_PORT_HAS_CLOSE
 #define MB_PORT_HAS_CLOSE 0
 #endif
@@ -125,6 +127,12 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
 };
 
 /* ----------------------- Start implementation -----------------------------*/
+BOOL IsSevenStarProtocal(UCHAR * pucFrame, USHORT usLen)
+{
+	if (usLen<9) return FALSE;
+	if ( pucFrame[1]==0x02 && pucFrame[usLen-2]==0x00) return TRUE;
+	else return FALSE;
+}
 eMBErrorCode
 eMBInit( eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity )
 {
@@ -368,39 +376,56 @@ eMBPoll( void )
             break;
 
         case EV_EXECUTE:
-            ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
-            eException = MB_EX_ILLEGAL_FUNCTION;
-            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
-            {
-                /* No more function handlers registered. Abort. */
-                if( xFuncHandlers[i].ucFunctionCode == 0 )
-                {
-                    break;
-                }
-                else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
-                {
-                    eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
-                    break;
-                }
-            }
+					  if(TRUE ==IsSevenStarProtocal(ucMBFrame, usLength)){//ucMBFrame is the raw data, we can modify it in MBRtuRecieve   sevenstar protocal
+							//reply with ack
+              
+							 peMBFrameSendCur( 0, ucMBFrame, REPLY_ACK );//default reply address is 0[address pbuf,len]
+							 
+							 SevenStarExecute(ucMBFrame, &usLength);//EV_EXECUTE
+							
+							
+							if( ucRcvAddress == MB_ADDRESS_BROADCAST){
+								eStatus = peMBFrameSendCur( 0, ucMBFrame, REPLY_ADDRESS );
+							}
+							if( ucRcvAddress != MB_ADDRESS_BROADCAST && ucMBFrame[2]==0x80)// read function we need to reply something
+							{
+							  eStatus = peMBFrameSendCur( 0, ucMBFrame, usLength );
+							}
+						}else{// standard mb
+							ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
+							eException = MB_EX_ILLEGAL_FUNCTION;
+							for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
+							{
+									/* No more function handlers registered. Abort. */
+									if( xFuncHandlers[i].ucFunctionCode == 0 )
+									{
+											break;
+									}
+									else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
+									{
+											eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
+											break;
+									}
+							}
 
-            /* If the request was not sent to the broadcast address we
-             * return a reply. */
-            if( ucRcvAddress != MB_ADDRESS_BROADCAST )
-            {
-                if( eException != MB_EX_NONE )
-                {
-                    /* An exception occured. Build an error frame. */
-                    usLength = 0;
-                    ucMBFrame[usLength++] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
-                    ucMBFrame[usLength++] = eException;
-                }
-                if( ( eMBCurrentMode == MB_ASCII ) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS )
-                {
-                    vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
-                }                
-                eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
-            }
+							/* If the request was not sent to the broadcast address we
+							 * return a reply. */
+							if( ucRcvAddress != MB_ADDRESS_BROADCAST )
+							{
+									if( eException != MB_EX_NONE )
+									{
+											/* An exception occured. Build an error frame. */
+											usLength = 0;
+											ucMBFrame[usLength++] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
+											ucMBFrame[usLength++] = eException;
+									}
+									if( ( eMBCurrentMode == MB_ASCII ) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS )
+									{
+											vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
+									}                
+									eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
+							}
+						}
             break;
 
         case EV_FRAME_SENT:

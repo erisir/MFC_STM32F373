@@ -671,4 +671,21 @@ uint16_t FlowToVoltage(uint16_t flow)//real Target voltage cover to current MFC 
 	return piecewiselinearinterp(scalValue,scalibrateTable,11,flow);
   //AD5761_SetVotage(voltage);
 }
+void UFRAC16ToFloat(uint8_t highBit,uint8_t lowBit,float *coverValue)
+{
+	uint16_t RawValue = highBit*256+lowBit;
+	*coverValue= (float) (RawValue-16384)/32768;
+}
+void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit)
+{
+	uint16_t temp = coverValue*32768+16384;
+	*highBit = temp/256;
+	*lowBit = temp%256;
+}
+void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
+{
+	pucFrame[4]= 5;//data len
+	FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);
+	*usLength =2;
+}
 //**********************************end of file**************************************

@@ -132,8 +132,9 @@ uint16_t piecewiselinearinterp(struct _CALVALUE * xDict,struct _CALVALUE * yDict
 uint16_t VoltageToFlow(uint16_t voltage);
 uint16_t FlowToVoltage(uint16_t flow);
 void VoltageOutLinerFix(void);
- 
+void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 void Fuzzy_Kpid(int16_t e, int16_t ec) ;
- 
+void UFRAC16ToFloat(uint8_t highBit,uint8_t lowBit,float *coverValue);
+void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit);
 #endif
 /*********************************************END OF FILE**********************/

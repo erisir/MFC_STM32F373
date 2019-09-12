@@ -95,3 +95,14 @@ usMBCRC16( UCHAR * pucFrame, USHORT usLen )
     }
     return ( USHORT )( ucCRCHi << 8 | ucCRCLo );
 }
+
+USHORT
+usSevenStarCheckSum( UCHAR * pucFrame, USHORT usLen )
+{
+		UCHAR           sum = 0x00;
+		while( usLen-- )
+    {
+        sum += *( pucFrame++ );
+    }
+		return sum;
+}
