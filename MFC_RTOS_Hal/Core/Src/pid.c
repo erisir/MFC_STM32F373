@@ -696,7 +696,26 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		lowBit = pucFrame[7];
 		UFRAC16ToFloat(highBit, lowBit,&valueSet);
 	}
-	
+	switch (dataClass){
+		case 0x69:// control mode
+			switch (dataAttribute){
+				case 0x03://set control mode
+					if (readWrite== 0x80)//read
+					{
+					}
+					if (readWrite== 0x81)//write
+					{
+					}
+					break;
+				case 0x04://set default control mode
+					break;
+				case 0x06://save to ERROM
+					break;
+				
+
+			}
+			break;
+	}
 	if(readWrite == 0x80){//read
 		pucFrame[3]= 5;//data len
 		FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);
