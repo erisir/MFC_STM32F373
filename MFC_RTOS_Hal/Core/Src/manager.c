@@ -152,6 +152,17 @@ void EEPROM_INIT(void)//
  
 void HolddingRegDataChange(void)
 {
+	//accumulator change
+	if(sZeroAndReadFlow->accumulatorMode ==0)//reset
+	{
+		sZeroAndReadFlow->accumulatorFlow=0;
+		sZeroAndReadFlow->accumulatorMode = 1;// continue
+	}
+	if(sZeroAndReadFlow->accumulatorMode ==3)//resume
+	{
+		sZeroAndReadFlow->accumulatorMode = 1;
+	}
+	
 	//contrlmode change
 	SetContrlResource(sControlMode->controlMode);
 	//pid parameter change
@@ -464,6 +475,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 			}
 		break;
 	}
+	HolddingRegDataChange();
 }
 void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
 {
