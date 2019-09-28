@@ -16,7 +16,6 @@ Copyright(C) bg8wj
 ///////////////////////////////////////////////////////////
  
 
-
 typedef enum{
 	EEPROM_PID_P = 1,
 	EEPROM_PID_I,
@@ -88,10 +87,78 @@ struct _PID{//21 ints
 struct _FuzzyCtrlRuleMap {
 	int8_t data[7][7][3];
 };
-struct _CALVALUE {
-	int16_t value[11];
+struct _LinearFittingValue {
+	int16_t value[11];//0-100
 };
-
+struct _ControlMode {
+	int8_t controlMode ;
+	int8_t defaultCotrolMode;
+	int8_t saveEEPROM;
+};
+typedef enum{
+	DigitalControl = 1,
+	VoltageControl, 
+}controlModeEnum;
+struct _SetPoint{
+	int8_t holdFollow;
+	int16_t delay;
+	int16_t digitalSetpoint;
+	int16_t softStartRate;
+	int16_t shutoffLevel;
+	int16_t activeSetpoint;
+};
+typedef enum{
+	HoldSetPoint = 0,
+	FollowSetPoint = 1, 
+}HoldFollow;
+struct _ZeroAndReadFlow{
+	int8_t zeroStatus;
+	uint16_t readFlow;
+};
+struct _ValveCommand{
+	int8_t valveCommandMode;
+	int8_t valveCommand;
+	int16_t valveVoltage;
+	int8_t valveType;
+};
+struct _AccumulatorFlow{
+	int8_t accumulatorMode;
+	int32_t accumulatorFlow;
+};
+struct _WarningsAlarms{
+	int16_t enableWarningsAlarms;
+	int8_t  clearWarningsAlarms;
+};
+struct _Product{
+	uint32_t productName;
+	uint16_t productVersion;
+	uint32_t manufacturer;
+	uint16_t modelID;
+	uint8_t firmwareRevision;
+	uint8_t PCBRevision;
+	uint16_t MFCSeiral;
+	uint16_t manufacturingDate;
+	uint16_t calibrationDate;
+};
+struct _Calibrate{
+	uint32_t targetGasName;
+	uint16_t targetGasCode;
+	uint16_t targetGasFullScaleRange;
+	uint32_t targetGasToCalibrationGasConversionFactor;
+	uint32_t CalibrationGasName;
+	uint16_t CalibrationGasCode;
+	uint16_t CalibrationGasFullScaleRange;
+	uint32_t CalibrationGasToN2ConversionFactor;
+};
+struct _Sensor{
+	uint32_t targetNullValue;
+	uint16_t temperature;
+};
+struct _MacBaudrate{
+	uint8_t RS485MacAddress;
+	uint16_t baudrate;
+	uint8_t reset;
+};
 extern struct _PID *  spid;
 
 void PID_Init (void);  
