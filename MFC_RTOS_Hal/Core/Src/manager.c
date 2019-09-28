@@ -69,18 +69,18 @@ void MFCInit(void)
 	sLinearFittingY->value[8] = 80.4*50;
 	sLinearFittingY->value[9] = 90*50;
 	sLinearFittingY->value[10] = 99.6*50;
+	 
+	sControlMode->controlMode = 1;
+	sControlMode->defaultCotrolMode=2;//default control mode on power on
+	sControlMode->saveEEPROM = 3;// dont save
 	
-	sControlMode->controlMode = emDigitalControl;
-	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
-	sControlMode->saveEEPROM = 0;// dont save
-	
-	sSetPoint->activeSetpoint=0;// current setpoint by external voltage
-	sSetPoint->delay = 0;//no delay
-	sSetPoint->digitalSetpoint = 0;//feedback target, user setpoint, FS%
-	sSetPoint->holdFollow = FollowSetPoint;//HoldSetPoint action inmidiatly
-	sSetPoint->shutoffLevel = 0x4000;//1.5%FS to shutoff UFRAC16
-	sSetPoint->softStartRate = 0;// turn off softstart
-	
+	sSetPoint->activeSetpoint=6;// current setpoint by external voltage
+	sSetPoint->delay = 2;//no delay
+	sSetPoint->digitalSetpoint = 3;//feedback target, user setpoint, FS%
+	sSetPoint->holdFollow = 1;//HoldSetPoint action inmidiatly
+	sSetPoint->shutoffLevel = 5;//1.5%FS to shutoff UFRAC16
+	sSetPoint->softStartRate = 4;// turn off softstart
+	 
 	sZeroAndReadFlow->accumulatorFlow = 0;
 	sZeroAndReadFlow->accumulatorMode = 0;//restart,1:pause,3,resume,4,nomal continue flag
 	sZeroAndReadFlow->readFlow = 0;
@@ -118,6 +118,7 @@ void MFCInit(void)
 	sMacBaudrate->RS485MacAddress=0x20;
 	sMacBaudrate->baudrate=9600;
 	sMacBaudrate->MBmode=0;//RTU
+	  
 }
  
 void EEPROM_INIT(void)// 

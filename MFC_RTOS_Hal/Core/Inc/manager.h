@@ -26,12 +26,13 @@ struct _ControlMode {//1 int32s
 
 struct _SetPoint{//3 int32s
 	int8_t holdFollow;
+	int8_t none;
 	int16_t delay;
 	int16_t digitalSetpoint;
 	int16_t softStartRate;
 	int16_t shutoffLevel;
 	int16_t activeSetpoint;
-	int8_t none;
+
 };
 
 struct _ZeroAndReadFlow{//3 int32s

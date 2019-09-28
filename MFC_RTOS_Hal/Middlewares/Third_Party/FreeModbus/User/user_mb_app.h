@@ -19,7 +19,7 @@
 #define S_REG_INPUT_START             0 //40000 等
 #define S_REG_INPUT_NREGS             29 // Ch0 Ch1
 #define S_REG_HOLDING_START           0 //40000 等
-#define S_REG_HOLDING_NREGS           156
+#define S_REG_HOLDING_NREGS           150
  
 
  
@@ -36,14 +36,14 @@ struct REG__HOLDINGs{//75*2= 150 int16t
 	int32_t	 PIDparam[11];
 	int32_t  FuzzyCtrlRuleMap[37];
 	int32_t  LinearFittingY[6];
-	int32_t  ControlMode;
+	int32_t  ControlMode[1];// 必须写成数组的形式天知道为神马
 	int32_t  SetPoint[3];
 	int32_t  ZeroAndReadFlow[3];
-	int32_t  ValveCommand;
-	int32_t  WarningsAlarms;
+	int32_t  ValveCommand[1];
+	int32_t  WarningsAlarms[1];
 	int32_t  Product[5];
 	int32_t  Calibrate[6];
-	int32_t  MacBaudrate;	
+	int32_t  MacBaudrate[1];	
 };
 extern struct REG_INPUTs * REG_INPUTsAddr;
 extern struct REG__HOLDINGs * REG__HOLDINGssAddr;
