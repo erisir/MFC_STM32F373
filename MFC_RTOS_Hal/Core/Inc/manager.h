@@ -78,8 +78,9 @@ struct _Calibrate{//6 int32s
  
 struct _MacBaudrate{//1 int32s
 	uint8_t RS485MacAddress;
+	uint8_t MBmode;
 	uint16_t baudrate;
-	uint8_t reset;
+
 };
 
 void MFCInit(void);

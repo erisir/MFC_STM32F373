@@ -108,10 +108,11 @@ int main(void)
 	AD5761_Config();
 	StartTimPwmDMA();
 	
-	MFCInit();
-	EEPROM_INIT();//MFCInit depended
+	//MFCInit();
+	//EEPROM_INIT();//MFCInit depended
 	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
-	eMBInit( MB_RTU, 0x20, 1, 9600, MB_PAR_NONE );
+	eMBInit( MB_RTU, 0x32, 1, 9600, MB_PAR_NONE );
+	//eMBInit( sMacBaudrate->MBmode, sMacBaudrate->RS485MacAddress, 1, sMacBaudrate->baudrate, MB_PAR_NONE );
   eMBEnable(  );
 
   /* USER CODE END 2 */

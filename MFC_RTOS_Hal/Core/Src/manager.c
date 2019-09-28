@@ -117,7 +117,7 @@ void MFCInit(void)
 	
 	sMacBaudrate->RS485MacAddress=0x20;
 	sMacBaudrate->baudrate=9600;
-	sMacBaudrate->reset=0;
+	sMacBaudrate->MBmode=0;//RTU
 }
  
 void EEPROM_INIT(void)// 
