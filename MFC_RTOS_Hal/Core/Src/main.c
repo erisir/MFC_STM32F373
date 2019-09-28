@@ -103,16 +103,17 @@ int main(void)
   MX_TIM3_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-
-	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
-	eMBInit( MB_RTU, 0x20, 1, 9600, MB_PAR_NONE );
-  eMBEnable(  );
-	
+		
 	SDADC_Config();
 	AD5761_Config();
 	StartTimPwmDMA();
+	
+	MFCInit();
+	EEPROM_INIT();//MFCInit depended
+	//eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity 
+	eMBInit( MB_RTU, 0x20, 1, 9600, MB_PAR_NONE );
+  eMBEnable(  );
 
-	PID_Init();//“¿¿µROM
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

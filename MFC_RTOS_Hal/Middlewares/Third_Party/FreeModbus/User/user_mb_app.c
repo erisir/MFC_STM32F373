@@ -19,7 +19,6 @@
  * File: $Id: user_mb_app.c,v 1.60 2013/11/23 11:49:05 Armink $
  */
 #include "user_mb_app.h"
-#include "pid.h"
 
 /*------------------------Slave mode use these variables----------------------*/
 //Slave mode:DiscreteInputs variables
@@ -147,12 +146,6 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 iRegIndex++;
                 usNRegs--;
             }
-						if(usAddress==0)
-							PIDSetPointChange();
-						if(usAddress==1)
-							Set_PID_Param();//
-						if(usAddress==96)
-							Set_Correct_Param();//
             break;
         }
     }
@@ -231,12 +224,6 @@ eMBErrorCode eMBRegCoilsCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 xMBUtilSetBits(&pucCoilBuf[iRegIndex++], iRegBitIndex, usNCoils,
                         *pucRegBuffer++);
             }
-						if(0==usAddress){
-							SetValveMode(pucCoilBuf[0]&0xff);
-						}else if(3==usAddress){
-							SetContrlResource((pucCoilBuf[0]>>3)&0xff);
-						}						
-
             break;
         }
     }

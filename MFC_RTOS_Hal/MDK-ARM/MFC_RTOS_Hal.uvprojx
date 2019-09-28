@@ -591,6 +591,11 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f3xx_hal_timebase_tim.c</FilePath>
             </File>
+            <File>
+              <FileName>manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\manager.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

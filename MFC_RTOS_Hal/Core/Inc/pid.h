@@ -14,44 +14,6 @@ Copyright(C) bg8wj
 #include "main.h"
 
 ///////////////////////////////////////////////////////////
- 
-
-typedef enum{
-	EEPROM_PID_P = 1,
-	EEPROM_PID_I,
-	EEPROM_PID_D,
-	EEPROM_PID_PF,
-	EEPROM_PID_IF,
-	EEPROM_PID_DF,
-	EEPROM_PID_EFRL,
-	EEPROM_PID_EFRM,
-	EEPROM_PID_EFRS,
-	EEPROM_PID_ECFRL,
-	EEPROM_PID_ECFRM,
-	EEPROM_PID_ECFRS,
-	EEPROM_PID_CUTOFF_FREQ,
-	EEPROM_PID_CONTROL_CYCLE,
-	EEPROM_PID_DEADZONE,
-	EEPROM_PWM_MAX_HIGH,
-	EEPROM_PWM_MIN_HIGH,
-	EEPROM_PWM_STEP_HIGH,
-	EEPROM_PWM_MAX_LOW,
-	EEPROM_PWM_MIN_LOW,
-	EEPROM_PWM_STEP_LOW,
-	EEPROM_CAL_VAL_0,
-	EEPROM_CAL_VAL_10,
-	EEPROM_CAL_VAL_20,
-	EEPROM_CAL_VAL_30,
-	EEPROM_CAL_VAL_40,
-	EEPROM_CAL_VAL_50,
-	EEPROM_CAL_VAL_60,
-	EEPROM_CAL_VAL_70,
-	EEPROM_CAL_VAL_80,
-	EEPROM_CAL_VAL_90,
-	EEPROM_CAL_VAL_100,
-	EEPROM_SUM,
-}EEPROM_SAVE_INDEX;
-
 typedef enum{
  NL=0 ,
  NM  ,
@@ -67,8 +29,10 @@ PID函数
 
  *************************************************/ 
 /*************PID**********************************/
-struct _PID{//21 ints
-  uint16_t Voltage_Set_Point;
+//内存分配以32bit为单位。之间如果前面uint16为奇数个，则在此会自动添加一个0的uint16补齐,这样在modbus中读出来的就是0
+
+struct _PID{//11 int32s
+  
 	uint16_t kpid[3]; // kp ki kd
 	uint16_t kpidF[3]; // kp ki kd factor	
 	uint16_t eFuzzyRule[3]; //  high middle low
@@ -77,131 +41,31 @@ struct _PID{//21 ints
 	uint16_t PID_Cutoff;
 	uint16_t PID_ControlCycle;
 	uint16_t PID_DeadZone;	
+	uint16_t none;
 	
-	//内存分配以32bit为单位。之间如果前面uint16为奇数个，则在此会自动添加一个0的uint16补齐
 	uint32_t PWM_MAX;
 	uint32_t PWM_MIN;
 	uint32_t PWM_STEP;
 }  ;
 
-struct _FuzzyCtrlRuleMap {
+struct _FuzzyCtrlRuleMap {//37 int32s
 	int8_t data[7][7][3];
+	int8_t none;
 };
-struct _LinearFittingValue {
-	int16_t value[11];//0-100
-};
-struct _ControlMode {
-	int8_t controlMode ;
-	int8_t defaultCotrolMode;
-	int8_t saveEEPROM;
-};
-typedef enum{
-	DigitalControl = 1,
-	VoltageControl, 
-}controlModeEnum;
-struct _SetPoint{
-	int8_t holdFollow;
-	int16_t delay;
-	int16_t digitalSetpoint;
-	int16_t softStartRate;
-	int16_t shutoffLevel;
-	int16_t activeSetpoint;
-};
-typedef enum{
-	HoldSetPoint = 0,
-	FollowSetPoint = 1, 
-}HoldFollow;
-struct _ZeroAndReadFlow{
-	int8_t zeroStatus;
-	uint16_t readFlow;
-};
-struct _ValveCommand{
-	int8_t valveCommandMode;
-	int8_t valveCommand;
-	int16_t valveVoltage;
-	int8_t valveType;
-};
-struct _AccumulatorFlow{
-	int8_t accumulatorMode;
-	int32_t accumulatorFlow;
-};
-struct _WarningsAlarms{
-	int16_t enableWarningsAlarms;
-	int8_t  clearWarningsAlarms;
-};
-struct _Product{
-	uint32_t productName;
-	uint16_t productVersion;
-	uint32_t manufacturer;
-	uint16_t modelID;
-	uint8_t firmwareRevision;
-	uint8_t PCBRevision;
-	uint16_t MFCSeiral;
-	uint16_t manufacturingDate;
-	uint16_t calibrationDate;
-};
-struct _Calibrate{
-	uint32_t targetGasName;
-	uint16_t targetGasCode;
-	uint16_t targetGasFullScaleRange;
-	uint32_t targetGasToCalibrationGasConversionFactor;
-	uint32_t CalibrationGasName;
-	uint16_t CalibrationGasCode;
-	uint16_t CalibrationGasFullScaleRange;
-	uint32_t CalibrationGasToN2ConversionFactor;
-};
-struct _Sensor{
-	uint32_t targetNullValue;
-	uint16_t temperature;
-};
-struct _MacBaudrate{
-	uint8_t RS485MacAddress;
-	uint16_t baudrate;
-	uint8_t reset;
-};
+
 extern struct _PID *  spid;
-
-void PID_Init (void);  
-void EEPROM_INIT(void);
-
-void EEPROM_READ_PID(void);
-void EEPROM_SAVE_PID(void);
-
-void EEPROM_READ_Correct(void);
-void EEPROM_SAVE_Correct(void);
-
-
-void FuzzyRuleInit(void);
-void PIDStructInit(void);
-void CalValueStructInit(void);
-
-void FuzzyMapInit(uint8_t mapId);
+extern struct _FuzzyCtrlRuleMap * FuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
+extern uint32_t PWM_Output;
+void PIDInit (void);  
+void FuzzyCtrlRuleMapInit(void);
 
 void PID_Start(void); 		
 void Inc_PID_Calc(void);
-
-void SetValveMode(uint8_t mode);
-void SetContrlResource(uint8_t mode);
-void Set_PID_Param(void); 
-void PIDSetPointChange(void);
-void Set_Correct_Param(void); 
-
-void Valve_Close(void);
-void Valve_Open(void);
-void Valve_PID_Ctrl(void);
- 
-
-uint8_t PID_isRunning(void);
-uint16_t myabs( int val);
-uint16_t Get_ControlCycle(void);
-
-uint16_t piecewiselinearinterp(struct _CALVALUE * xDict,struct _CALVALUE * yDict,uint16_t DictSize,uint16_t xInput);//电压层面的分段线性插值
-uint16_t VoltageToFlow(uint16_t voltage);
-uint16_t FlowToVoltage(uint16_t flow);
-void VoltageOutLinerFix(void);
-void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 void Fuzzy_Kpid(int16_t e, int16_t ec) ;
-void UFRAC16ToFloat(uint8_t highBit,uint8_t lowBit,float *coverValue);
-void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit);
+
+uint16_t myabs( int val);
+
+
+
 #endif
 /*********************************************END OF FILE**********************/

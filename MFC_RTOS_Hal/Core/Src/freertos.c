@@ -211,11 +211,15 @@ void StartPID(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		if(TRUE == PID_isRunning()){
+		if(0 == sValveCommand->valveCommand){// 1 valve off,2 valve on,0,valve pid
 			PID_Start();
-			osDelay(Get_ControlCycle());
+			osDelay(spid->PID_ControlCycle);
+		}else if(2 == sValveCommand->valveCommand){
+			Valve_Open();
+			osDelay(100);
 		}else{
-			osDelay(500);
+			Valve_Close();
+			osDelay(100);
 		}
 		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
   }

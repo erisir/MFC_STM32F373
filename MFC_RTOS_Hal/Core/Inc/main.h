@@ -53,6 +53,7 @@ extern "C" {
 #include "spi.h"
 #include "tim.h"
 #include "eeprom_emul.h"
+#include "manager.h"
 #include "user_mb_app.h"
 /* USER CODE END Includes */
 

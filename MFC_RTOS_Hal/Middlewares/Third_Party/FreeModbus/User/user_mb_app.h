@@ -19,7 +19,7 @@
 #define S_REG_INPUT_START             0 //40000 µÈ
 #define S_REG_INPUT_NREGS             29 // Ch0 Ch1
 #define S_REG_HOLDING_START           0 //40000 µÈ
-#define S_REG_HOLDING_NREGS           128
+#define S_REG_HOLDING_NREGS           156
  
 
  
@@ -32,11 +32,18 @@ struct REG_INPUTs{
 	uint32_t DEBUG161[10];
 //22 int
 };
-struct REG__HOLDINGs{
-	int16_t	PIDparam[22];
-	int8_t  FuzzyCtrlRuleMap[7][7][3];
-	int8_t  none;//96
-	int16_t stdFlowValue[11];//0%--100%
+struct REG__HOLDINGs{//75*2= 150 int16t
+	int32_t	 PIDparam[11];
+	int32_t  FuzzyCtrlRuleMap[37];
+	int32_t  LinearFittingY[6];
+	int32_t  ControlMode;
+	int32_t  SetPoint[3];
+	int32_t  ZeroAndReadFlow[3];
+	int32_t  ValveCommand;
+	int32_t  WarningsAlarms;
+	int32_t  Product[5];
+	int32_t  Calibrate[6];
+	int32_t  MacBaudrate;	
 };
 extern struct REG_INPUTs * REG_INPUTsAddr;
 extern struct REG__HOLDINGs * REG__HOLDINGssAddr;
