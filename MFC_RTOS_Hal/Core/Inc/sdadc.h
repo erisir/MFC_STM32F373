@@ -70,6 +70,7 @@ extern struct _VoltageSum sum_voltage;
 void VOL_IIR_Filter(void);
 void SDADC_Config(void);
 float GetADCVoltage(unsigned char ch);
+void setValtageOffset(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

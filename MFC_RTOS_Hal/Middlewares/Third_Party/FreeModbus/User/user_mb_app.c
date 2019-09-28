@@ -146,6 +146,7 @@ eMBErrorCode eMBRegHoldingCB(UCHAR * pucRegBuffer, USHORT usAddress,
                 iRegIndex++;
                 usNRegs--;
             }
+						HolddingRegDataChange();
             break;
         }
     }

@@ -56,8 +56,12 @@ struct _FuzzyCtrlRuleMap {//37 int32s
 extern struct _PID *  spid;
 extern struct _FuzzyCtrlRuleMap * FuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
 extern uint32_t PWM_Output;
+
 void PIDInit (void);  
+void setVoltageSetPoint(uint16_t voltage);
+uint16_t getVoltageSetPoint(void);
 void FuzzyCtrlRuleMapInit(void);
+void FuzzyRuleInit(void);
 
 void PID_Start(void); 		
 void Inc_PID_Calc(void);

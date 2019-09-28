@@ -36,7 +36,7 @@ struct	_MacBaudrate*					sMacBaudrate;
 uint16_t data_x,data_y,data_z;
  
 uint8_t isRunning=0;
- 
+uint16_t * Voltage_Set_PointCur;
  
 uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 uint16_t linearFittingX[]={0,10*50,20*50,30*50,40*50,50*50,60*50,70*50,80*50,90*50,100*50};
@@ -70,16 +70,16 @@ void MFCInit(void)
 	sLinearFittingY->value[9] = 90*50;
 	sLinearFittingY->value[10] = 99.6*50;
 	 
-	sControlMode->controlMode = 1;
-	sControlMode->defaultCotrolMode=2;//default control mode on power on
-	sControlMode->saveEEPROM = 3;// dont save
+	sControlMode->controlMode = emDigitalControl;
+	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
+	sControlMode->saveEEPROM = 0;// dont save
 	
-	sSetPoint->activeSetpoint=6;// current setpoint by external voltage
-	sSetPoint->delay = 2;//no delay
-	sSetPoint->digitalSetpoint = 3;//feedback target, user setpoint, FS%
-	sSetPoint->holdFollow = 1;//HoldSetPoint action inmidiatly
-	sSetPoint->shutoffLevel = 5;//1.5%FS to shutoff UFRAC16
-	sSetPoint->softStartRate = 4;// turn off softstart
+	sSetPoint->activeSetpoint=0;// current setpoint by external voltage
+	sSetPoint->delay = 0;//no delay
+	sSetPoint->digitalSetpoint = 0;//feedback target, user setpoint, FS%
+	sSetPoint->holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
+	sSetPoint->shutoffLevel = 0;//1.5%FS to shutoff UFRAC16
+	sSetPoint->softStartRate = 0;// turn off softstart
 	 
 	sZeroAndReadFlow->accumulatorFlow = 0;
 	sZeroAndReadFlow->accumulatorMode = 0;//restart,1:pause,3,resume,4,nomal continue flag
@@ -87,7 +87,7 @@ void MFCInit(void)
 	sZeroAndReadFlow->targetNullValue = 0;//custumer set zeropoint
 	sZeroAndReadFlow->zeroStatus = 0;//set current to zero in 1,need to change to 0
 	 
-	sValveCommand->valveCommand = 1;// valve off,2 valve on,0,valve pid
+	sValveCommand->valveCommand = emValveClose;// valve off,2 valve on,0,valve pid
 	sValveCommand->valveCommandMode=0;// not function
 	sValveCommand->valveType=0;// normal on type
 	sValveCommand->valveVoltage=0;// not function
@@ -96,22 +96,23 @@ void MFCInit(void)
 	sWarningsAlarms->enableWarningsAlarms=0;// not function
 	sWarningsAlarms->none=0;// not function
 	
-	sProduct->firmwareRevision=1;
-	sProduct->PCBRevision=1;
-	sProduct->modelID=1;
-	sProduct->MFCSeiral=1;
-	sProduct->manufacturingDate=1;
-	sProduct->calibrationDate=1;
-	sProduct->productVersion=1;
-	sProduct->productName=1;
-	sProduct->manufacturer=1;
+	sProduct->firmwareRevision=10;
+	sProduct->PCBRevision=10;
+	sProduct->modelID=10;
+	sProduct->MFCSeiral=1234;
+	sProduct->manufacturingDate=1909;
+	sProduct->calibrationDate=1909;
+	sProduct->productVersion=10;
+	sProduct->productName=51;
+	sProduct->manufacturer=51;
 	
 	sCalibrate->targetGasName=1;
-	sCalibrate->targetGasCode=1;
+	sCalibrate->targetGasCode=13;
 	sCalibrate->targetGasFullScaleRange=1;
 	sCalibrate->targetGasToCalibrationGasConversionFactor=1;
+	
 	sCalibrate->CalibrationGasName=1;
-	sCalibrate->CalibrationGasCode=1;
+	sCalibrate->CalibrationGasCode=13;
 	sCalibrate->CalibrationGasFullScaleRange=1;
 	sCalibrate->CalibrationGasToN2ConversionFactor=1;
 	
@@ -142,20 +143,72 @@ void EEPROM_INIT(void)//
 		EEPROM_READ();
 	}
 	HAL_FLASH_Lock();
+	
+	SetContrlResource(sControlMode->defaultCotrolMode);
+	sValveCommand->valveCommand = emValveClose;
+	Valve_Close();
+ 
 }
  
- 
+void HolddingRegDataChange(void)
+{
+	//contrlmode change
+	SetContrlResource(sControlMode->controlMode);
+	//pid parameter change
+	FuzzyRuleInit();
+	//eeprom change
+	if(sControlMode->saveEEPROM ==1)
+	{
+		sControlMode->saveEEPROM=0;
+		EEPROM_SAVE();
+	}
+	// valve mode change
+	if(sValveCommand->valveCommand ==emValveClose){
+		Valve_Close();
+	}else if(sValveCommand->valveCommand ==emValveOpen){
+		Valve_Open();
+	}
+	//zero change
+	setValtageOffset();
+	//digital setpoint change
+	if(*Voltage_Set_PointCur !=getVoltageSetPoint()){
+		if(sSetPoint->holdFollow ==emFollowSetPoint){
+			if(sSetPoint->delay<49 && sSetPoint->delay>1){
+				osDelay(100);
+			}else{
+				osDelay(sSetPoint->delay);
+			}
+			setVoltageSetPoint(*Voltage_Set_PointCur);
+		}
+	}
+}
 void  Valve_Close(void)
 {
-	PWM_Output = spid->PWM_MIN;
+	PWM_Output = 0;
 	LoadPWM(PWM_Output) ;
 }
 void Valve_Open(void)
 {
-	PWM_Output = spid->PWM_MAX;
+	PWM_Output = 65536*32;
 	LoadPWM(PWM_Output) ;
 }
- 
+void SetContrlResource(uint8_t mode)
+{
+	  
+		switch(mode){
+		case 1:
+			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;
+					
+		break;
+		case 2:
+			Voltage_Set_PointCur = &REG_INPUTsAddr->voltageCh1;	
+		break;
+		
+		default:
+			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;
+		break;
+	}
+}
 void EEPROM_SAVE(void)	 
 {
 	uint16_t * pbuf = (uint16_t *)REG__HOLDINGssAddr;
@@ -208,9 +261,7 @@ void VoltageOutLinerFix(void)
 	
 	REG_INPUTsAddr->DEBUG16[0]= currVoltage;
 	REG_INPUTsAddr->DEBUG16[1]= outputVoltage;
-	
-	 
-	
+		
 	AD5761_SetVoltage(outputVoltage);
 }
  
@@ -240,47 +291,222 @@ void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit)
 }
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
-	uint8_t highBit,lowBit;
-	float valueSet = 0.0;
-	uint8_t readWrite = pucFrame[2];
-	uint8_t dataLen = pucFrame[3];
 	uint8_t dataClass = pucFrame[4];
-	uint8_t dataInstance = pucFrame[5];
 	uint8_t dataAttribute = pucFrame[6];
-	if(dataLen ==5){
+	/*if(dataLen ==5){
 		highBit = pucFrame[8];
 		lowBit = pucFrame[7];
 		UFRAC16ToFloat(highBit, lowBit,&valueSet);
-	}
+	}FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);*/
+ 
 	switch (dataClass){
-		case 0x69:// control mode
+		case 0x69:// control mode & setpoint
 			switch (dataAttribute){
-				case 0x03://set control mode
-					if (readWrite== 0x80)//read
-					{
-					}
-					if (readWrite== 0x81)//write
-					{
-					}
-					break;
-				case 0x04://set default control mode
-					break;
-				case 0x06://save to ERROM
-					break;
-				
-
+				case 0x03:
+					saveSevenStarUINT8DataToMBHoldingReg(&sControlMode->controlMode,usLength,pucFrame);
+				break;
+				case 0x04:
+					saveSevenStarUINT8DataToMBHoldingReg(&sControlMode->defaultCotrolMode,usLength,pucFrame);
+				break;
+				case 0x06:
+					sControlMode->saveEEPROM = pucFrame[7];
+				break;
+				case 0x05:
+					saveSevenStarUINT8DataToMBHoldingReg(&sSetPoint->holdFollow,usLength,pucFrame);
+				break;
+				case 0xA6:
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->delay,usLength,pucFrame);
+				break;
+				case 0xA4:
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->digitalSetpoint,usLength,pucFrame);
+				break;
+				case 0xA5:
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->activeSetpoint,usLength,pucFrame);
+				break;				
+			}
+		break;
+		case 0x6A:// setpoint &valve cmd
+			switch (dataAttribute){
+				case 0xA4:
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->softStartRate,usLength,pucFrame);
+				break;
+				case 0xA2:
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->shutoffLevel,usLength,pucFrame);
+				break;
+				case 0xA1:
+					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveCommandMode,usLength,pucFrame);
+				break;
+				case 0x01:
+					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveCommand,usLength,pucFrame);
+				break;	
+				case 0x91:
+					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveVoltage,usLength,pucFrame);
+				break;	
+				case 0x9C:
+					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveType,usLength,pucFrame);
+				break;					
+			}
+		break;
+		case 0x68:// zero
+			switch (dataAttribute){
+				case 0xBA:
+					saveSevenStarUINT8DataToMBHoldingReg(&sZeroAndReadFlow->zeroStatus,usLength,pucFrame);
+				break;
+				case 0xB9:
+					saveSevenStarUINT16DataToMBHoldingReg(&sZeroAndReadFlow->readFlow,usLength,pucFrame);
+				break;				 			
+			}
+		break;
+		case 0xA4:// Accumulator
+			switch (dataAttribute){
+				case 0x05:
+					saveSevenStarUINT8DataToMBHoldingReg(&sZeroAndReadFlow->accumulatorMode,usLength,pucFrame);
+				break;
+				case 0x03:
+					saveSevenStarUINT32DataToMBHoldingReg(&sZeroAndReadFlow->accumulatorFlow,usLength,pucFrame);
+				break;				 			
 			}
 			break;
+		case 0x65:// warning
+			switch (dataAttribute){
+				case 0xA2:
+					saveSevenStarUINT16DataToMBHoldingReg(&sWarningsAlarms->enableWarningsAlarms,usLength,pucFrame);
+				break;
+				case 0xA1:
+					saveSevenStarUINT8DataToMBHoldingReg(&sWarningsAlarms->clearWarningsAlarms,usLength,pucFrame);
+				break;	
+				case 0xA0:
+					saveSevenStarUINT8DataToMBHoldingReg(&sWarningsAlarms->none,usLength,pucFrame);
+				break;					
+			}
+		break;
+		case 0x01:// Product
+			switch (dataAttribute){
+				case 0x07:
+					saveSevenStarUINT32DataToMBHoldingReg(&sProduct->productName,usLength,pucFrame);
+				break;
+				case 0x04:
+					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->productVersion,usLength,pucFrame);
+				break;					
+			}
+		break;
+	  case 0x64:// Product
+			switch (dataAttribute){
+				case 0x03:
+					saveSevenStarUINT32DataToMBHoldingReg(&sProduct->manufacturer,usLength,pucFrame);
+				break;
+				case 0x04:
+					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->modelID,usLength,pucFrame);
+				break;	
+				case 0x05:
+					saveSevenStarUINT8DataToMBHoldingReg(&sProduct->firmwareRevision,usLength,pucFrame);
+				break;	
+				case 0x06:
+					saveSevenStarUINT8DataToMBHoldingReg(&sProduct->PCBRevision,usLength,pucFrame);
+				break;	
+				case 0x07:
+					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->MFCSeiral,usLength,pucFrame);
+				break;	
+				case 0x0a:
+					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->manufacturingDate,usLength,pucFrame);
+				break;	
+				case 0x0c:
+					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->calibrationDate,usLength,pucFrame);
+				break;					
+			}
+		break;
+		case 0x66:// Calibrate
+			switch (dataAttribute){
+				case 0x01:
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->targetGasName,usLength,pucFrame);
+				break;
+				case 0x02:
+					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasCode,usLength,pucFrame);
+				break;	
+				case 0x03:
+					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasFullScaleRange,usLength,pucFrame);
+				break;	
+				case 0x04:
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->targetGasToCalibrationGasConversionFactor,usLength,pucFrame);
+				break;	
+				case 0x06:
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalibrationGasName,usLength,pucFrame);
+				break;	
+				case 0x07:
+					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasCode,usLength,pucFrame);
+				break;	
+				case 0x08:
+					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasFullScaleRange,usLength,pucFrame);
+				break;	
+				case 0x09:
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalibrationGasToN2ConversionFactor,usLength,pucFrame);
+				break;					
+			}
+		break;
+		case 0xA1:// Calibrate
+			switch (dataAttribute){
+				case 0x07:
+					saveSevenStarUINT32DataToMBHoldingReg(&sZeroAndReadFlow->targetNullValue,usLength,pucFrame);
+				break;
+			}
+		break;
+		case 0x03:// Calibrate
+			switch (dataAttribute){
+				case 0x01:
+					saveSevenStarUINT8DataToMBHoldingReg(&sMacBaudrate->RS485MacAddress,usLength,pucFrame);
+				break;
+				case 0x02:
+					saveSevenStarUINT16DataToMBHoldingReg(&sMacBaudrate->baudrate,usLength,pucFrame);
+				break;
+				case 0x03:
+					saveSevenStarUINT8DataToMBHoldingReg(&sMacBaudrate->MBmode,usLength,pucFrame);
+				break;
+			}
+		break;
 	}
-	if(readWrite == 0x80){//read
-		pucFrame[3]= 5;//data len
-		FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);
+}
+void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
+{
+if (pucFrame[2]== 0x80)//read
+	{
+		*usLength =1;
+		pucFrame[3]=4;
+		pucFrame[7]=* MBHoldRegAddress;
+	}
+	if (pucFrame[2]== 0x81)//write
+	{
+		* MBHoldRegAddress = pucFrame[7];
+	}
+}
+void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
+{
+if (pucFrame[2]== 0x80)//read
+	{
 		*usLength =2;
+		pucFrame[3]=5;
+		pucFrame[7]=(* MBHoldRegAddress)&0x00FF;//lowbit
+		pucFrame[8]=(* MBHoldRegAddress)>>8;//hightbit
 	}
-	if(readWrite == 0x81){//write
-
+	if (pucFrame[2]== 0x81)//write
+	{
+		* MBHoldRegAddress = pucFrame[7]+pucFrame[8]*256;
 	}
-	
+}
+void saveSevenStarUINT32DataToMBHoldingReg(uint32_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
+{
+if (pucFrame[2]== 0x80)//read
+	{
+		*usLength =4;
+		pucFrame[3]=7;
+		pucFrame[7]=(* MBHoldRegAddress)&0x00FF;//lowbit
+		pucFrame[8]=((* MBHoldRegAddress)>>8)&0x00FF; 
+		pucFrame[9]=((* MBHoldRegAddress)>>16)&0x00FF; 
+		pucFrame[10]=((* MBHoldRegAddress)>>24)&0x00FF;//hightbit
+	}
+	if (pucFrame[2]== 0x81)//write
+	{
+		* MBHoldRegAddress = pucFrame[7]+pucFrame[8]*256+pucFrame[9]*65536+pucFrame[10]*256*65536;
+	}
 }
 /* USER CODE END 1 */
 

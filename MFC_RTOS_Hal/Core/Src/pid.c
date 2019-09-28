@@ -26,7 +26,8 @@ float Kpid_calcu[3]={0.0,0.0,0.0};
 float eFuzzy[]={0.0,0.0};       
 float ecFuzzy[]={0.0,0.0};  
 float deFuzzyFactor[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-
+float  eFuzzyRule[7]={-3000,-2000,-1000,0,1000,2000,3000};   
+float  ecFuzzyRule[7]={-300,-200,-100,0,100,200,300};
 
 int8_t  DefuzzyRuleMap[3][7]={
 								{-3,-2,-1,0.0,1,2,3}, 
@@ -111,7 +112,25 @@ void FuzzyCtrlRuleMapInit(void)
 {
 		memcpy(FuzzyCtrlRuleMap->data,FuzzyCtrlRuleMap0,147); 
 }
- 
+void FuzzyRuleInit(void)
+  {
+	  // l m s
+	eFuzzyRule[0] = -1*spid->eFuzzyRule[0];
+	eFuzzyRule[1] = -1*spid->eFuzzyRule[1];
+	eFuzzyRule[2] = -1*spid->eFuzzyRule[2];
+	eFuzzyRule[3]=0;
+	eFuzzyRule[4] =  spid->eFuzzyRule[2];
+	eFuzzyRule[5] =  spid->eFuzzyRule[1];
+	eFuzzyRule[6] =  spid->eFuzzyRule[0];
+	
+	ecFuzzyRule[0] = -1*spid->ecFuzzyRule[0];
+	ecFuzzyRule[1] = -1*spid->ecFuzzyRule[1];
+	ecFuzzyRule[2] = -1*spid->ecFuzzyRule[2];
+	ecFuzzyRule[3]=0;
+	ecFuzzyRule[4] =  spid->ecFuzzyRule[2];
+	ecFuzzyRule[5] =  spid->ecFuzzyRule[1];
+	ecFuzzyRule[6] =  spid->ecFuzzyRule[0];
+}
 /*********************************************************** 
               PID控制动作函数
  ***********************************************************/ 
@@ -126,7 +145,14 @@ void PID_Start()
 	REG_INPUTsAddr->DEBUG32[0] = PWM_Output;
 	LoadPWM(PWM_Output);	
 }
-
+void setVoltageSetPoint(uint16_t voltage)
+{
+	Voltage_Set_Point= voltage;
+}
+uint16_t getVoltageSetPoint(void)
+{
+	return Voltage_Set_Point;
+}
 /*********************************************************** 
               PID计算函数
  ***********************************************************/ 
@@ -159,58 +185,58 @@ void Inc_PID_Calc(void)
 
 void Fuzzy_Kpid(int16_t e, int16_t ec)  
 {  
-	float temp;
+	 	float temp;
 	uint8_t num,pe,pec;
 	uint8_t KpidSelect=0,i=0;		     
 	/*****误差变化隶属函数描述*****/       
-	if(ec<-1*spid->ecFuzzyRule[0]){   
+	if(ec<ecFuzzyRule[0]){   
 		pec = 0;
-		ecFuzzy[0] =1.0; //ecFuzzy[0] 属于 当前pec的程度 -3 -2 -1 0 1 2 3
-	}else if(-1*spid->ecFuzzyRule[0]<=ec && ec<-1*spid->ecFuzzyRule[1])  {
+		ecFuzzy[0] =1.0; //ecFuzzy[0] 属于 当前pec的程度
+	}else if(ecFuzzyRule[0]<=ec && ec<ecFuzzyRule[1])  {
 		pec = 0;
-		ecFuzzy[0] = (-1*spid->ecFuzzyRule[1] - ec)/(-1*spid->ecFuzzyRule[1]+spid->ecFuzzyRule[0]);   		
-	}else if(-1*spid->ecFuzzyRule[1]<=ec && ec<-1*spid->ecFuzzyRule[2])  {   
+		ecFuzzy[0] = (ecFuzzyRule[1] - ec)/(ecFuzzyRule[1]-ecFuzzyRule[0]);   		
+	}else if(ecFuzzyRule[1]<=ec && ec<ecFuzzyRule[2])  {   
 		pec = 1;
-		ecFuzzy[0] = (-1*spid->ecFuzzyRule[2] - ec)/(-1*spid->ecFuzzyRule[2]+spid->ecFuzzyRule[1]);  
-	}else if(-1*spid->ecFuzzyRule[2]<=ec && ec<0)  {  
+		ecFuzzy[0] = (ecFuzzyRule[2] - ec)/(ecFuzzyRule[2]-ecFuzzyRule[1]);  
+	}else if(ecFuzzyRule[2]<=ec && ec<ecFuzzyRule[3])  {  
 		pec = 2 ; 
-		ecFuzzy[0] = (0 - ec)/spid->ecFuzzyRule[2];   
-	}else if(0<=ec && ec<spid->ecFuzzyRule[2])  {  
+		ecFuzzy[0] = (ecFuzzyRule[3] - ec)/(ecFuzzyRule[3]-ecFuzzyRule[2]);   
+	}else if(ecFuzzyRule[3]<=ec && ec<ecFuzzyRule[4])  {  
 		pec = 3;			
-		ecFuzzy[0] = (spid->ecFuzzyRule[2] - ec)/spid->ecFuzzyRule[2];
-	}else if(spid->ecFuzzyRule[2]<=ec && ec<spid->ecFuzzyRule[1])  {  
+		ecFuzzy[0] = (ecFuzzyRule[4] - ec)/(ecFuzzyRule[4]-ecFuzzyRule[3]);
+	}else if(ecFuzzyRule[4]<=ec && ec<ecFuzzyRule[5])  {  
 		pec = 4;
-		ecFuzzy[0] = (spid->ecFuzzyRule[1] - ec)/(spid->ecFuzzyRule[1]-spid->ecFuzzyRule[2]);         
-	}else if(spid->ecFuzzyRule[1]<=ec && ec<spid->ecFuzzyRule[0])  {  
+		ecFuzzy[0] = (ecFuzzyRule[5] - ec)/(ecFuzzyRule[5]-ecFuzzyRule[4]);         
+	}else if(ecFuzzyRule[5]<=ec && ec<ecFuzzyRule[6])  {  
 		pec = 5;
-		ecFuzzy[0] = (spid->ecFuzzyRule[0] - ec)/(spid->ecFuzzyRule[0]-spid->ecFuzzyRule[1]);         
+		ecFuzzy[0] = (ecFuzzyRule[6] - ec)/(ecFuzzyRule[6]-ecFuzzyRule[5]);         
 	}else{   
 		pec = 5;
 		ecFuzzy[0] =0;	
 	}   
 	ecFuzzy[1] = (float)(1.0f - ecFuzzy[0]); 
 	/*****误差隶属函数描述*****/  
-	if(e<-1*spid->eFuzzyRule[0]) {
+	if(e<eFuzzyRule[0]) {
 		pe = 0;			 						
 		eFuzzy[0] =1;
-	}else if(-1*spid->eFuzzyRule[0]<=e && e<-1*spid->eFuzzyRule[1])  {
+	}else if(eFuzzyRule[0]<=e && e<eFuzzyRule[1])  {
 		pe = 0; 
-		eFuzzy[0] = (-1*spid->eFuzzyRule[1] - e)/(-1*spid->eFuzzyRule[1]+spid->eFuzzyRule[0]);
-	}else if(-1*spid->eFuzzyRule[1]<=e && e<-1*spid->eFuzzyRule[2])  {
+		eFuzzy[0] = (eFuzzyRule[1] - e)/(eFuzzyRule[1]-eFuzzyRule[0]);
+	}else if(eFuzzyRule[1]<=e && e<eFuzzyRule[2])  {
 		pe = 1; 
-		eFuzzy[0] = (-1*spid->eFuzzyRule[2] - e)/(-1*spid->eFuzzyRule[2]+1*spid->eFuzzyRule[1]);
-	}else if(-1*spid->eFuzzyRule[2]<=e && e<0)  {
+		eFuzzy[0] = (eFuzzyRule[2] - e)/(eFuzzyRule[2]-eFuzzyRule[1]);
+	}else if(eFuzzyRule[2]<=e && e<eFuzzyRule[3])  {
 		pe = 2;
-		eFuzzy[0] = (0 - e)/spid->eFuzzyRule[2];
-	}else if(0<=e && e<spid->eFuzzyRule[2])  {
+		eFuzzy[0] = (eFuzzyRule[3] - e)/(eFuzzyRule[3]-eFuzzyRule[2]);
+	}else if(eFuzzyRule[3]<=e && e<eFuzzyRule[4])  {
 		pe = 3;
-		eFuzzy[0] = (spid->eFuzzyRule[2] - e)/spid->eFuzzyRule[2];
-	}else if(spid->eFuzzyRule[2]<=e && e<spid->eFuzzyRule[1])  {
+		eFuzzy[0] = (eFuzzyRule[4] - e)/(eFuzzyRule[4]-eFuzzyRule[3]);
+	}else if(eFuzzyRule[4]<=e && e<eFuzzyRule[5])  {
 		pe = 4; 
-		eFuzzy[0] = (spid->eFuzzyRule[1] - e)/(spid->eFuzzyRule[1]-spid->eFuzzyRule[2]);   
-	}else if(spid->eFuzzyRule[1]<=e && e<spid->eFuzzyRule[0])  {
+		eFuzzy[0] = (eFuzzyRule[5] - e)/(eFuzzyRule[5]-eFuzzyRule[4]);   
+	}else if(eFuzzyRule[5]<=e && e<eFuzzyRule[6])  {
 		pe = 5; 
-		eFuzzy[0] = (spid->eFuzzyRule[0] - e)/(spid->eFuzzyRule[0]-spid->eFuzzyRule[1]);   
+		eFuzzy[0] = (eFuzzyRule[6] - e)/(eFuzzyRule[6]-eFuzzyRule[5]);   
 	}else  { 
 		pe =5;
 		eFuzzy[0] =0;

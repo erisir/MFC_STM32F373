@@ -33,7 +33,7 @@ int16_t SDADC_ValueTable[ADCMeanWindow*2]={0};
 struct _VoltageRaw voltage;
 struct _Voltage filter_voltage;
 struct _VoltageSum sum_voltage;
-
+uint16_t valtageOffset=0;
 /* USER CODE END 0 */
 
 SDADC_HandleTypeDef hsdadc1;
@@ -202,6 +202,10 @@ void VOL_IIR_Filter()
 	REG_INPUTsAddr->voltageCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); 	
 	REG_INPUTsAddr->voltageCh1= (USHORT)(filter_voltage.ch1); //输出实际电压----来自流量检测的DAC输入
 	 
+}
+void setValtageOffset(void)
+{
+	valtageOffset = filter_voltage.ch0;
 }
 
 float  GetADCVoltage(unsigned char ch){//PID调用

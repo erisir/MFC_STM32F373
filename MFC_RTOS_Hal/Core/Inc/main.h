@@ -45,7 +45,8 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include <stdio.h>
-	
+#include "cmsis_os.h"
+
 #include "pwm.h"
 #include "pid.h"
 #include "sdadc.h"
