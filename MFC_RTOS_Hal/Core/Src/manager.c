@@ -270,17 +270,7 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
 
 	return yOutput;
 }
-void VoltageOutLinerFix(void)
-{
-	uint16_t currVoltage,outputVoltage;
-	currVoltage= GetADCVoltage(0);
-	outputVoltage=VoltageToFlow(currVoltage);
-	
-	REG_INPUTsAddr->DEBUG16[0]= currVoltage;
-	REG_INPUTsAddr->DEBUG16[1]= outputVoltage;
-		
-	AD5761_SetVoltage(outputVoltage);
-}
+
  
 float VoltageToFlow(uint16_t voltage) 
 {

@@ -111,8 +111,6 @@ void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *u
 void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT32DataToMBHoldingReg(uint32_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 
-void VoltageOutLinerFix(void);
-
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 
 float UFRAC16ToFloat(uint16_t ufrac16);

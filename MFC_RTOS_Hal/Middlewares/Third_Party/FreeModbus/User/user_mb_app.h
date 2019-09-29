@@ -28,9 +28,9 @@ struct REG_INPUTs{
 	uint16_t voltageCh1; 
 	float flowCh0;
 	float flowCh1;
-	uint16_t DEBUG16[6];  
-	uint32_t DEBUG32[4];
-	uint32_t DEBUG161[10];
+	float flowIIRFilterCh0;
+	float flowIIRFilterCh1;
+ 
 //22 int
 };
 struct REG__HOLDINGs{//75*2= 150 int16t

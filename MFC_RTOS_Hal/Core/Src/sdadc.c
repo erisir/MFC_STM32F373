@@ -34,6 +34,13 @@ struct _VoltageRaw voltage;
 struct _Voltage filter_voltage;
 struct _VoltageSum sum_voltage;
 uint16_t valtageOffset=0;
+float VOL_IIR_FACTOR;
+float FIRWindowPass1[10];
+float FIRWindowPass2[10];
+float FIRFilterResult1=0.0;
+float FIRFilterResult2=0.0;
+int8_t FIRFilterIndex1=0;
+int8_t FIRFilterIndex2=0;
 /* USER CODE END 0 */
 
 SDADC_HandleTypeDef hsdadc1;
@@ -181,46 +188,68 @@ void SDADC_Config()
     Error_Handler();
   }
 	HAL_SDADC_InjectedStart_DMA(&hsdadc1, (uint32_t*)SDADC_ValueTable,bufLength);
-
+	Calculate_FilteringCoefficient(50);
 }
+void Calculate_FilteringCoefficient(float Cut_Off) 
+ { 
+ 	VOL_IIR_FACTOR =(float)( 10 /( 10 + 1.0f/(2.0f*3.14f*Cut_Off) )); 
+ } 
+
 void VOL_IIR_Filter()
 {
 	uint16_t i = 0;
 	int16_t temp = 0;
 	sum_voltage.ch0 = 0;
 	sum_voltage.ch1 = 0;
-	float flow=0.0;
+	 
 	for(i=0;i<ADCMeanWindow;i++){
 		sum_voltage.ch0 +=SDADC_ValueTable[2*i+1];
 		sum_voltage.ch1 +=SDADC_ValueTable[2*i+0];
 	}
 	
 	temp =sum_voltage.ch0>>ADCMeanWindowShift;
-  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
-	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
+	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
  
-	REG_INPUTsAddr->flowCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); 
-	REG_INPUTsAddr->flowCh0 = REG_INPUTsAddr->flowCh0*sCalibrate->targetGasToCalibrationGasConversionFactor;//real flow for target gas
-	//IRR fliter REG_INPUTsAddr->flowCh0
-	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowCh0);//digital read
-	AD5761_SetVoltage(REG_INPUTsAddr->flowCh0*65.535);// DAC output
+	REG_INPUTsAddr->flowCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); //linear fited
+	REG_INPUTsAddr->flowCh0 = REG_INPUTsAddr->flowCh0*sCalibrate->targetGasToCalibrationGasConversionFactor;//target gas fited: read 
+	
+	//FIR fliter for ch0
+	/*FIRFilterResult1 -=FIRWindowPass1[FIRFilterIndex1]; //pass1
+	FIRWindowPass1[FIRFilterIndex1] = filter_voltage.ch0/10;
+	FIRFilterResult1 +=FIRWindowPass1[FIRFilterIndex1];
+	FIRFilterIndex1 = (FIRFilterIndex1+1)%10;
+	
+	FIRFilterResult2 -=FIRWindowPass2[FIRFilterIndex2]; //pass2
+	FIRWindowPass2[FIRFilterIndex2] = FIRFilterResult1/10;
+	FIRFilterResult2 +=FIRWindowPass2[FIRFilterIndex2];
+	FIRFilterIndex2 = (FIRFilterIndex2+1)%10;*/
+	
+	
+	sZeroAndReadFlow->readFlow=FloatToUFRAC16(FIRFilterResult2);//digital read
+	AD5761_SetVoltage(FIRFilterResult2*65.535);// DAC output
 	
 	REG_INPUTsAddr->voltageCh0=(USHORT)(filter_voltage.ch0);
-	REG_INPUTsAddr->voltageCh1= FloatToUFRAC16(filter_voltage.ch1/50); //control电压----来自流量检测的DAC输入,保存为UFRAT16
+	
+	//IRR fliter for ch1
+	REG_INPUTsAddr->flowCh1=filter_voltage.ch1/50;// control flow
+	REG_INPUTsAddr->flowIIRFilterCh1 = (float)(REG_INPUTsAddr->flowIIRFilterCh1 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowCh1 - REG_INPUTsAddr->flowIIRFilterCh1)); 
+	REG_INPUTsAddr->voltageCh1= FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh1); //control电压----来自流量检测的DAC输入,保存为UFRAT16
 	 
+}
+uint16_t GetADCVoltage(uint8_t ch)
+{
+	if (ch==0)
+		return filter_voltage.ch0;// pid not filter
+	else
+		return filter_voltage.ch1;
 }
 void setValtageOffset(void)
 {
 	valtageOffset = filter_voltage.ch0;
 }
 
-float  GetADCVoltage(unsigned char ch){//PID调用
-	if(ch == 0)
-		 return filter_voltage.ch0;
-	 else
-		 return  filter_voltage.ch1;
-}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

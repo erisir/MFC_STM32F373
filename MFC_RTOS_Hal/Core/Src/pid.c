@@ -142,7 +142,6 @@ void PID_Start()
 		PWM_Output = spid->PWM_MAX; 
 	if(PWM_Output <spid->PWM_MIN)
 		PWM_Output = spid->PWM_MIN;  
-	REG_INPUTsAddr->DEBUG32[0] = PWM_Output;
 	LoadPWM(PWM_Output);	
 }
 void setVoltageSetPoint(uint16_t voltage)

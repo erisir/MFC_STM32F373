@@ -241,7 +241,7 @@ void StartCheckKeyDown(void const * argument)
 			value = 4096;		
 		AD5761_SetVotage(value);
 		//AD5761_Config();*/
-		VoltageOutLinerFix();
+		//VoltageOutLinerFix();
     osDelay(2000);
   }
   /* USER CODE END StartCheckKeyDown */
