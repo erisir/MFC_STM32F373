@@ -76,12 +76,12 @@ void MFCInit(void)
 	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
 	sControlMode->saveEEPROM = 0;// dont save
 	
-	sSetPoint->activeSetpoint=0;// current setpoint by external voltage
+	sSetPoint->activeSetpoint=FloatToUFRAC16(0.5);// current setpoint by external voltage
 	sSetPoint->delay = 0;//no delay
-	sSetPoint->digitalSetpoint = 0;//feedback target, user setpoint, FS%
+	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.5);//feedback target, user setpoint, FS%
 	sSetPoint->holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
-	sSetPoint->shutoffLevel = 0;//1.5%FS to shutoff UFRAC16
-	sSetPoint->softStartRate = 0;// turn off softstart
+	sSetPoint->shutoffLevel = FloatToUFRAC16(0.015);//1.5%FS to shutoff UFRAC16
+	sSetPoint->softStartRate = FloatToUFRAC16(0);// turn off softstart
 	 
 	sZeroAndReadFlow->accumulatorFlow = 0;
 	sZeroAndReadFlow->accumulatorMode = 0;//restart,1:pause,3,resume,4,nomal continue flag
@@ -122,6 +122,8 @@ void MFCInit(void)
 	sMacBaudrate->baudrate=9600;
 	sMacBaudrate->MBmode=0;//RTU
 	  
+	SetContrlResource(sControlMode->controlMode);
+	Valve_Close();
 }
  
 void EEPROM_INIT(void)// 
@@ -184,7 +186,7 @@ void HolddingRegDataChange(void)
 	//zero change
 	setValtageOffset();
 	//digital setpoint change
-	if(myabs(*Voltage_Set_PointCur -lastVoltage_Set_Point)>3){
+	if(*Voltage_Set_PointCur !=lastVoltage_Set_Point ){
 		if(sSetPoint->holdFollow ==emFollowSetPoint){
 			if(sSetPoint->delay<49 && sSetPoint->delay>1){
 				osDelay(100);
@@ -192,20 +194,22 @@ void HolddingRegDataChange(void)
 				osDelay(sSetPoint->delay);
 			}
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
-			flow_Set_PointGasFit =UFRAC16ToFloat(*Voltage_Set_PointCur)/sCalibrate->targetGasToCalibrationGasConversionFactor;//设定的时候要除 
+			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/1;//sCalibrate->targetGasToCalibrationGasConversionFactor;//设定的时候要除 %
 			Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
 			setVoltageSetPoint(Voltage_Set_PointLinearFit);
 		}
 	}
+	REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
+
 }
 void  Valve_Close(void)
 {
-	PWM_Output = 0;
+	PWM_Output = 1;
 	LoadPWM(PWM_Output) ;
 }
 void Valve_Open(void)
 {
-	PWM_Output = 65536*32;
+	PWM_Output = 65536*20;
 	LoadPWM(PWM_Output) ;
 }
 void SetContrlResource(uint8_t mode)
@@ -278,7 +282,7 @@ float VoltageToFlow(uint16_t voltage)
 }
 uint16_t FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
 {
-	return 50*piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow);
+	return piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow*50);
 }
 float UFRAC16ToFloat(uint16_t ufrac16)
 {
@@ -315,7 +319,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->digitalSetpoint,usLength,pucFrame);
 				break;
 				case 0xA5:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->activeSetpoint,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->digitalSetpoint,usLength,pucFrame);
 				break;				
 			}
 		break;

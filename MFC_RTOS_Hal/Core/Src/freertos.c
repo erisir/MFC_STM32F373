@@ -172,7 +172,7 @@ void StartSDADCIIRFilter(void const * argument)
   for(;;)
   {
 		VOL_IIR_Filter();
-		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);			
+				
     osDelay(10);
   }
   /* USER CODE END StartSDADCIIRFilter */
@@ -217,7 +217,7 @@ void StartPID(void const * argument)
 		}else{
 			osDelay(100);
 		}
-		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
   }
   /* USER CODE END StartPID */
 }

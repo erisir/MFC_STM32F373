@@ -87,9 +87,9 @@ void PIDInit(void)
 	spid->kpid[1] = 30;
 	spid->kpid[2] = 20;
 	
-	spid->kpidF[0] = 2;
-	spid->kpidF[1] = 2;
-	spid->kpidF[2] = 2;
+	spid->kpidF[0] = 0;
+	spid->kpidF[1] = 0;
+	spid->kpidF[2] = 0;
 
   spid->eFuzzyRule[0] = 2000;//
 	spid->eFuzzyRule[1] = 800;
@@ -142,6 +142,9 @@ void PID_Start()
 		PWM_Output = spid->PWM_MAX; 
 	if(PWM_Output <spid->PWM_MIN)
 		PWM_Output = spid->PWM_MIN;  
+	
+	REG_INPUTsAddr->pwmOut=PWM_Output;
+	
 	LoadPWM(PWM_Output);	
 }
 void setVoltageSetPoint(uint16_t voltage)
