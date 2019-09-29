@@ -384,10 +384,11 @@ eMBPoll( void )
 							 SevenStarExecute(ucMBFrame, &usLength);//EV_EXECUTE
 							
 							
-							if( ucRcvAddress == MB_ADDRESS_BROADCAST){
+							/*if( ucRcvAddress == MB_ADDRESS_BROADCAST){
+								HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
 								eStatus = peMBFrameSendCur( 0, ucMBFrame, REPLY_ADDRESS );
-							}
-							if( ucRcvAddress != MB_ADDRESS_BROADCAST && ucMBFrame[2]==0x80)// read function we need to reply something
+							}*/
+							if(ucMBFrame[2]==0x80)// read function we need to reply something
 							{
 							  eStatus = peMBFrameSendCur( 0, ucMBFrame, usLength );
 							}

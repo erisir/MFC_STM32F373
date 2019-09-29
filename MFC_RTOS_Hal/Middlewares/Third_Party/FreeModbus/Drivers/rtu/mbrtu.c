@@ -172,7 +172,7 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 							/* Return the start of the Modbus PDU to the caller. */
 							*pucFrame = ( UCHAR * ) & ucRTUBuf[0];
 							xFrameReceived = TRUE;
-							HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
+							
 					}
 					else
 					{
