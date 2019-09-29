@@ -189,6 +189,7 @@ void VOL_IIR_Filter()
 	int16_t temp = 0;
 	sum_voltage.ch0 = 0;
 	sum_voltage.ch1 = 0;
+	float flow=0.0;
 	for(i=0;i<ADCMeanWindow;i++){
 		sum_voltage.ch0 +=SDADC_ValueTable[2*i+1];
 		sum_voltage.ch1 +=SDADC_ValueTable[2*i+0];
@@ -199,8 +200,14 @@ void VOL_IIR_Filter()
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
 	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));
  
-	REG_INPUTsAddr->voltageCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); 	
-	REG_INPUTsAddr->voltageCh1= (USHORT)(filter_voltage.ch1); //输出实际电压----来自流量检测的DAC输入
+	REG_INPUTsAddr->flowCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); 
+	REG_INPUTsAddr->flowCh0 = REG_INPUTsAddr->flowCh0*sCalibrate->targetGasToCalibrationGasConversionFactor;//real flow for target gas
+	//IRR fliter REG_INPUTsAddr->flowCh0
+	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowCh0);//digital read
+	AD5761_SetVoltage(REG_INPUTsAddr->flowCh0*65.535);// DAC output
+	
+	REG_INPUTsAddr->voltageCh0=(USHORT)(filter_voltage.ch0);
+	REG_INPUTsAddr->voltageCh1= FloatToUFRAC16(filter_voltage.ch1/50); //control电压----来自流量检测的DAC输入,保存为UFRAT16
 	 
 }
 void setValtageOffset(void)

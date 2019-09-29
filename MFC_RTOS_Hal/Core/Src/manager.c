@@ -37,6 +37,8 @@ uint16_t data_x,data_y,data_z;
  
 uint8_t isRunning=0;
 uint16_t * Voltage_Set_PointCur;
+uint16_t  Voltage_Set_PointLinearFit,lastVoltage_Set_Point;
+float  flow_Set_PointGasFit;
  
 uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 uint16_t linearFittingX[]={0,10*50,20*50,30*50,40*50,50*50,60*50,70*50,80*50,90*50,100*50};
@@ -109,7 +111,7 @@ void MFCInit(void)
 	sCalibrate->targetGasName=1;
 	sCalibrate->targetGasCode=13;
 	sCalibrate->targetGasFullScaleRange=1;
-	sCalibrate->targetGasToCalibrationGasConversionFactor=1;
+	sCalibrate->targetGasToCalibrationGasConversionFactor=1;//fix16.16
 	
 	sCalibrate->CalibrationGasName=1;
 	sCalibrate->CalibrationGasCode=13;
@@ -182,14 +184,17 @@ void HolddingRegDataChange(void)
 	//zero change
 	setValtageOffset();
 	//digital setpoint change
-	if(*Voltage_Set_PointCur !=getVoltageSetPoint()){
+	if(myabs(*Voltage_Set_PointCur -lastVoltage_Set_Point)>3){
 		if(sSetPoint->holdFollow ==emFollowSetPoint){
 			if(sSetPoint->delay<49 && sSetPoint->delay>1){
 				osDelay(100);
 			}else{
 				osDelay(sSetPoint->delay);
 			}
-			setVoltageSetPoint(*Voltage_Set_PointCur);
+			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
+			flow_Set_PointGasFit =UFRAC16ToFloat(*Voltage_Set_PointCur)/sCalibrate->targetGasToCalibrationGasConversionFactor;//设定的时候要除 
+			Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
+			setVoltageSetPoint(Voltage_Set_PointLinearFit);
 		}
 	}
 }
@@ -208,15 +213,15 @@ void SetContrlResource(uint8_t mode)
 	  
 		switch(mode){
 		case 1:
-			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;
+			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;//ufrat16
 					
 		break;
 		case 2:
-			Voltage_Set_PointCur = &REG_INPUTsAddr->voltageCh1;	
+			Voltage_Set_PointCur = &REG_INPUTsAddr->voltageCh1;//ufrat16
 		break;
 		
 		default:
-			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;
+			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;//ufrat16
 		break;
 	}
 }
@@ -241,14 +246,15 @@ void EEPROM_READ(void)	//
 	  
 }
 
-uint16_t piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFittingValue * yDict,uint16_t DictSize,uint16_t xInput)
+float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFittingValue * yDict,uint16_t DictSize,float xInput)
 {
  
-	uint16_t x1,x2,y1,y2,i=0,yOutput=0;
+	uint16_t x1,x2,y1,y2,i=0;
+	float yOutput=0;
   if(xInput<=xDict->value[0]){
 		yOutput= yDict->value[0];
 	}else if(xInput>=xDict->value[DictSize-1]){
-		yOutput= yDict->value[DictSize-1];
+		yOutput= yOutput;//yDict->value[DictSize-1];
 	}else{
 		for(i=0;i<DictSize-1;i++){
 			if( (xInput>=xDict->value[i]) && (xInput<xDict->value[i+1])){
@@ -256,7 +262,7 @@ uint16_t piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _Linear
 				x2 = xDict->value[i+1];
 				y1 = yDict->value[i];
 				y2 = yDict->value[i+1];
-				yOutput = (xInput-x2)*y1/(x1-x2)+(xInput-x1)*y2/(x2-x1);
+				yOutput =(float)(xInput-x2)*y1/(x1-x2)+(xInput-x1)*y2/(x2-x1);
 				break;
 			}
 		}
@@ -276,40 +282,27 @@ void VoltageOutLinerFix(void)
 	AD5761_SetVoltage(outputVoltage);
 }
  
-uint16_t VoltageToFlow(uint16_t voltage) 
+float VoltageToFlow(uint16_t voltage) 
 {
-	return piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage);
-	//AD5761_SetVotage(vout);
+	return (float)piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage)/50;
 }
-uint16_t FlowToVoltage(uint16_t flow)//real Target voltage cover to current MFC sensor Voltage
+uint16_t FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
 {
-	//uint16_t voltage = 0;
-	//scalValue->value[0];
-	//voltage = (uint16_t)(13.0f*filter_voltage.ch0);
-	return piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow);
-  //AD5761_SetVotage(voltage);
+	return 50*piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow);
 }
-void UFRAC16ToFloat(uint8_t highBit,uint8_t lowBit,float *coverValue)
+float UFRAC16ToFloat(uint16_t ufrac16)
 {
-	uint16_t RawValue = highBit*256+lowBit;
-	*coverValue= (float) (RawValue-16384)/32768;
+	return (float) (ufrac16-16384)/32768;
 }
-void FloatToUFRAC16(float coverValue, uint8_t *highBit,uint8_t *lowBit)
+uint16_t FloatToUFRAC16(float floatValue)
 {
-	uint16_t temp = coverValue*32768+16384;
-	*highBit = temp/256;
-	*lowBit = temp%256;
+	return floatValue*32768+16384;
 }
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
 	uint8_t dataClass = pucFrame[4];
 	uint8_t dataAttribute = pucFrame[6];
-	/*if(dataLen ==5){
-		highBit = pucFrame[8];
-		lowBit = pucFrame[7];
-		UFRAC16ToFloat(highBit, lowBit,&valueSet);
-	}FloatToUFRAC16(0.119,&pucFrame[8],&pucFrame[7]);*/
- 
+
 	switch (dataClass){
 		case 0x69:// control mode & setpoint
 			switch (dataAttribute){
