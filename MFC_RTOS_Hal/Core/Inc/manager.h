@@ -104,8 +104,8 @@ void Valve_Open(void);
 
 
 float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFittingValue * yDict,uint16_t DictSize,float xInput);//电压层面的分段线性插值
-float VoltageToFlow(uint16_t voltage);
-uint16_t FlowToVoltage(float flow);
+float VoltageToFlow(float voltage);
+float FlowToVoltage(float flow);
 
 void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);

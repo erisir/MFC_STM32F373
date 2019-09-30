@@ -35,11 +35,11 @@ extern SDADC_HandleTypeDef hsdadc1;
 /* USER CODE BEGIN Private defines */
 
 
-#define SDADC_GAIN           (uint32_t) 1  /* SDADC internal gain is set to 1: update this define according to POT_SDADC_GAIN */
+#define SDADC_GAIN           (float) 0.51564  /* SDADC internal gain is set to 1: update this define according to POT_SDADC_GAIN */
 
 #define SDADC_RESOL          (uint32_t) 65535 /* 2e16 - 1 */
 
-#define SDADC_VREF           (float) 2907  /* SDADC external reference is set to 3V */
+#define SDADC_VREF           (float) 2990  /* SDADC external reference is set to 3V */
 
 /* USER CODE END Private defines */
 

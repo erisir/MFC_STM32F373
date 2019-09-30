@@ -255,10 +255,9 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
  
 	uint16_t x1,x2,y1,y2,i=0;
 	float yOutput=0;
-  if(xInput<=xDict->value[0]){
-		yOutput= yDict->value[0];
-	}else if(xInput>=xDict->value[DictSize-1]){
-		yOutput=5000;// yDict->value[DictSize-1];
+	
+  if(xInput<=xDict->value[0] ||xInput>=xDict->value[DictSize-1]){
+		yOutput= xInput;
 	}else{
 		for(i=0;i<DictSize-1;i++){
 			if( (xInput>=xDict->value[i]) && (xInput<xDict->value[i+1])){
@@ -275,22 +274,21 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
 	return yOutput;
 }
 
- 
-float VoltageToFlow(uint16_t voltage) 
+float VoltageToFlow(float voltage) 
 {
 	return (float)piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage)/50;
 }
-uint16_t FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
+float FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
 {
 	return piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow*50);
 }
 float UFRAC16ToFloat(uint16_t ufrac16)
 {
-	return (float) (ufrac16-16384)/49152;
+	return (float) (ufrac16-16384)/32768;
 }
 uint16_t FloatToUFRAC16(float floatValue)
 {
-	return floatValue*49152+16384;
+	return floatValue*32768+16384;
 }
 
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)

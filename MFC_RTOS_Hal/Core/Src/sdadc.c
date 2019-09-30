@@ -57,7 +57,7 @@ void MX_SDADC1_Init(void)
   hsdadc1.Instance = SDADC1;
   hsdadc1.Init.IdleLowPowerMode = SDADC_LOWPOWER_NONE;
   hsdadc1.Init.FastConversionMode = SDADC_FAST_CONV_DISABLE;
-  hsdadc1.Init.SlowClockMode = SDADC_SLOW_CLOCK_DISABLE;
+  hsdadc1.Init.SlowClockMode = SDADC_SLOW_CLOCK_ENABLE;
   hsdadc1.Init.ReferenceVoltage = SDADC_VREF_EXT;
   hsdadc1.InjectedTrigger = SDADC_SOFTWARE_TRIGGER;
   if (HAL_SDADC_Init(&hsdadc1) != HAL_OK)
@@ -208,9 +208,9 @@ void VOL_IIR_Filter()
 	}
 	
 	temp =sum_voltage.ch0>>ADCMeanWindowShift;
-  filter_voltage.ch0=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
+  filter_voltage.ch0=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
-	filter_voltage.ch1=(float)(2.0f* (((temp + 32768) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
+	filter_voltage.ch1=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
   
 	REG_INPUTsAddr->flowCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); //linear fited %
 	REG_INPUTsAddr->flowCh0 = (float)(REG_INPUTsAddr->flowCh0*1);//sCalibrate->tarGasConversionFactor;//target gas fited: read 
@@ -227,15 +227,20 @@ void VOL_IIR_Filter()
 	FIRFilterIndex2 = (FIRFilterIndex2+1)%10;
 	 */
 	REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
-	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh0/100);//digital read
-	AD5761_SetVoltage(REG_INPUTsAddr->flowIIRFilterCh0*65.535);// DAC output
 	
-	REG_INPUTsAddr->voltageCh0=sZeroAndReadFlow->readFlow;//sZeroAndReadFlow->readFlow;
+	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh0/100);//digital read
+	
+	//AD5761_SetVoltage(REG_INPUTsAddr->flowIIRFilterCh0*65.535);// DAC output
+	AD5761_SetVoltage(32768);// DAC output
+	
+	
 	REG_INPUTsAddr->pwmOut=PWM_Output;	
 	//IRR fliter for ch1
 	REG_INPUTsAddr->flowCh1=filter_voltage.ch1/50;// control flow %
 	REG_INPUTsAddr->flowIIRFilterCh1 = (float)(REG_INPUTsAddr->flowIIRFilterCh1 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowCh1 - REG_INPUTsAddr->flowIIRFilterCh1)); 
-	REG_INPUTsAddr->voltageCh1= FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh1); //control电压----来自流量检测的DAC输入,保存为UFRAT16
+	
+	REG_INPUTsAddr->voltageCh1=FloatToUFRAC16(filter_voltage.ch0/5000);// FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh1); //control电压----来自流量检测的DAC输入,保存为UFRAT16
+	REG_INPUTsAddr->voltageCh0=FloatToUFRAC16(filter_voltage.ch1/5000);//sZeroAndReadFlow->readFlow;//sZeroAndReadFlow->readFlow;
 	 
 }
 void FlowAccumulator(void)//1pass/sec
