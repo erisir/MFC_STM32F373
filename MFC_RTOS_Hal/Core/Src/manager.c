@@ -258,7 +258,7 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
   if(xInput<=xDict->value[0]){
 		yOutput= yDict->value[0];
 	}else if(xInput>=xDict->value[DictSize-1]){
-		yOutput=yOutput;// yDict->value[DictSize-1];
+		yOutput=5000;// yDict->value[DictSize-1];
 	}else{
 		for(i=0;i<DictSize-1;i++){
 			if( (xInput>=xDict->value[i]) && (xInput<xDict->value[i+1])){

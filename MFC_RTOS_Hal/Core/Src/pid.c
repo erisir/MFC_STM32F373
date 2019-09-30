@@ -70,7 +70,7 @@ void PIDInit(void)
 	spid->kpidF[0] = 11;
 	spid->kpidF[1] = 2;
 	spid->kpidF[2] = 11;
-
+   
   spid->eFuzzyRule[0] = 3000;//
 	spid->eFuzzyRule[1] = 1200;
 	spid->eFuzzyRule[2] = 600;
@@ -86,7 +86,7 @@ void PIDInit(void)
  
 	spid->PWM_MAX=1000000;
 	spid->PWM_MIN=860000;
-	spid->PWM_STEP=600;
+	//spid->PWM_STEP=600;
 }
 void FuzzyCtrlRuleMapInit(void)
 {
