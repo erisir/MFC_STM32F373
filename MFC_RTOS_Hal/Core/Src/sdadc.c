@@ -248,8 +248,8 @@ void ResetFlowAccumulator(void)
 }
 void FlowAccumulator(void)//1pass/sec
 {
-	if(sZeroAndReadFlow->accumulatorMode==1){
-		//sZeroAndReadFlow->accumulatorFlow+=filter_voltage.ch0/3000;
+	if(GetAccumulatorStatu()==emAccumulatorRunning){
+		sZeroAndReadFlow->accumulatorFlow+=filter_voltage.ch0/3000;
 	}
 }
 void ResetFlowOffset(void)
@@ -264,10 +264,7 @@ uint16_t GetADCVoltage(uint8_t ch)
 	else
 		return filter_voltage.ch1;
 }
-void setValtageOffset(void)
-{
-	valtageOffset = filter_voltage.ch0;
-}
+ 
 
 /* USER CODE END 1 */
 

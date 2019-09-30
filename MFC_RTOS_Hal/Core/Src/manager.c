@@ -42,7 +42,7 @@ float  flow_Set_PointGasFit;
  
 uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 uint16_t linearFittingX[]={0,10*50,20*50,30*50,40*50,50*50,60*50,70*50,80*50,90*50,100*50};
-
+uint8_t accumulatorStatu= 0;//0 stop,1 pause,2 running
 void MFCInit(void)
 {
 	spid  = (struct _PID *)REG__HOLDINGssAddr->PIDparam;
@@ -84,7 +84,7 @@ void MFCInit(void)
 	sSetPoint->softStartRate = FloatToUFRAC16(0);// turn off softstart
 	 
 	sZeroAndReadFlow->accumulatorFlow = 0;
-	sZeroAndReadFlow->accumulatorMode = 0;//restart,1:pause,3,resume,4,nomal continue flag
+	sZeroAndReadFlow->accumulatorMode = 4;//0 restart,1:pause,3,resume,4,nomal continue flag
 	sZeroAndReadFlow->readFlow = 0;
 	sZeroAndReadFlow->targetNullValue = 0;//custumer set zeropoint
 	sZeroAndReadFlow->zeroStatus = 0;//set current to zero in 1,need to change to 0
@@ -96,7 +96,7 @@ void MFCInit(void)
 	
 	sWarningsAlarms->clearWarningsAlarms=0;// not function
 	sWarningsAlarms->enableWarningsAlarms=0;// not function
-	sWarningsAlarms->none=0;// not function
+	 
 	
 	sProduct->firmwareRevision=10;
 	sProduct->PCBRevision=10;
@@ -153,18 +153,24 @@ void EEPROM_INIT(void)//
 	Valve_Close();
  
 }
- 
+uint8_t GetAccumulatorStatu()
+{
+	return  accumulatorStatu;//0 stop,1 pause,2 running;
+}
 void HolddingRegDataChange(void)
 {
-	//accumulator change
+	//accumulator change 0 restart,1:pause,3,resume,4,start continue flag
 	if(sZeroAndReadFlow->accumulatorMode ==0)//reset
+	{	
+		sZeroAndReadFlow->accumulatorFlow=4;
+		ResetFlowAccumulator();	
+		accumulatorStatu = emAccumulatorRunning;
+	}else if(sZeroAndReadFlow->accumulatorMode ==1)//pause
 	{
-		sZeroAndReadFlow->accumulatorFlow=0;
-		sZeroAndReadFlow->accumulatorMode = 1;// continue
-	}
-	if(sZeroAndReadFlow->accumulatorMode ==3)//resume
+		accumulatorStatu = emAccumulatorPause;
+	}else if(sZeroAndReadFlow->accumulatorMode ==3)//resume
 	{
-		sZeroAndReadFlow->accumulatorMode = 1;
+		accumulatorStatu = emAccumulatorRunning;
 	}
 	
 	//contrlmode change
@@ -181,10 +187,18 @@ void HolddingRegDataChange(void)
 	if(sValveCommand->valveCommand ==emValveClose){
 		Valve_Close();
 	}else if(sValveCommand->valveCommand ==emValveOpen){
+		if(accumulatorStatu == emAccumulatorRunning)
+			accumulatorStatu = emAccumulatorPauseByOpenValve;
 		Valve_Open();
+	}else if(sValveCommand->valveCommand ==emValvePID){
+		if(accumulatorStatu == emAccumulatorPauseByOpenValve)
+			accumulatorStatu = emAccumulatorRunning;
 	}
 	//zero change
-	setValtageOffset();
+	if(sZeroAndReadFlow->zeroStatus ==1){
+		ResetFlowOffset();
+		sZeroAndReadFlow->zeroStatus =0;
+	}
 	//digital setpoint change
 	if(*Voltage_Set_PointCur !=lastVoltage_Set_Point ){
 		if(sSetPoint->holdFollow ==emFollowSetPoint){
@@ -305,16 +319,16 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		case 0x69:// control mode & setpoint
 			switch (dataAttribute){
 				case 0x03:
-					saveSevenStarUINT8DataToMBHoldingReg(&sControlMode->controlMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sControlMode->controlMode,usLength,pucFrame);
 				break;
 				case 0x04:
-					saveSevenStarUINT8DataToMBHoldingReg(&sControlMode->defaultCotrolMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sControlMode->defaultCotrolMode,usLength,pucFrame);
 				break;
 				case 0x06:
 					sControlMode->saveEEPROM = pucFrame[7];
 				break;
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingReg(&sSetPoint->holdFollow,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sSetPoint->holdFollow,usLength,pucFrame);
 				break;
 				case 0xA6:
 					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->delay,usLength,pucFrame);
@@ -336,23 +350,23 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->shutoffLevel,usLength,pucFrame);
 				break;
 				case 0xA1:
-					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveCommandMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveCommandMode,usLength,pucFrame);
 				break;
 				case 0x01:
-					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveCommand,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveCommand,usLength,pucFrame);
 				break;	
 				case 0x91:
-					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveVoltage,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveVoltage,usLength,pucFrame);
 				break;	
 				case 0x9C:
-					saveSevenStarUINT8DataToMBHoldingReg(&sValveCommand->valveType,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveType,usLength,pucFrame);
 				break;					
 			}
 		break;
 		case 0x68:// zero
 			switch (dataAttribute){
 				case 0xBA:
-					saveSevenStarUINT8DataToMBHoldingReg(&sZeroAndReadFlow->zeroStatus,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sZeroAndReadFlow->zeroStatus,usLength,pucFrame);
 				break;
 				case 0xB9:
 					saveSevenStarUINT16DataToMBHoldingReg(&sZeroAndReadFlow->readFlow,usLength,pucFrame);
@@ -362,7 +376,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		case 0xA4:// Accumulator
 			switch (dataAttribute){
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingReg(&sZeroAndReadFlow->accumulatorMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sZeroAndReadFlow->accumulatorMode,usLength,pucFrame);
 				break;
 				case 0x03:
 					saveSevenStarUINT32DataToMBHoldingReg(&sZeroAndReadFlow->accumulatorFlow,usLength,pucFrame);
@@ -375,10 +389,10 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sWarningsAlarms->enableWarningsAlarms,usLength,pucFrame);
 				break;
 				case 0xA1:
-					saveSevenStarUINT8DataToMBHoldingReg(&sWarningsAlarms->clearWarningsAlarms,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sWarningsAlarms->clearWarningsAlarms,usLength,pucFrame);
 				break;	
 				case 0xA0:
-					saveSevenStarUINT8DataToMBHoldingReg(&sWarningsAlarms->none,usLength,pucFrame);
+					//saveSevenStarUINT8DataToMBHoldingRegUINT16(&sWarningsAlarms->none,usLength,pucFrame);
 				break;					
 			}
 		break;
@@ -401,10 +415,10 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->modelID,usLength,pucFrame);
 				break;	
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingReg(&sProduct->firmwareRevision,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sProduct->firmwareRevision,usLength,pucFrame);
 				break;	
 				case 0x06:
-					saveSevenStarUINT8DataToMBHoldingReg(&sProduct->PCBRevision,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sProduct->PCBRevision,usLength,pucFrame);
 				break;	
 				case 0x07:
 					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->MFCSeiral,usLength,pucFrame);
@@ -455,13 +469,13 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		case 0x03:// Calibrate
 			switch (dataAttribute){
 				case 0x01:
-					saveSevenStarUINT8DataToMBHoldingReg(&sMacBaudrate->RS485MacAddress,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sMacBaudrate->RS485MacAddress,usLength,pucFrame);
 				break;
 				case 0x02:
 					saveSevenStarUINT16DataToMBHoldingReg(&sMacBaudrate->baudrate,usLength,pucFrame);
 				break;
 				case 0x03:
-					saveSevenStarUINT8DataToMBHoldingReg(&sMacBaudrate->MBmode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sMacBaudrate->MBmode,usLength,pucFrame);
 				break;
 			}
 		break;
@@ -469,6 +483,19 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 	HolddingRegDataChange();
 }
 void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
+{
+if (pucFrame[2]== 0x80)//read
+	{
+		*usLength =1;
+		pucFrame[3]=4;
+		pucFrame[7]=* MBHoldRegAddress;
+	}
+	if (pucFrame[2]== 0x81)//write
+	{
+		* MBHoldRegAddress = pucFrame[7];
+	}
+}
+void saveSevenStarUINT8DataToMBHoldingRegUINT16(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame)
 {
 if (pucFrame[2]== 0x80)//read
 	{

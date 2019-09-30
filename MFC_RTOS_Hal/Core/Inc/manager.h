@@ -18,20 +18,26 @@ typedef enum{
 	emValveClose ,
 	emValveOpen ,	
 }ValveMode;
+typedef enum{
+	emAccumulatorStop ,
+	emAccumulatorPause,
+	emAccumulatorPauseByOpenValve,
+	emAccumulatorRunning ,	
+}AccumulatorStatu;
+
 struct _LinearFittingValue {//6 int32s
 	uint16_t value[11];//0-100
 	uint16_t none;
 };
 struct _ControlMode {//1 int32s
-	uint8_t controlMode ;
-	uint8_t defaultCotrolMode;
-	uint8_t saveEEPROM;
-	uint8_t none;
+	uint16_t controlMode ;
+	uint16_t defaultCotrolMode;
+	uint16_t saveEEPROM;
+	uint16_t none;
 };
 
 struct _SetPoint{//3 int32s
-	uint8_t holdFollow;
-	uint8_t none;
+	uint16_t holdFollow;
 	uint16_t delay;
 	uint16_t digitalSetpoint;
 	uint16_t softStartRate;
@@ -40,33 +46,34 @@ struct _SetPoint{//3 int32s
 
 };
 
-struct _ZeroAndReadFlow{//3 int32s
-	uint8_t zeroStatus;
-	uint8_t accumulatorMode;
+struct _ZeroAndReadFlow{//4 int32s
+	uint16_t zeroStatus;
+	uint16_t accumulatorMode;
 	uint16_t readFlow;	
+	uint16_t none;	
 	uint32_t accumulatorFlow;
 	uint32_t targetNullValue;
 };
-struct _ValveCommand{//1 int32s
-	uint8_t valveCommandMode;
-	uint8_t valveCommand;
-	uint8_t valveVoltage;
-	uint8_t valveType;
+struct _ValveCommand{//2 int32s
+	uint16_t valveCommandMode;
+	uint16_t valveCommand;
+	uint16_t valveVoltage;
+	uint16_t valveType;
 };
 
 struct _WarningsAlarms{//1 int32s
 	uint16_t enableWarningsAlarms;
-	uint8_t  clearWarningsAlarms;
-	uint8_t none;
+	uint16_t  clearWarningsAlarms;
 };
-struct _Product{//5 int32s
-	uint8_t firmwareRevision;
-	uint8_t PCBRevision;
+struct _Product{//6 int32s
+	uint16_t firmwareRevision;
+	uint16_t PCBRevision;
 	uint16_t modelID;
 	uint16_t MFCSeiral;
 	uint16_t manufacturingDate;
 	uint16_t calibrationDate;
 	uint16_t productVersion;
+	uint16_t none;
 	uint32_t productName;
 	uint32_t manufacturer;
 };
@@ -82,10 +89,11 @@ struct _Calibrate{//6 int32s
 	uint32_t CalGasConversionFactor;
 };
 
-struct _MacBaudrate{//1 int32s
-	uint8_t RS485MacAddress;
-	uint8_t MBmode;
+struct _MacBaudrate{//2 int32s
+	uint16_t RS485MacAddress;
+	uint16_t MBmode;
 	uint16_t baudrate;
+	uint16_t none;
 
 };
 
@@ -108,6 +116,7 @@ float VoltageToFlow(float voltage);
 float FlowToVoltage(float flow);
 
 void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
+void saveSevenStarUINT8DataToMBHoldingRegUINT16(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT32DataToMBHoldingReg(uint32_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
@@ -116,6 +125,7 @@ float UFRAC16ToFloat(uint16_t ufrac16);
 uint16_t FloatToUFRAC16(float coverValue);
  
 float GetTargetNullFlow(void);
+uint8_t GetAccumulatorStatu(void);
 
 extern struct  _ControlMode*				sControlMode;
 extern struct  _SetPoint*					  sSetPoint ;
