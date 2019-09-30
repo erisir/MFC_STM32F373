@@ -255,7 +255,6 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
  
 	uint16_t x1,x2,y1,y2,i=0;
 	float yOutput=0;
-	
   if(xInput<=xDict->value[0] ||xInput>=xDict->value[DictSize-1]){
 		yOutput= xInput;
 	}else{
@@ -273,10 +272,13 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
 
 	return yOutput;
 }
-
+/*
+voltage:0-5000*1.25
+return:0-100:  %
+*/
 float VoltageToFlow(float voltage) 
 {
-	return (float)piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage)/50;
+	return piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage)/50;
 }
 float FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
 {

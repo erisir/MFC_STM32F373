@@ -212,12 +212,12 @@ void VOL_IIR_Filter()
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
 	filter_voltage.ch1=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
   
-	REG_INPUTsAddr->flowCh0= VoltageToFlow((USHORT)(filter_voltage.ch0)); //linear fited %
-	REG_INPUTsAddr->flowCh0 = (float)(REG_INPUTsAddr->flowCh0*1);//sCalibrate->tarGasConversionFactor;//target gas fited: read 
+	REG_INPUTsAddr->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
+	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0*1);//sCalibrate->tarGasConversionFactor;//target gas fited: read 
 	
 	//FIR fliter for ch0
-	/*FIRFilterResult1 -=FIRWindowPass1[FIRFilterIndex1]; //pass1
-	FIRWindowPass1[FIRFilterIndex1] = REG_INPUTsAddr->flowCh0/10;
+	FIRFilterResult1 -=FIRWindowPass1[FIRFilterIndex1]; //pass1
+	FIRWindowPass1[FIRFilterIndex1] = REG_INPUTsAddr->flowRealCh0/10;
 	FIRFilterResult1 +=FIRWindowPass1[FIRFilterIndex1];
 	FIRFilterIndex1 = (FIRFilterIndex1+1)%10;
 	
@@ -225,23 +225,22 @@ void VOL_IIR_Filter()
 	FIRWindowPass2[FIRFilterIndex2] = FIRFilterResult1/10;
 	FIRFilterResult2 +=FIRWindowPass2[FIRFilterIndex2];
 	FIRFilterIndex2 = (FIRFilterIndex2+1)%10;
-	 */
-	REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
 	
-	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh0/100);//digital read
+	//IIR fliter for ch0
+	//REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowRealCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
+	filter_voltage.ch0 = FIRFilterResult2*50;
+	sZeroAndReadFlow->readFlow=FloatToUFRAC16(FIRFilterResult2/100);//digital read ported for Sevenstart
+	REG_INPUTsAddr->voltageCh0=sZeroAndReadFlow->readFlow;//modbus
 	
-	//AD5761_SetVoltage(REG_INPUTsAddr->flowIIRFilterCh0*65.535);// DAC output
-	AD5761_SetVoltage(32768);// DAC output
+	AD5761_SetVoltage(FIRFilterResult2*50);// DAC output
+	 	
+	//IRR fliter for ch1,prepare external control signal
+	REG_INPUTsAddr->flowRawCh1=filter_voltage.ch1/50;// control flow 0-100% input voltage is stable,no need to filter
+	REG_INPUTsAddr->voltageCh1=FloatToUFRAC16(REG_INPUTsAddr->flowRawCh1/100);//control电压----来自流量检测的DAC输入,保存为UFRAT16 小数点格式
 	
 	
-	REG_INPUTsAddr->pwmOut=PWM_Output;	
-	//IRR fliter for ch1
-	REG_INPUTsAddr->flowCh1=filter_voltage.ch1/50;// control flow %
-	REG_INPUTsAddr->flowIIRFilterCh1 = (float)(REG_INPUTsAddr->flowIIRFilterCh1 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowCh1 - REG_INPUTsAddr->flowIIRFilterCh1)); 
-	
-	REG_INPUTsAddr->voltageCh1=FloatToUFRAC16(filter_voltage.ch0/5000);// FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh1); //control电压----来自流量检测的DAC输入,保存为UFRAT16
-	REG_INPUTsAddr->voltageCh0=FloatToUFRAC16(filter_voltage.ch1/5000);//sZeroAndReadFlow->readFlow;//sZeroAndReadFlow->readFlow;
-	 
+	//debug
+	REG_INPUTsAddr->pwmOut=PWM_Output;
 }
 void FlowAccumulator(void)//1pass/sec
 {

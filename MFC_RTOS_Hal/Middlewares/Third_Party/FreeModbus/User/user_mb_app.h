@@ -17,7 +17,7 @@
 #define S_COIL_START                  0 //40000 µÈ
 #define S_COIL_NCOILS                 3 // ON OFF pid
 #define S_REG_INPUT_START             0 //40000 µÈ
-#define S_REG_INPUT_NREGS             39 // Ch0 Ch1
+#define S_REG_INPUT_NREGS             100 // Ch0 Ch1
 #define S_REG_HOLDING_START           0 //40000 µÈ
 #define S_REG_HOLDING_NREGS           150
  
@@ -28,8 +28,12 @@ struct REG_INPUTs{
 	uint16_t voltageCh1; 
 	uint16_t voltageSetPoint;
 	int32_t pwmOut;
-	float flowCh0;//%
-	float flowCh1;//%
+	float flowRawCh0;//%
+	float flowRawCh1;//%
+	
+	float flowRealCh0;//%
+	float flowRealCh1;//%
+	
 	float flowIIRFilterCh0;
 	float flowIIRFilterCh1;
  
