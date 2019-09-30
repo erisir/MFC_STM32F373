@@ -86,7 +86,7 @@ void PIDInit(void)
  
 	spid->PWM_MAX=1000000;
 	spid->PWM_MIN=860000;
-	//spid->PWM_STEP=600;
+	spid->PWM_STEP=4000;
 }
 void FuzzyCtrlRuleMapInit(void)
 {
