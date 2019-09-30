@@ -213,7 +213,7 @@ void VOL_IIR_Filter()
 	filter_voltage.ch1=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
   
 	REG_INPUTsAddr->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
-	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0*1);//sCalibrate->tarGasConversionFactor;//target gas fited: read 
+	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0-REG_INPUTsAddr->flowOffsetCh0-GetTargetNullFlow())*1;//sCalibrate->tarGasConversionFactor;//target gas fited: read 
 	
 	//FIR fliter for ch0
 	FIRFilterResult1 -=FIRWindowPass1[FIRFilterIndex1]; //pass1
@@ -242,11 +242,19 @@ void VOL_IIR_Filter()
 	//debug
 	REG_INPUTsAddr->pwmOut=PWM_Output;
 }
+void ResetFlowAccumulator(void)
+{
+	sZeroAndReadFlow->accumulatorFlow=0;
+}
 void FlowAccumulator(void)//1pass/sec
 {
 	if(sZeroAndReadFlow->accumulatorMode==1){
 		//sZeroAndReadFlow->accumulatorFlow+=filter_voltage.ch0/3000;
 	}
+}
+void ResetFlowOffset(void)
+{
+	REG_INPUTsAddr->flowOffsetCh0 = REG_INPUTsAddr->flowRawCh0*50;
 }
 uint16_t GetADCVoltage(uint8_t ch)
 {

@@ -237,12 +237,13 @@ void StartCheckKeyDown(void const * argument)
  
   for(;;)
   {
-		/*value+= 1000;
-		if(value>65335)
-			value = 4096;		
-		AD5761_SetVotage(value);
-		//AD5761_Config();*/
-		//VoltageOutLinerFix();
+		if(HAL_GPIO_ReadPin(FlowReset_GPIO_Port,FlowReset_Pin) == 0){        
+						osDelay(4000);               
+						if(HAL_GPIO_ReadPin(FlowReset_GPIO_Port,FlowReset_Pin) == 0){        
+								//ResetFlowAccumulator();  
+								ResetFlowOffset();						
+						}
+				}
     osDelay(2000);
   }
   /* USER CODE END StartCheckKeyDown */

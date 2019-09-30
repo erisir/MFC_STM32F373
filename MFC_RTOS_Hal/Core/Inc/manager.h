@@ -115,6 +115,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 float UFRAC16ToFloat(uint16_t ufrac16);
 uint16_t FloatToUFRAC16(float coverValue);
  
+float GetTargetNullFlow(void);
 
 extern struct  _ControlMode*				sControlMode;
 extern struct  _SetPoint*					  sSetPoint ;

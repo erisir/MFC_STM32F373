@@ -292,7 +292,10 @@ uint16_t FloatToUFRAC16(float floatValue)
 {
 	return floatValue*32768+16384;
 }
-
+float GetTargetNullFlow(void)
+{
+	return 0;
+}
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
 	uint8_t dataClass = pucFrame[4];

@@ -36,6 +36,8 @@ struct REG_INPUTs{
 	
 	float flowIIRFilterCh0;
 	float flowIIRFilterCh1;
+	
+	int16_t flowOffsetCh0;
  
 //22 int
 };

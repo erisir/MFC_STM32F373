@@ -73,6 +73,8 @@ void Calculate_FilteringCoefficient(float Cut_Off);
 void setValtageOffset(void);
 void FlowAccumulator(void);
 uint16_t GetADCVoltage(uint8_t ch);
+void ResetFlowAccumulator(void);
+void ResetFlowOffset(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
