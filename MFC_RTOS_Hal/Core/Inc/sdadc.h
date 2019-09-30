@@ -39,7 +39,7 @@ extern SDADC_HandleTypeDef hsdadc1;
 
 #define SDADC_RESOL          (uint32_t) 65535 /* 2e16 - 1 */
 
-#define SDADC_VREF           (float) 2994  /* SDADC external reference is set to 3V */
+#define SDADC_VREF           (float) 2907  /* SDADC external reference is set to 3V */
 
 /* USER CODE END Private defines */
 
@@ -71,6 +71,7 @@ void VOL_IIR_Filter(void);
 void SDADC_Config(void);
 void Calculate_FilteringCoefficient(float Cut_Off);
 void setValtageOffset(void);
+void FlowAccumulator(void);
 uint16_t GetADCVoltage(uint8_t ch);
 /* USER CODE END Prototypes */
 

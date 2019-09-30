@@ -27,7 +27,7 @@ struct REG_INPUTs{
 	uint16_t voltageCh0;  
 	uint16_t voltageCh1; 
 	uint16_t voltageSetPoint;
-	uint32_t pwmOut;
+	int32_t pwmOut;
 	float flowCh0;//%
 	float flowCh1;//%
 	float flowIIRFilterCh0;
@@ -36,9 +36,9 @@ struct REG_INPUTs{
 //22 int
 };
 struct REG__HOLDINGs{//75*2= 150 int16t
-	int32_t	 PIDparam[11];
-	int32_t  FuzzyCtrlRuleMap[37];
-	int32_t  LinearFittingY[6];
+	int32_t	 PIDparam[11];//start address: 0
+	int32_t  FuzzyCtrlRuleMap[37];//start address: 22
+	int32_t  LinearFittingY[6];//start address: 96
 	int32_t  ControlMode[1];// 必须写成数组的形式天知道为神马108
 	int32_t  SetPoint[3];
 	int32_t  ZeroAndReadFlow[3];

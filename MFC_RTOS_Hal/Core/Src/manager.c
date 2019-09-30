@@ -47,7 +47,7 @@ void MFCInit(void)
 {
 	spid  = (struct _PID *)REG__HOLDINGssAddr->PIDparam;
 	PIDInit();
-	FuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
+	sFuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
 	FuzzyCtrlRuleMapInit();
 	sLinearFittingX = (struct _LinearFittingValue*)linearFittingX;
 	sLinearFittingY = (struct _LinearFittingValue*)REG__HOLDINGssAddr->LinearFittingY;
@@ -61,16 +61,16 @@ void MFCInit(void)
 	sMacBaudrate = (struct _MacBaudrate*)REG__HOLDINGssAddr->MacBaudrate;
 	
 	sLinearFittingY->value[0] = 0;
-	sLinearFittingY->value[1] = 5.4*50;//500sccm
-	sLinearFittingY->value[2] = 16.6*50;
-	sLinearFittingY->value[3] = 27.8*50;
-	sLinearFittingY->value[4] = 38.8*50;
-	sLinearFittingY->value[5] = 49.6*50;
-	sLinearFittingY->value[6] = 60.2*50;
-	sLinearFittingY->value[7] = 70.4*50;
-	sLinearFittingY->value[8] = 80.4*50;
+	sLinearFittingY->value[1] = 9.8*50;//500sccm
+	sLinearFittingY->value[2] = 19.8*50;
+	sLinearFittingY->value[3] = 29.8*50;
+	sLinearFittingY->value[4] = 40*50;
+	sLinearFittingY->value[5] = 50*50;
+	sLinearFittingY->value[6] = 60*50;
+	sLinearFittingY->value[7] = 70*50;
+	sLinearFittingY->value[8] = 80*50;
 	sLinearFittingY->value[9] = 90*50;
-	sLinearFittingY->value[10] = 99.6*50;
+	sLinearFittingY->value[10] = 100*50;
 	 
 	sControlMode->controlMode = emDigitalControl;
 	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
@@ -111,12 +111,12 @@ void MFCInit(void)
 	sCalibrate->targetGasName=1;
 	sCalibrate->targetGasCode=13;
 	sCalibrate->targetGasFullScaleRange=1;
-	sCalibrate->targetGasToCalibrationGasConversionFactor=1;//fix16.16
+	sCalibrate->tarGasConversionFactor=1;//fix16.16
 	
 	sCalibrate->CalibrationGasName=1;
 	sCalibrate->CalibrationGasCode=13;
 	sCalibrate->CalibrationGasFullScaleRange=1;
-	sCalibrate->CalibrationGasToN2ConversionFactor=1;
+	sCalibrate->CalGasConversionFactor=1;
 	
 	sMacBaudrate->RS485MacAddress=0x20;
 	sMacBaudrate->baudrate=9600;
@@ -258,7 +258,7 @@ float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFit
   if(xInput<=xDict->value[0]){
 		yOutput= yDict->value[0];
 	}else if(xInput>=xDict->value[DictSize-1]){
-		yOutput= yOutput;//yDict->value[DictSize-1];
+		yOutput=yOutput;// yDict->value[DictSize-1];
 	}else{
 		for(i=0;i<DictSize-1;i++){
 			if( (xInput>=xDict->value[i]) && (xInput<xDict->value[i+1])){
@@ -286,12 +286,13 @@ uint16_t FlowToVoltage(float flow)//real Target voltage cover to current MFC sen
 }
 float UFRAC16ToFloat(uint16_t ufrac16)
 {
-	return (float) (ufrac16-16384)/32768;
+	return (float) (ufrac16-16384)/49152;
 }
 uint16_t FloatToUFRAC16(float floatValue)
 {
-	return floatValue*32768+16384;
+	return floatValue*49152+16384;
 }
+
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
 	uint8_t dataClass = pucFrame[4];
@@ -425,7 +426,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasFullScaleRange,usLength,pucFrame);
 				break;	
 				case 0x04:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->targetGasToCalibrationGasConversionFactor,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->tarGasConversionFactor,usLength,pucFrame);
 				break;	
 				case 0x06:
 					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalibrationGasName,usLength,pucFrame);
@@ -437,7 +438,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasFullScaleRange,usLength,pucFrame);
 				break;	
 				case 0x09:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalibrationGasToN2ConversionFactor,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalGasConversionFactor,usLength,pucFrame);
 				break;					
 			}
 		break;
@@ -507,6 +508,7 @@ if (pucFrame[2]== 0x80)//read
 		* MBHoldRegAddress = pucFrame[7]+pucFrame[8]*256+pucFrame[9]*65536+pucFrame[10]*256*65536;
 	}
 }
+
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

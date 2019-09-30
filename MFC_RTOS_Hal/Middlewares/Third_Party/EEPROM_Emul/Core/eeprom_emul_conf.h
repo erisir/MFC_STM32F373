@@ -67,7 +67,7 @@
   */
 
 /* Configuration of eeprom emulation in flash, can be custom */
-#define START_PAGE_ADDRESS      0x08032000U /*!< Start address of the 1st page in flash, for EEPROM emulation  start from page 100 to page 127*/
+#define START_PAGE_ADDRESS      0x0803E000U /*!< Start address of the 1st page in flash, for EEPROM emulation  start from page 124 to page 127*/
 #define CYCLES_NUMBER           1U   /*!< Number of 10Kcycles requested, minimum 1 for 10Kcycles (default),
                                         for instance 10 to reach 100Kcycles. This factor will increase
                                         pages number */

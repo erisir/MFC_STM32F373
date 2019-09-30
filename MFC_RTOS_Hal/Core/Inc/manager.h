@@ -74,14 +74,14 @@ struct _Calibrate{//6 int32s
 	uint32_t targetGasName;
 	uint16_t targetGasCode;
 	uint16_t targetGasFullScaleRange;
-	uint32_t targetGasToCalibrationGasConversionFactor;
+	uint32_t tarGasConversionFactor;
 	
 	uint32_t CalibrationGasName;
 	uint16_t CalibrationGasCode;
 	uint16_t CalibrationGasFullScaleRange;
-	uint32_t CalibrationGasToN2ConversionFactor;
+	uint32_t CalGasConversionFactor;
 };
- 
+
 struct _MacBaudrate{//1 int32s
 	uint8_t RS485MacAddress;
 	uint8_t MBmode;
@@ -110,12 +110,11 @@ uint16_t FlowToVoltage(float flow);
 void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT32DataToMBHoldingReg(uint32_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
-
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 
 float UFRAC16ToFloat(uint16_t ufrac16);
 uint16_t FloatToUFRAC16(float coverValue);
-
+ 
 
 extern struct  _ControlMode*				sControlMode;
 extern struct  _SetPoint*					  sSetPoint ;

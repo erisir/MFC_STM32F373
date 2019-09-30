@@ -13,13 +13,13 @@
 #include "pid.h"
 
 struct _PID * spid;
-struct _FuzzyCtrlRuleMap *FuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
+struct _FuzzyCtrlRuleMap *sFuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
 
 int16_t LastError; // Error[-1]
 int16_t PrevError; // Error[-2]
 int32_t SumError;
 
-uint32_t PWM_Output;
+int32_t PWM_Output;
 uint16_t Voltage_Set_Point;
 
 float Kpid_calcu[3]={0.0,0.0,0.0};
@@ -34,37 +34,17 @@ int8_t  DefuzzyRuleMap[3][7]={
 								{-3,-2,-1,0.0,1,2,3},
 								{-3,-2,-1,0.0,1,2,3}}; 
 
-int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->步进电机*/
-/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
-/*NL*/        {{PL,PL,PL },{PL,PL,PM },{PM,PL,PL },{PM,NM,PL },{PM,NM,PL },{PS,ZE,ZE },{ZE,ZE,NL}} ,
-/*NM*/    		{{PL,PL,PM },{PL,PL,PS },{PM,PM,PM },{PM,NS,PM },{PM,NS,PM },{ZE,ZE,NS },{ZE,PS,NL}} ,
-/*NS*/    		{{PL,PL,PS },{PM,PL,ZE },{PS,PS,PS },{PM,ZE,PS },{ZE,ZE,ZE },{NS,PS,NM },{NS,PS,NL}} ,
-/*ZE*/    		{{PM,PL,NL },{PS,PM,NM },{PS,PL,NS },{ZE,PL,NS },{NS,PL,ZE },{NS,PM,PS },{NM,PL,PM}} ,
-/*PS*/    		{{PS,PM,NL },{PS,PS,NL },{PS,PL,PS },{NS,PL,PS },{NS,PL,PS },{NS,PM,ZE },{NM,PL,PS}} ,
-/*PM*/    		{{ZE,PS,NL },{ZE,ZE,NS },{ZE,NS,PM },{NS,NS,PM },{NM,PM,PM },{NM,PL,PS },{NM,PL,PM}} ,
-/*PL*/    		{{ZE,ZE,NL },{NS,ZE,ZE },{NS,NM,PL },{NS,NM,PL },{NM,PL,PL },{NM,PL,PM },{NL,PL,PL}}
-    		};
-int8_t  FuzzyCtrlRuleMap1[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
-/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
-/*NL*/        {{PL,NL,PS },{PL,NL,PS },{PM,NL,ZE },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PS,NL}} ,
-/*NM*/    		{{PL,NL,NS },{PL,NL,NS },{PM,NM,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PM,NL }} ,
-/*NS*/    		{{PM,NM,NL },{PM,NM,NL },{PM,NS,NM },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL  },{NL,PL,NL }} ,
-/*ZE*/    		{{PM,NM,NL },{PS,NS,NM },{PS,NS,NM },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PL,NL }} ,
-/*PS*/    		{{PS,NS,NL },{PS,NS,NM },{ZE,ZE,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL  },{NM,PM,PS}} ,
-/*PM*/    		{{ZE,ZE,NM },{ZE,ZE,NS },{NS,PS,NS },{NM,PM,NS },{NM,PM,ZE },{NM,PL,PS },{NL,PL,PS}} ,
-/*PL*/    		{{ZE,ZE,PS },{NS,ZE,PS },{NS,PS,ZE },{NM,PM,ZE },{NM,PL,ZE },{NL,PL,PL },{NL,PL,PL}}
-    		};
-int8_t  FuzzyCtrlRuleMap2[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
-/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
-/*NL*/        {{PL,NL,PS },{PL,NL,PS },{PM,NL,ZE },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PS,NL}} ,
-/*NM*/    		{{PL,NL,NS },{PL,NL,NS },{PM,NM,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PM,NL }} ,
-/*NS*/    		{{PM,NM,NL },{PM,NM,NL },{PM,NS,NM },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL  },{NL,PL,NL }} ,
-/*ZE*/    		{{PM,NM,NL },{PS,NS,NM },{PS,NS,NM },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PL,NL }} ,
-/*PS*/    		{{PS,NS,NL },{PS,NS,NM },{ZE,ZE,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL  },{NM,PM,PS}} ,
-/*PM*/    		{{ZE,ZE,NM },{ZE,ZE,NS },{NS,PS,NS },{NM,PM,NS },{NM,PM,ZE },{NM,PL,PS },{NL,PL,PS}} ,
-/*PL*/    		{{ZE,ZE,PS },{NS,ZE,PS },{NS,PS,ZE },{NM,PM,ZE },{NM,PL,ZE },{NL,PL,PL },{NL,PL,PL}}
-    		};
-int8_t  FuzzyCtrlRuleMap3[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
+//int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
+///*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
+///*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,NM },{NL,PL,NL}} ,
+///*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,NS}} ,
+///*NS*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,PS}} ,
+///*ZE*/    		{{NL,PL,NL },{NS,NM,NL },{NS,PS,NS },{NL,NM,NL },{NS,NS,NL },{NM,PM,PM },{NL,PL,PL}} ,
+///*PS*/    		{{NL,PL,NS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+///*PM*/    		{{NL,PL,PS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+///*PL*/    		{{NL,PL,PL },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}}
+//    		};
+int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
 /*NL*/        {{PL,NL,PS },{PL,NL,PS },{PM,NL,ZE },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PS,NL}} ,
 /*NM*/    		{{PL,NL,NS },{PL,NL,NS },{PM,NM,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PM,NL }} ,
@@ -83,34 +63,34 @@ int8_t  FuzzyCtrlRuleMap3[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->
 				
 void PIDInit(void) 
 { 	
-	spid->kpid[0] = 20;//for 500sccm
-	spid->kpid[1] = 30;
-	spid->kpid[2] = 20;
+	spid->kpid[0] = 33;//for 500sccm
+	spid->kpid[1] = 9;
+	spid->kpid[2] = 33;
 	
-	spid->kpidF[0] = 0;
-	spid->kpidF[1] = 0;
-	spid->kpidF[2] = 0;
+	spid->kpidF[0] = 11;
+	spid->kpidF[1] = 2;
+	spid->kpidF[2] = 11;
 
-  spid->eFuzzyRule[0] = 2000;//
-	spid->eFuzzyRule[1] = 800;
-	spid->eFuzzyRule[2] = 20;
+  spid->eFuzzyRule[0] = 3000;//
+	spid->eFuzzyRule[1] = 1200;
+	spid->eFuzzyRule[2] = 600;
 	
-	spid->ecFuzzyRule[0] = 300;
-	spid->ecFuzzyRule[1] = 100;
-	spid->ecFuzzyRule[2] = 10;
+	spid->ecFuzzyRule[0] = 1000;
+	spid->ecFuzzyRule[1] = 500;
+	spid->ecFuzzyRule[2] = 100;
  
  	
 	spid->PID_Cutoff=3000;
-	spid->PID_ControlCycle=20;
+	spid->PID_ControlCycle=15;
 	spid->PID_DeadZone=2;
  
 	spid->PWM_MAX=1000000;
-	spid->PWM_MIN=900000;
-	spid->PWM_STEP=5000;
+	spid->PWM_MIN=860000;
+	spid->PWM_STEP=600;
 }
 void FuzzyCtrlRuleMapInit(void)
 {
-		memcpy(FuzzyCtrlRuleMap->data,FuzzyCtrlRuleMap0,147); 
+		memcpy(sFuzzyCtrlRuleMap->data,FuzzyCtrlRuleMap0,147); 
 }
 void FuzzyRuleInit(void)
   {
@@ -142,8 +122,6 @@ void PID_Start()
 		PWM_Output = spid->PWM_MAX; 
 	if(PWM_Output <spid->PWM_MIN)
 		PWM_Output = spid->PWM_MIN;  
-	
-	REG_INPUTsAddr->pwmOut=PWM_Output;
 	
 	LoadPWM(PWM_Output);	
 }
@@ -178,7 +156,7 @@ void Inc_PID_Calc(void)
 	PrevError = LastError;
 	LastError = iError;
 	
-	PWM_Output += (iIncpid/100);
+	PWM_Output += iIncpid/100;
 }
  
 /*********************************************************** 
@@ -249,16 +227,16 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 	for(KpidSelect=0;KpidSelect<3;KpidSelect++){
 		memset(deFuzzyFactor,0,7*sizeof(float));
 
-		num =FuzzyCtrlRuleMap->data[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
+		num =sFuzzyCtrlRuleMap->data[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[0]; 
 
-		num =FuzzyCtrlRuleMap->data[pec+1][pe][KpidSelect];   
+		num =sFuzzyCtrlRuleMap->data[pec+1][pe][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[1];  
 
-		num =FuzzyCtrlRuleMap->data[pec][pe+1][KpidSelect];   
+		num =sFuzzyCtrlRuleMap->data[pec][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[0]; 
 
-		num =FuzzyCtrlRuleMap->data[pec+1][pe+1][KpidSelect];   
+		num =sFuzzyCtrlRuleMap->data[pec+1][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[1];  
 
 		/********加权平均法解模糊********///DefuzzyRuleMap = [-3,-2,-1,0,1,2,3]

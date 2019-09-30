@@ -152,7 +152,8 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		FlowAccumulator();
+    osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
 }
