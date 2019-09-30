@@ -254,7 +254,7 @@ void FlowAccumulator(void)//1pass/sec
 }
 void ResetFlowOffset(void)
 {
-	REG_INPUTsAddr->flowOffsetCh0 = REG_INPUTsAddr->flowRawCh0*50;
+	REG_INPUTsAddr->flowOffsetCh0 = REG_INPUTsAddr->flowRawCh0;
 }
 uint16_t GetADCVoltage(uint8_t ch)
 {
