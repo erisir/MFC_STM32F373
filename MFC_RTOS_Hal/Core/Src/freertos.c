@@ -238,13 +238,20 @@ void StartCheckKeyDown(void const * argument)
   for(;;)
   {
 		if(HAL_GPIO_ReadPin(FlowReset_GPIO_Port,FlowReset_Pin) == 0){        
-						osDelay(4000);               
+						osDelay(2000);               
 						if(HAL_GPIO_ReadPin(FlowReset_GPIO_Port,FlowReset_Pin) == 0){        
 								//ResetFlowAccumulator();  
-								ResetFlowOffset();						
+								ResetFlowOffset();	
+								HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);							
+								osDelay(500); 
+								HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);							
+								osDelay(500); 
+								HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);							
+								osDelay(500); 							
+								HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);		
 						}
 				}
-    osDelay(2000);
+    osDelay(1000);
   }
   /* USER CODE END StartCheckKeyDown */
 }

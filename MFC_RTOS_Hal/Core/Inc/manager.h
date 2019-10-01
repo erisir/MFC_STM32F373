@@ -51,8 +51,8 @@ struct _ZeroAndReadFlow{//4 int32s
 	uint16_t accumulatorMode;
 	uint16_t readFlow;	
 	uint16_t none;	
-	uint32_t accumulatorFlow;
-	uint32_t targetNullValue;
+	float accumulatorFlow;
+	uint32_t targetNullValue;//FIXED 16.16
 };
 struct _ValveCommand{//2 int32s
 	uint16_t valveCommandMode;
@@ -81,12 +81,12 @@ struct _Calibrate{//6 int32s
 	uint32_t targetGasName;
 	uint16_t targetGasCode;
 	uint16_t targetGasFullScaleRange;
-	uint32_t tarGasConversionFactor;
+	uint32_t tarGasConversionFactor;//FIXED 16.16
 	
 	uint32_t CalibrationGasName;
 	uint16_t CalibrationGasCode;
 	uint16_t CalibrationGasFullScaleRange;
-	uint32_t CalGasConversionFactor;
+	uint32_t CalGasConversionFactor;//FIXED 16.16
 };
 
 struct _MacBaudrate{//2 int32s

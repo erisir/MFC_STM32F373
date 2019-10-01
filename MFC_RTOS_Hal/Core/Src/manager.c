@@ -76,16 +76,16 @@ void MFCInit(void)
 	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
 	sControlMode->saveEEPROM = 0;// dont save
 	
-	sSetPoint->activeSetpoint=FloatToUFRAC16(0.5);// current setpoint by external voltage
+	sSetPoint->activeSetpoint=FloatToUFRAC16(0.5);//UFRAC16 current setpoint by external voltage
 	sSetPoint->delay = 0;//no delay
-	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.5);//feedback target, user setpoint, FS%
+	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.5);//UFRAC16feedback target, user setpoint, FS%
 	sSetPoint->holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
-	sSetPoint->shutoffLevel = FloatToUFRAC16(0.015);//1.5%FS to shutoff UFRAC16
-	sSetPoint->softStartRate = FloatToUFRAC16(0);// turn off softstart
+	sSetPoint->shutoffLevel = FloatToUFRAC16(0.015);//UFRAC161.5%FS to shutoff UFRAC16
+	sSetPoint->softStartRate = FloatToUFRAC16(0);//UFRAC16 turn off softstart
 	 
-	sZeroAndReadFlow->accumulatorFlow = 0;
+	sZeroAndReadFlow->accumulatorFlow = 0;//float
 	sZeroAndReadFlow->accumulatorMode = 4;//0 restart,1:pause,3,resume,4,nomal continue flag
-	sZeroAndReadFlow->readFlow = 0;
+	sZeroAndReadFlow->readFlow = 0;//UFRAC16
 	sZeroAndReadFlow->targetNullValue = 0;//custumer set zeropoint
 	sZeroAndReadFlow->zeroStatus = 0;//set current to zero in 1,need to change to 0
 	 
@@ -111,16 +111,17 @@ void MFCInit(void)
 	sCalibrate->targetGasName=1;
 	sCalibrate->targetGasCode=13;
 	sCalibrate->targetGasFullScaleRange=1;
-	sCalibrate->tarGasConversionFactor=1;//fix16.16
+	sCalibrate->tarGasConversionFactor=1*65536;//fix16.16
 	
 	sCalibrate->CalibrationGasName=1;
 	sCalibrate->CalibrationGasCode=13;
 	sCalibrate->CalibrationGasFullScaleRange=1;
-	sCalibrate->CalGasConversionFactor=1;
+	sCalibrate->CalGasConversionFactor=1*65536;//fix16.16
 	
 	sMacBaudrate->RS485MacAddress=0x20;
 	sMacBaudrate->baudrate=9600;
 	sMacBaudrate->MBmode=0;//RTU
+	sMacBaudrate->IRRCutoff=5;
 	  
 	SetContrlResource(sControlMode->controlMode);
 	Valve_Close();
@@ -208,7 +209,7 @@ void HolddingRegDataChange(void)
 				osDelay(sSetPoint->delay);
 			}
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
-			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/1;//sCalibrate->targetGasToCalibrationGasConversionFactor;//设定的时候要除 %
+			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(sCalibrate->tarGasConversionFactor/65536);//设定的时候要除 %
 			Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
 			REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
 			setVoltageSetPoint(Voltage_Set_PointLinearFit);

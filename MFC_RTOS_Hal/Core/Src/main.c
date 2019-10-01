@@ -114,7 +114,9 @@ int main(void)
 	//eMBInit( MB_RTU, 0x20, 1, 9600, MB_PAR_NONE );
 	eMBInit( sMacBaudrate->MBmode, sMacBaudrate->RS485MacAddress, 1, sMacBaudrate->baudrate, MB_PAR_NONE );
   eMBEnable(  );
-
+	
+ 
+	
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
