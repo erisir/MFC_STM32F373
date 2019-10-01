@@ -19,7 +19,7 @@
 #define S_REG_INPUT_START             0 //40000 µÈ
 #define S_REG_INPUT_NREGS             100 // Ch0 Ch1
 #define S_REG_HOLDING_START           0 //40000 µÈ
-#define S_REG_HOLDING_NREGS           252
+#define S_REG_HOLDING_NREGS           260
  
 
  

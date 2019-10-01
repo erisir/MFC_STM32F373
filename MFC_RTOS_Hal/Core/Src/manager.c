@@ -77,9 +77,9 @@ void MFCInit(void)
 	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
 	sControlMode->saveEEPROM = 0;// dont save
 	
-	sSetPoint->activeSetpoint=FloatToUFRAC16(0.5);//UFRAC16 current setpoint by external voltage
+	sSetPoint->activeSetpoint=FloatToUFRAC16(0.0);//UFRAC16 current setpoint by external voltage
 	sSetPoint->delay = 0;//no delay
-	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.5);//UFRAC16feedback target, user setpoint, FS%
+	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.0);//UFRAC16feedback target, user setpoint, FS%
 	sSetPoint->holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
 	sSetPoint->shutoffLevel = FloatToUFRAC16(0.015);//UFRAC161.5%FS to shutoff UFRAC16
 	sSetPoint->softStartRate = FloatToUFRAC16(0);//UFRAC16 turn off softstart
@@ -140,11 +140,11 @@ void EEPROM_INIT(void)//
 
 	HAL_FLASH_Unlock();
 	EE_Init(VirtAddVarTab, EE_FORCED_ERASE);
-
-	EE_ReadVariable16bits(VirtAddVarTab[160], &data_x);
-	if(data_x != 160)
+	
+	EE_ReadVariable16bits(VirtAddVarTab[290], &data_x);
+	if(data_x != 290)
 	{
-		EE_WriteVariable16bits(VirtAddVarTab[160], 160);
+		EE_WriteVariable16bits(VirtAddVarTab[290], 290);
 		EEPROM_SAVE();
 	}else{
 		EEPROM_READ();
@@ -212,7 +212,8 @@ void HolddingRegDataChange(void)
 			}
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
 			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(sCalibrate->tarGasConversionFactor/65536.0f);//设定的时候要除 %
-			if(flow_Set_PointGasFit<UFRAC16ToFloat(sSetPoint->shutoffLevel)){
+			if(flow_Set_PointGasFit<UFRAC16ToFloat(sSetPoint->shutoffLevel)*100){
+				sValveCommand->valveCommand =emValveClose;
 				Valve_Close();
 			}else{	
 				Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
@@ -293,7 +294,7 @@ void EEPROM_SAVE(void)
 	uint16_t * pbuf = (uint16_t *)REG__HOLDINGssAddr;
 	HAL_FLASH_Unlock();
 	
-	for(int i=0;i<150;i++){
+	for(int i=0;i<S_REG_HOLDING_NREGS;i++){
 		EE_WriteVariable16bits(VirtAddVarTab[i], *(pbuf++));
 	}
 	HAL_FLASH_Lock();
@@ -302,7 +303,7 @@ void EEPROM_READ(void)	//
 {
   uint16_t * pbuf = (uint16_t *)REG__HOLDINGssAddr;
 	HAL_FLASH_Unlock();
-	for(int i=0;i<150;i++){
+	for(int i=0;i<S_REG_HOLDING_NREGS;i++){
 		EE_ReadVariable16bits(VirtAddVarTab[i], pbuf++);
 	}
   HAL_FLASH_Lock();
@@ -353,7 +354,7 @@ uint16_t FloatToUFRAC16(float floatValue)
 }
 float GetTargetNullFlow(void)
 {
-	return 0;
+	return sZeroAndReadFlow->targetNullValue/65536.0f;
 }
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
