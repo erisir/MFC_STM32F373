@@ -69,7 +69,7 @@ extern struct _VoltageSum sum_voltage;
 
 void VOL_IIR_Filter(void);
 void SDADC_Config(void);
-void Calculate_FilteringCoefficient(float Cut_Off);
+void Calculate_FilteringCoefficient(uint16_t Cut_Off);
 
 void FlowAccumulator(void);
 uint16_t GetADCVoltage(uint8_t ch);

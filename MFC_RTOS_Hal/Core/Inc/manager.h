@@ -93,7 +93,7 @@ struct _MacBaudrate{//2 int32s
 	uint16_t RS485MacAddress;
 	uint16_t MBmode;
 	uint16_t baudrate;
-	uint16_t none;
+	uint16_t IRRCutoff;
 
 };
 

@@ -210,10 +210,12 @@ void HolddingRegDataChange(void)
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
 			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/1;//sCalibrate->targetGasToCalibrationGasConversionFactor;//设定的时候要除 %
 			Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
+			REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
 			setVoltageSetPoint(Voltage_Set_PointLinearFit);
 		}
 	}
-	REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
+	//Calculate_FilteringCoefficient
+	Calculate_FilteringCoefficient(sMacBaudrate->IRRCutoff);
 
 }
 void  Valve_Close(void)

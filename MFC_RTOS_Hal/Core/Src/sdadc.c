@@ -190,9 +190,9 @@ void SDADC_Config()
 	HAL_SDADC_InjectedStart_DMA(&hsdadc1, (uint32_t*)SDADC_ValueTable,bufLength);
 	Calculate_FilteringCoefficient(50);
 }
-void Calculate_FilteringCoefficient(float Cut_Off) 
+void Calculate_FilteringCoefficient( uint16_t Cut_Off) 
  { 
- 	VOL_IIR_FACTOR =(float)( 10 /( 10 + 1.0f/(2.0f*3.14f*Cut_Off) )); 
+ 	VOL_IIR_FACTOR =(float)Cut_Off/1000;//( 10 /( 10 + 100.0f/(2.0f*3.14f*Cut_Off) )); 
  } 
 
 void VOL_IIR_Filter()
@@ -215,21 +215,16 @@ void VOL_IIR_Filter()
 	REG_INPUTsAddr->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
 	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0-REG_INPUTsAddr->flowOffsetCh0-GetTargetNullFlow())*1;//sCalibrate->tarGasConversionFactor;//target gas fited: read 
 	
-	//FIR fliter for ch0
-	FIRFilterResult1 -=FIRWindowPass1[FIRFilterIndex1]; //pass1
-	FIRWindowPass1[FIRFilterIndex1] = REG_INPUTsAddr->flowRealCh0/10;
-	FIRFilterResult1 +=FIRWindowPass1[FIRFilterIndex1];
-	FIRFilterIndex1 = (FIRFilterIndex1+1)%10;
-	
-	FIRFilterResult2 -=FIRWindowPass2[FIRFilterIndex2]; //pass2
-	FIRWindowPass2[FIRFilterIndex2] = FIRFilterResult1/10;
-	FIRFilterResult2 +=FIRWindowPass2[FIRFilterIndex2];
-	FIRFilterIndex2 = (FIRFilterIndex2+1)%10;
-	
+
 	//IIR fliter for ch0
-	//REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowRealCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
-	filter_voltage.ch0 = FIRFilterResult2*50;
-	sZeroAndReadFlow->readFlow=FloatToUFRAC16(FIRFilterResult2/100);//digital read ported for Sevenstart
+	float iErrorRate = (float)(REG_INPUTsAddr->flowRealCh0*50-REG_INPUTsAddr->voltageSetPoint)/REG_INPUTsAddr->voltageSetPoint;
+	
+	if((iErrorRate<0.004&&iErrorRate>-0.004)||(sValveCommand->valveCommand ==emValveClose&&REG_INPUTsAddr->flowRealCh0<0.02)){
+		REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowRealCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
+	}else{
+		REG_INPUTsAddr->flowIIRFilterCh0 = REG_INPUTsAddr->flowRealCh0;
+	}
+	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh0/100);//digital read ported for Sevenstart
 	REG_INPUTsAddr->voltageCh0=sZeroAndReadFlow->readFlow;//modbus
 	
 	AD5761_SetVoltage(FIRFilterResult2*50);// DAC output

@@ -34,17 +34,17 @@ int8_t  DefuzzyRuleMap[3][7]={
 								{-3,-2,-1,0.0,1,2,3},
 								{-3,-2,-1,0.0,1,2,3}}; 
 
-//int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
-///*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
-///*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,NM },{NL,PL,NL}} ,
-///*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,NS}} ,
-///*NS*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,PS}} ,
-///*ZE*/    		{{NL,PL,NL },{NS,NM,NL },{NS,PS,NS },{NL,NM,NL },{NS,NS,NL },{NM,PM,PM },{NL,PL,PL}} ,
-///*PS*/    		{{NL,PL,NS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
-///*PM*/    		{{NL,PL,PS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
-///*PL*/    		{{NL,PL,PL },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}}
-//    		};
 int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
+/*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
+/*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,NM },{NL,PL,NL}} ,
+/*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,NS}} ,
+/*NS*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,PS}} ,
+/*ZE*/    		{{NL,PL,NL },{NS,NM,NL },{NS,PS,NS },{NL,NM,NL },{NS,NS,NL },{NM,PM,PM },{NL,PL,PL}} ,
+/*PS*/    		{{NL,PL,NS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+/*PM*/    		{{NL,PL,PS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+/*PL*/    		{{NL,PL,PL },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}}
+    		};
+int8_t  FuzzyCtrlRuleMap_Bak[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
 /*NL*/        {{PL,NL,PS },{PL,NL,PS },{PM,NL,ZE },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PS,NL}} ,
 /*NM*/    		{{PL,NL,NS },{PL,NL,NS },{PM,NM,NS },{NL,NL,NL  },{NL,NL,NL  },{NL,NL,NL },{NL,PM,NL }} ,
@@ -68,7 +68,7 @@ void PIDInit(void)
 	spid->kpid[2] = 33;
 	
 	spid->kpidF[0] = 11;
-	spid->kpidF[1] = 2;
+	spid->kpidF[1] = 3;
 	spid->kpidF[2] = 11;
    
   spid->eFuzzyRule[0] = 3000;//
@@ -85,7 +85,7 @@ void PIDInit(void)
 	spid->PID_DeadZone=2;
  
 	spid->PWM_MAX=1000000;
-	spid->PWM_MIN=860000;
+	spid->PWM_MIN=850000;
 	spid->PWM_STEP=4000;
 }
 void FuzzyCtrlRuleMapInit(void)
