@@ -153,6 +153,9 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 		FlowAccumulator();
+		if(GetSoftStartCounter()>0){
+			SoftStartCountintDown();
+		}
     osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */

@@ -66,24 +66,24 @@ struct _WarningsAlarms{//1 int32s
 	uint16_t  clearWarningsAlarms;
 };
 struct _Product{//6 int32s
-	uint16_t firmwareRevision;
-	uint16_t PCBRevision;
-	uint16_t modelID;
-	uint16_t MFCSeiral;
-	uint16_t manufacturingDate;
-	uint16_t calibrationDate;
+	uint8_t firmwareRevision[8];//Text8
+	uint8_t PCBRevision[8];//Text8
+	uint8_t modelID[16];//Text16
+	uint8_t MFCSeiral[16];//Text16
+	uint8_t manufacturingDate[16];//Text16
+	uint8_t calibrationDate[16];//Text16
 	uint16_t productVersion;
 	uint16_t none;
-	uint32_t productName;
-	uint32_t manufacturer;
+	uint8_t productName[32];//Text32
+	uint8_t manufacturer[32];//Text32
 };
 struct _Calibrate{//6 int32s
-	uint32_t targetGasName;
+	uint8_t targetGasName[32];//Text32
 	uint16_t targetGasCode;
 	uint16_t targetGasFullScaleRange;
 	uint32_t tarGasConversionFactor;//FIXED 16.16
 	
-	uint32_t CalibrationGasName;
+	uint8_t CalibrationGasName[32];//Text32
 	uint16_t CalibrationGasCode;
 	uint16_t CalibrationGasFullScaleRange;
 	uint32_t CalGasConversionFactor;//FIXED 16.16
@@ -119,6 +119,7 @@ void saveSevenStarUINT8DataToMBHoldingReg(uint8_t * MBHoldRegAddress,uint16_t *u
 void saveSevenStarUINT8DataToMBHoldingRegUINT16(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT16DataToMBHoldingReg(uint16_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
 void saveSevenStarUINT32DataToMBHoldingReg(uint32_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame);
+void saveSevenStarTEXTxDataToMBHoldingRegUINT8(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame,uint8_t textSize);
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength);
 
 float UFRAC16ToFloat(uint16_t ufrac16);
@@ -127,6 +128,9 @@ uint16_t FloatToUFRAC16(float coverValue);
 float GetTargetNullFlow(void);
 uint8_t GetAccumulatorStatu(void);
 
+void StartSoftStartTimer(uint16_t Voltage_Set_PointLinearFit,float rateFSpsc);
+uint8_t GetSoftStartCounter(void);
+void SoftStartCountintDown(void);
 extern struct  _ControlMode*				sControlMode;
 extern struct  _SetPoint*					  sSetPoint ;
 extern struct  _ZeroAndReadFlow*		sZeroAndReadFlow ;

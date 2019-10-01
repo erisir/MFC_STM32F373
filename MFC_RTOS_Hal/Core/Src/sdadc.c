@@ -213,11 +213,11 @@ void VOL_IIR_Filter()
 	filter_voltage.ch1=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
   
 	REG_INPUTsAddr->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
-	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0-REG_INPUTsAddr->flowOffsetCh0-GetTargetNullFlow())*(sCalibrate->tarGasConversionFactor/65536);//target gas fited: read 
+	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0-REG_INPUTsAddr->flowOffsetCh0-GetTargetNullFlow())*(sCalibrate->tarGasConversionFactor/65536.0f);//target gas fited: read 
 	
 
 	//IIR fliter for ch0
-	float iErrorRate = (float)(REG_INPUTsAddr->flowRealCh0*50-REG_INPUTsAddr->voltageSetPoint)/REG_INPUTsAddr->voltageSetPoint;
+	float iErrorRate = (float)(REG_INPUTsAddr->flowRealCh0*50-REG_INPUTsAddr->voltageSetPoint)/5000;
 	
 	if((iErrorRate<0.003&&iErrorRate>-0.003)||((sValveCommand->valveCommand ==emValveClose)&&(REG_INPUTsAddr->flowRealCh0<0.02))){
 		REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowRealCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
@@ -244,7 +244,7 @@ void ResetFlowAccumulator(void)
 void FlowAccumulator(void)//1pass/sec
 {
 	if(GetAccumulatorStatu()==emAccumulatorRunning){
-		sZeroAndReadFlow->accumulatorFlow+=filter_voltage.ch0/3000;
+		sZeroAndReadFlow->accumulatorFlow+=REG_INPUTsAddr->flowIIRFilterCh0*sCalibrate->targetGasFullScaleRange/6000;
 	}
 }
 void ResetFlowOffset(void)

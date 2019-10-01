@@ -43,6 +43,7 @@ float  flow_Set_PointGasFit;
 uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 uint16_t linearFittingX[]={0,10*50,20*50,30*50,40*50,50*50,60*50,70*50,80*50,90*50,100*50};
 uint8_t accumulatorStatu= 0;//0 stop,1 pause,2 running
+uint8_t softStartCounter=0;
 void MFCInit(void)
 {
 	spid  = (struct _PID *)REG__HOLDINGssAddr->PIDparam;
@@ -98,24 +99,24 @@ void MFCInit(void)
 	sWarningsAlarms->enableWarningsAlarms=0;// not function
 	 
 	
-	sProduct->firmwareRevision=10;
-	sProduct->PCBRevision=10;
-	sProduct->modelID=10;
-	sProduct->MFCSeiral=1234;
-	sProduct->manufacturingDate=1909;
-	sProduct->calibrationDate=1909;
+	strcpy((char*)&sProduct->firmwareRevision,"01.01");
+	strcpy((char*)&sProduct->PCBRevision,"01.01");
+	strcpy((char*)&sProduct->modelID,"3687");
+	strcpy((char*)&sProduct->MFCSeiral,"255879");
+	strcpy((char*)&sProduct->manufacturingDate,"19/01/10");
+	strcpy((char*)&sProduct->calibrationDate,"19/01/10");
 	sProduct->productVersion=10;
-	sProduct->productName=51;
-	sProduct->manufacturer=51;
+	strcpy((char*)&sProduct->productName,"MFCc51");
+	strcpy((char*)&sProduct->manufacturer,"Maice");
 	
-	sCalibrate->targetGasName=1;
+	strcpy((char*)&sCalibrate->targetGasName,"N2");
 	sCalibrate->targetGasCode=13;
-	sCalibrate->targetGasFullScaleRange=1;
+	sCalibrate->targetGasFullScaleRange=500;
 	sCalibrate->tarGasConversionFactor=1*65536;//fix16.16
 	
-	sCalibrate->CalibrationGasName=1;
+	strcpy((char*)&sCalibrate->CalibrationGasName,"N2");
 	sCalibrate->CalibrationGasCode=13;
-	sCalibrate->CalibrationGasFullScaleRange=1;
+	sCalibrate->CalibrationGasFullScaleRange=500;
 	sCalibrate->CalGasConversionFactor=1*65536;//fix16.16
 	
 	sMacBaudrate->RS485MacAddress=0x20;
@@ -124,6 +125,7 @@ void MFCInit(void)
 	sMacBaudrate->IRRCutoff=5;
 	  
 	SetContrlResource(sControlMode->controlMode);
+	accumulatorStatu = emAccumulatorRunning;
 	Valve_Close();
 }
  
@@ -163,7 +165,7 @@ void HolddingRegDataChange(void)
 	//accumulator change 0 restart,1:pause,3,resume,4,start continue flag
 	if(sZeroAndReadFlow->accumulatorMode ==0)//reset
 	{	
-		sZeroAndReadFlow->accumulatorFlow=4;
+		sZeroAndReadFlow->accumulatorMode=3;
 		ResetFlowAccumulator();	
 		accumulatorStatu = emAccumulatorRunning;
 	}else if(sZeroAndReadFlow->accumulatorMode ==1)//pause
@@ -209,15 +211,55 @@ void HolddingRegDataChange(void)
 				osDelay(sSetPoint->delay);
 			}
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
-			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(sCalibrate->tarGasConversionFactor/65536);//设定的时候要除 %
-			Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
-			REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
-			setVoltageSetPoint(Voltage_Set_PointLinearFit);
+			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(sCalibrate->tarGasConversionFactor/65536.0f);//设定的时候要除 %
+			if(flow_Set_PointGasFit<UFRAC16ToFloat(sSetPoint->shutoffLevel)){
+				Valve_Close();
+			}else{	
+				Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
+				REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
+				
+				if(UFRAC16ToFloat(sSetPoint->softStartRate)>0 &&((Voltage_Set_PointLinearFit-GetADCVoltage(0))>50)){
+					StartSoftStartTimer(Voltage_Set_PointLinearFit,UFRAC16ToFloat(sSetPoint->softStartRate));
+				}else{
+				setVoltageSetPoint(Voltage_Set_PointLinearFit);
+				}
+				
+			}
 		}
 	}
 	//Calculate_FilteringCoefficient
 	Calculate_FilteringCoefficient(sMacBaudrate->IRRCutoff);
 
+}
+void StartSoftStartTimer(uint16_t Voltage_Set_PointLinearFit,float rateFSpsc)
+{
+	float currentRate = Voltage_Set_PointLinearFit/50.0f;
+	
+	softStartCounter = currentRate/rateFSpsc;
+  uint16_t targetVoltage = GetADCVoltage(0)+rateFSpsc*5000;
+	if(targetVoltage<Voltage_Set_PointLinearFit){
+	setVoltageSetPoint(targetVoltage);
+	}else{
+	setVoltageSetPoint(Voltage_Set_PointLinearFit);
+	}
+
+}
+void SoftStartCountintDown(void)
+{
+	//softStartCounter--;
+	uint16_t targetVoltage = GetADCVoltage(0)+UFRAC16ToFloat(sSetPoint->softStartRate)*5000;
+	if(targetVoltage<Voltage_Set_PointLinearFit){
+	setVoltageSetPoint(targetVoltage);
+	}else{
+	softStartCounter=0;
+	setVoltageSetPoint(Voltage_Set_PointLinearFit);		
+	}
+	
+}
+uint8_t GetSoftStartCounter()
+{
+	
+	return softStartCounter;
 }
 void  Valve_Close(void)
 {
@@ -382,7 +424,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sZeroAndReadFlow->accumulatorMode,usLength,pucFrame);
 				break;
 				case 0x03:
-					saveSevenStarUINT32DataToMBHoldingReg(&sZeroAndReadFlow->accumulatorFlow,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg((uint32_t*)&sZeroAndReadFlow->accumulatorFlow,usLength,pucFrame);
 				break;				 			
 			}
 			break;
@@ -402,7 +444,8 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		case 0x01:// Product
 			switch (dataAttribute){
 				case 0x07:
-					saveSevenStarUINT32DataToMBHoldingReg(&sProduct->productName,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->productName,usLength,pucFrame,32);
+				
 				break;
 				case 0x04:
 					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->productVersion,usLength,pucFrame);
@@ -412,32 +455,32 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 	  case 0x64:// Product
 			switch (dataAttribute){
 				case 0x03:
-					saveSevenStarUINT32DataToMBHoldingReg(&sProduct->manufacturer,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->manufacturer,usLength,pucFrame,32);
 				break;
 				case 0x04:
-					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->modelID,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->modelID,usLength,pucFrame,16);
 				break;	
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sProduct->firmwareRevision,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->firmwareRevision,usLength,pucFrame,8);
 				break;	
 				case 0x06:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sProduct->PCBRevision,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->PCBRevision,usLength,pucFrame,8);
 				break;	
 				case 0x07:
-					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->MFCSeiral,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->MFCSeiral,usLength,pucFrame,16);
 				break;	
 				case 0x0a:
-					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->manufacturingDate,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->manufacturingDate,usLength,pucFrame,16);
 				break;	
 				case 0x0c:
-					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->calibrationDate,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->calibrationDate,usLength,pucFrame,16);
 				break;					
 			}
 		break;
 		case 0x66:// Calibrate
 			switch (dataAttribute){
 				case 0x01:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->targetGasName,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sCalibrate->targetGasName,usLength,pucFrame,32);
 				break;
 				case 0x02:
 					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasCode,usLength,pucFrame);
@@ -449,7 +492,7 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->tarGasConversionFactor,usLength,pucFrame);
 				break;	
 				case 0x06:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalibrationGasName,usLength,pucFrame);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sCalibrate->CalibrationGasName,usLength,pucFrame,32);
 				break;	
 				case 0x07:
 					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasCode,usLength,pucFrame);
@@ -541,7 +584,19 @@ if (pucFrame[2]== 0x80)//read
 		* MBHoldRegAddress = pucFrame[7]+pucFrame[8]*256+pucFrame[9]*65536+pucFrame[10]*256*65536;
 	}
 }
-
+void saveSevenStarTEXTxDataToMBHoldingRegUINT8(uint8_t * MBHoldRegAddress,uint16_t *usLength,uint8_t * pucFrame,uint8_t textSize)
+{
+if (pucFrame[2]== 0x80)//read
+	{
+		*usLength =textSize;
+		pucFrame[3]=3+textSize;
+		memcpy(pucFrame, MBHoldRegAddress,textSize);
+	}
+	if (pucFrame[2]== 0x81)//write
+	{
+		memcpy(MBHoldRegAddress,pucFrame ,textSize);
+	}
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

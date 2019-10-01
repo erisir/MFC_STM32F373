@@ -19,7 +19,7 @@
 #define S_REG_INPUT_START             0 //40000 µÈ
 #define S_REG_INPUT_NREGS             100 // Ch0 Ch1
 #define S_REG_HOLDING_START           0 //40000 µÈ
-#define S_REG_HOLDING_NREGS           162
+#define S_REG_HOLDING_NREGS           252
  
 
  
@@ -51,8 +51,8 @@ struct REG__HOLDINGs{//75*2= 150 int16t
 	int32_t  ZeroAndReadFlow[4];
 	int32_t  ValveCommand[2];
 	int32_t  WarningsAlarms[1];
-	int32_t  Product[6];
-	int32_t  Calibrate[6];
+	int32_t  Product[37];
+	int32_t  Calibrate[20];
 	int32_t  MacBaudrate[2];	
 };
 extern struct REG_INPUTs * REG_INPUTsAddr;
