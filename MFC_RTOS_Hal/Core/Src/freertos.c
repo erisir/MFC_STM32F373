@@ -221,7 +221,7 @@ void StartPID(void const * argument)
 		}else{
 			osDelay(100);
 		}
-		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
+		//HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_8);
   }
   /* USER CODE END StartPID */
 }

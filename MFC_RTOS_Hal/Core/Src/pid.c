@@ -36,13 +36,13 @@ int8_t  DefuzzyRuleMap[3][7]={
 
 int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
-/*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,NM },{NL,PL,NL}} ,
-/*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,NS}} ,
-/*NS*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NS,NL },{NM,PM,ZE },{NL,PL,PS}} ,
-/*ZE*/    		{{NL,PL,NL },{NS,NM,NL },{NS,PS,NS },{NL,NM,NL },{NS,NS,NL },{NM,PM,PM },{NL,PL,PL}} ,
-/*PS*/    		{{NL,PL,NS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
-/*PM*/    		{{NL,PL,PS },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
-/*PL*/    		{{NL,PL,PL },{NS,NM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}}
+/*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NM,NL },{NM,NL,NM },{NL,NS,NL}} ,
+/*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NM,NL },{NM,NL,ZE },{NL,ZE,NS}} ,
+/*NS*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NM,NL },{NM,NL,ZE },{NL,PS,PS}} ,
+/*ZE*/    		{{NL,PL,NL },{NS,PM,NL },{NS,PS,NS },{NL,PL,NL },{NS,NM,NL },{NM,NM,PM },{NL,PS,PL}} ,
+/*PS*/    		{{NL,PL,NS },{NS,PM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+/*PM*/    		{{NL,PL,PS },{NS,PM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}} ,
+/*PL*/    		{{NL,PL,PL },{NS,PM,NL },{NL,NL,NL },{ZE,ZE,ZE },/**/{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE}}
     		};
 int8_t  FuzzyCtrlRuleMap_Bak[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
@@ -64,11 +64,11 @@ int8_t  FuzzyCtrlRuleMap_Bak[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]-------
 void PIDInit(void) 
 { 	
 	spid->kpid[0] = 33;//for 500sccm
-	spid->kpid[1] = 9;
+	spid->kpid[1] = 21;
 	spid->kpid[2] = 33;
 	
 	spid->kpidF[0] = 11;
-	spid->kpidF[1] = 3;
+	spid->kpidF[1] = 7;
 	spid->kpidF[2] = 11;
    
   spid->eFuzzyRule[0] = 3000;//
