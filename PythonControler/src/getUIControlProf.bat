@@ -1,1 +1,0 @@
-pyuic5 -o UIControlProf.py UIControlProf.ui
