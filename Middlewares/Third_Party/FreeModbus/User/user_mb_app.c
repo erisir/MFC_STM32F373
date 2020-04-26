@@ -42,8 +42,9 @@ USHORT   usSRegInBuf[S_REG_INPUT_NREGS]              ;
 USHORT   usSRegHoldStart                              = S_REG_HOLDING_START;
 USHORT   usSRegHoldBuf[S_REG_HOLDING_NREGS]          ;
 
-struct REG_INPUTs * REG_INPUTsAddr = (struct REG_INPUTs *)usSRegInBuf;
-struct REG__HOLDINGs * REG__HOLDINGssAddr =(struct REG__HOLDINGs *)usSRegHoldBuf;
+//global variable
+struct TRegInputWrap * pRegInputWrap = (struct TRegInputWrap *)usSRegInBuf;
+struct TRegHoldingWrap * pRegHoldingWrap =(struct TRegHoldingWrap *)usSRegHoldBuf;
 /**
  * Modbus slave input register callback function.
  *输入寄存器回调接口 16-bit整型	　 只读

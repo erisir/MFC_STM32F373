@@ -12,9 +12,6 @@
  
 #include "pid.h"
 
-struct _PID * spid;
-struct _FuzzyCtrlRuleMap *sFuzzyCtrlRuleMap;//int8_t *FuzzyCtrlRuleMap[7][7][3];
-
 int16_t LastError; // Error[-1]
 int16_t PrevError; // Error[-2]
 int32_t SumError;
@@ -34,7 +31,7 @@ int8_t  DefuzzyRuleMap[3][7]={
 								{-3,-2,-1,0.0,1,2,3},
 								{-3,-2,-1,0.0,1,2,3}}; 
 
-int8_t  FuzzyCtrlRuleMap0[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
+int8_t  kFuzzyCtrlRuleMap[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]--------->电磁阀*/
 /*Row[ec]          NL 	        NM 	        NS 	        ZE        	PS       	PM 	        PL    */	
 /*NL*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NM,NL },{NM,NL,NM },{NL,NS,NL}} ,
 /*NM*/    {{ZE,ZE,ZE },{ZE,ZE,ZE },{ZE,ZE,ZE }/**/,{NL,NM,NL },{NS,NM,NL },{NM,NL,ZE },{NL,ZE,NS}} ,
@@ -63,53 +60,55 @@ int8_t  FuzzyCtrlRuleMap_Bak[7][7][3] = {/*Column[e]----Cell[?Kp/?KI/?KD]-------
 				
 void PIDInit(void) 
 { 	
-	spid->kpid[0] = 33;//for 500sccm
-	spid->kpid[1] = 21;
-	spid->kpid[2] = 33;
 	
-	spid->kpidF[0] = 11;
-	spid->kpidF[1] = 7;
-	spid->kpidF[2] = 11;
+	pRegHoldingWrap->pPidParameter.kpid[0] = 33;//for 500sccm
+	pRegHoldingWrap->pPidParameter.kpid[1] = 21;
+	pRegHoldingWrap->pPidParameter.kpid[2] = 33;
+	
+	pRegHoldingWrap->pPidParameter.kpidF[0] = 11;
+	pRegHoldingWrap->pPidParameter.kpidF[1] = 7;
+	pRegHoldingWrap->pPidParameter.kpidF[2] = 11;
    
-  spid->eFuzzyRule[0] = 3000;//
-	spid->eFuzzyRule[1] = 1200;
-	spid->eFuzzyRule[2] = 600;
+	pRegHoldingWrap->pPidParameter.eFuzzyRule[0] = 3000;//
+	pRegHoldingWrap->pPidParameter.eFuzzyRule[1] = 1200;
+	pRegHoldingWrap->pPidParameter.eFuzzyRule[2] = 600;
 	
-	spid->ecFuzzyRule[0] = 1000;
-	spid->ecFuzzyRule[1] = 500;
-	spid->ecFuzzyRule[2] = 100;
+	pRegHoldingWrap->pPidParameter.ecFuzzyRule[0] = 1000;
+	pRegHoldingWrap->pPidParameter.ecFuzzyRule[1] = 500;
+	pRegHoldingWrap->pPidParameter.ecFuzzyRule[2] = 100;
  
  	
-	spid->PID_Cutoff=3000;
-	spid->PID_ControlCycle=15;
-	spid->PID_DeadZone=2;
+	pRegHoldingWrap->pPidParameter.PID_Cutoff=3000;
+	pRegHoldingWrap->pPidParameter.PID_ControlCycle=15;
+	pRegHoldingWrap->pPidParameter.PID_DeadZone=2;
  
-	spid->PWM_MAX=1000000;
-	spid->PWM_MIN=850000;
-	spid->PWM_STEP=4000;
+	pRegHoldingWrap->pPidParameter.PWM_MAX=1000000;
+	pRegHoldingWrap->pPidParameter.PWM_MIN=850000;
+	pRegHoldingWrap->pPidParameter.PWM_STEP=4000;
 }
 void FuzzyCtrlRuleMapInit(void)
 {
-		memcpy(sFuzzyCtrlRuleMap->data,FuzzyCtrlRuleMap0,147); 
+	
+		memcpy(pRegHoldingWrap->pFuzzyCtrlRuleMap.data,kFuzzyCtrlRuleMap,147); 
 }
 void FuzzyRuleInit(void)
   {
 	  // l m s
-	eFuzzyRule[0] = -1*spid->eFuzzyRule[0];
-	eFuzzyRule[1] = -1*spid->eFuzzyRule[1];
-	eFuzzyRule[2] = -1*spid->eFuzzyRule[2];
+	eFuzzyRule[0] = -1*pRegHoldingWrap->pPidParameter.eFuzzyRule[0];
+	eFuzzyRule[1] = -1*pRegHoldingWrap->pPidParameter.eFuzzyRule[1];
+	eFuzzyRule[2] = -1*pRegHoldingWrap->pPidParameter.eFuzzyRule[2];
 	eFuzzyRule[3]=0;
-	eFuzzyRule[4] =  spid->eFuzzyRule[2];
-	eFuzzyRule[5] =  spid->eFuzzyRule[1];
-	eFuzzyRule[6] =  spid->eFuzzyRule[0];
+	eFuzzyRule[4] =  pRegHoldingWrap->pPidParameter.eFuzzyRule[2];
+	eFuzzyRule[5] =  pRegHoldingWrap->pPidParameter.eFuzzyRule[1];
+	eFuzzyRule[6] =  pRegHoldingWrap->pPidParameter.eFuzzyRule[0];
 	
-	ecFuzzyRule[0] = -1*spid->ecFuzzyRule[0];
-	ecFuzzyRule[1] = -1*spid->ecFuzzyRule[1];
-	ecFuzzyRule[2] = -1*spid->ecFuzzyRule[2];
+	ecFuzzyRule[0] = -1*pRegHoldingWrap->pPidParameter.ecFuzzyRule[0];
+	ecFuzzyRule[1] = -1*pRegHoldingWrap->pPidParameter.ecFuzzyRule[1];
+	ecFuzzyRule[2] = -1*pRegHoldingWrap->pPidParameter.ecFuzzyRule[2];
 	ecFuzzyRule[3]=0;
-	ecFuzzyRule[4] =  spid->ecFuzzyRule[2];
-	ecFuzzyRule[5] =  spid->ecFuzzyRule[1];
-	ecFuzzyRule[6] =  spid->ecFuzzyRule[0];
+	ecFuzzyRule[4] =  pRegHoldingWrap->pPidParameter.ecFuzzyRule[2];
+	ecFuzzyRule[5] =  pRegHoldingWrap->pPidParameter.ecFuzzyRule[1];
+	ecFuzzyRule[6] =  pRegHoldingWrap->pPidParameter.ecFuzzyRule[0];
 }
 /*********************************************************** 
               PID控制动作函数
@@ -118,10 +117,10 @@ void PID_Start()
 { 
 	Inc_PID_Calc();
 	
-	if(PWM_Output >spid->PWM_MAX)
-		PWM_Output = spid->PWM_MAX; 
-	if(PWM_Output <spid->PWM_MIN)
-		PWM_Output = spid->PWM_MIN;  
+	if(PWM_Output >pRegHoldingWrap->pPidParameter.PWM_MAX)
+		PWM_Output = pRegHoldingWrap->pPidParameter.PWM_MAX; 
+	if(PWM_Output <pRegHoldingWrap->pPidParameter.PWM_MIN)
+		PWM_Output = pRegHoldingWrap->pPidParameter.PWM_MIN;  
 	
 	LoadPWM(PWM_Output);	
 }
@@ -144,12 +143,12 @@ void Inc_PID_Calc(void)
 	//当前误差
 	iError =  Voltage_Set_Point- NextPoint;
 	Fuzzy_Kpid(iError, iError-LastError) ;
-	if(myabs(iError)<spid->PID_DeadZone){
+	if(myabs(iError)<pRegHoldingWrap->pPidParameter.PID_DeadZone){
 	iIncpid = 0;
 	}else{//在中间
-		iIncpid = (spid->kpid[0]+Kpid_calcu[0]*spid->kpidF[0]) * (iError-LastError) //E[k]项
-						+ (spid->kpid[1]+Kpid_calcu[1]*spid->kpidF[1]) * iError //E[k－1]项
-						+ (spid->kpid[2]+Kpid_calcu[2]*spid->kpidF[2]) * (iError-2*LastError+PrevError); //E[k－2]项
+		iIncpid = (pRegHoldingWrap->pPidParameter.kpid[0]+Kpid_calcu[0]*pRegHoldingWrap->pPidParameter.kpidF[0]) * (iError-LastError) //E[k]项
+						+ (pRegHoldingWrap->pPidParameter.kpid[1]+Kpid_calcu[1]*pRegHoldingWrap->pPidParameter.kpidF[1]) * iError //E[k－1]项
+						+ (pRegHoldingWrap->pPidParameter.kpid[2]+Kpid_calcu[2]*pRegHoldingWrap->pPidParameter.kpidF[2]) * (iError-2*LastError+PrevError); //E[k－2]项
 						 						
 	}
 	//存储误差，用于下次计算
@@ -227,16 +226,16 @@ void Fuzzy_Kpid(int16_t e, int16_t ec)
 	for(KpidSelect=0;KpidSelect<3;KpidSelect++){
 		memset(deFuzzyFactor,0,7*sizeof(float));
 
-		num =sFuzzyCtrlRuleMap->data[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
+		num =pRegHoldingWrap->pFuzzyCtrlRuleMap.data[pec][pe][KpidSelect];   //主值 可取 NL,NM,LS...PS,PM,PL[0~6]	 	pec 行 pe 列		
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[0]; 
 
-		num =sFuzzyCtrlRuleMap->data[pec+1][pe][KpidSelect];   
+		num =pRegHoldingWrap->pFuzzyCtrlRuleMap.data[pec+1][pe][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[0]*ecFuzzy[1];  
 
-		num =sFuzzyCtrlRuleMap->data[pec][pe+1][KpidSelect];   
+		num =pRegHoldingWrap->pFuzzyCtrlRuleMap.data[pec][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[0]; 
 
-		num =sFuzzyCtrlRuleMap->data[pec+1][pe+1][KpidSelect];   
+		num =pRegHoldingWrap->pFuzzyCtrlRuleMap.data[pec+1][pe+1][KpidSelect];   
 		deFuzzyFactor[num] += eFuzzy[1]*ecFuzzy[1];  
 
 		/********加权平均法解模糊********///DefuzzyRuleMap = [-3,-2,-1,0,1,2,3]

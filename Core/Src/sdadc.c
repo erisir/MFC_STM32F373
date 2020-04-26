@@ -212,44 +212,44 @@ void VOL_IIR_Filter()
 	temp =sum_voltage.ch1>>ADCMeanWindowShift;
 	filter_voltage.ch1=(float)((((temp + 32767) * SDADC_VREF) / (SDADC_GAIN * SDADC_RESOL)));//raw
   
-	REG_INPUTsAddr->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
-	REG_INPUTsAddr->flowRealCh0 = (float)(REG_INPUTsAddr->flowRawCh0-REG_INPUTsAddr->flowOffsetCh0-GetTargetNullFlow())*(sCalibrate->tarGasConversionFactor/65536.0f);//target gas fited: read 
+	pRegInputWrap->flowRawCh0= VoltageToFlow(filter_voltage.ch0); //linear fited %
+	pRegInputWrap->flowRealCh0 = (float)(pRegInputWrap->flowRawCh0-pRegInputWrap->flowOffsetCh0-GetTargetNullFlow())*(pRegHoldingWrap->pCalibrate.tarGasConversionFactor/65536.0f);//target gas fited: read 
 	
 
 	//IIR fliter for ch0
-	float iErrorRate = (float)(REG_INPUTsAddr->flowRealCh0*50-REG_INPUTsAddr->voltageSetPoint)/5000;
+	float iErrorRate = (float)(pRegInputWrap->flowRealCh0*50-pRegInputWrap->voltageSetPoint)/5000;
 	
-	if((iErrorRate<0.003&&iErrorRate>-0.003)||((sValveCommand->valveCommand ==emValveClose)&&(REG_INPUTsAddr->flowRealCh0<0.02))){
-		REG_INPUTsAddr->flowIIRFilterCh0 = (float)(REG_INPUTsAddr->flowIIRFilterCh0 + VOL_IIR_FACTOR*(REG_INPUTsAddr->flowRealCh0 - REG_INPUTsAddr->flowIIRFilterCh0)); 
+	if((iErrorRate<0.003&&iErrorRate>-0.003)||((pRegHoldingWrap->pValveCommand.valveCommand ==emValveClose)&&(pRegInputWrap->flowRealCh0<0.02))){
+		pRegInputWrap->flowIIRFilterCh0 = (float)(pRegInputWrap->flowIIRFilterCh0 + VOL_IIR_FACTOR*(pRegInputWrap->flowRealCh0 - pRegInputWrap->flowIIRFilterCh0)); 
 	}else{
-		REG_INPUTsAddr->flowIIRFilterCh0 = REG_INPUTsAddr->flowRealCh0;
+		pRegInputWrap->flowIIRFilterCh0 = pRegInputWrap->flowRealCh0;
 	}
-	sZeroAndReadFlow->readFlow=FloatToUFRAC16(REG_INPUTsAddr->flowIIRFilterCh0/100);//digital read ported for Sevenstart
-	REG_INPUTsAddr->voltageCh0=sZeroAndReadFlow->readFlow;//modbus
+	pRegHoldingWrap->pZeroAndReadFlow.readFlow=FloatToUFRAC16(pRegInputWrap->flowIIRFilterCh0/100);//digital read ported for Sevenstart
+	pRegInputWrap->voltageCh0=pRegHoldingWrap->pZeroAndReadFlow.readFlow;//modbus
 	
 	AD5761_SetVoltage(FIRFilterResult2*50);// DAC output
 	 	
 	//IRR fliter for ch1,prepare external control signal
-	REG_INPUTsAddr->flowRawCh1=filter_voltage.ch1/50;// control flow 0-100% input voltage is stable,no need to filter
-	REG_INPUTsAddr->voltageCh1=FloatToUFRAC16(REG_INPUTsAddr->flowRawCh1/100);//control电压----来自流量检测的DAC输入,保存为UFRAT16 小数点格式
+	pRegInputWrap->flowRawCh1=filter_voltage.ch1/50;// control flow 0-100% input voltage is stable,no need to filter
+	pRegInputWrap->voltageCh1=FloatToUFRAC16(pRegInputWrap->flowRawCh1/100);//control电压----来自流量检测的DAC输入,保存为UFRAT16 小数点格式
 	
 	
 	//debug
-	REG_INPUTsAddr->pwmOut=PWM_Output;
+	pRegInputWrap->pwmOut=PWM_Output;
 }
 void ResetFlowAccumulator(void)
 {
-	sZeroAndReadFlow->accumulatorFlow=0;
+	pRegHoldingWrap->pZeroAndReadFlow.accumulatorFlow=0;
 }
 void FlowAccumulator(void)//1pass/sec
 {
 	if(GetAccumulatorStatu()==emAccumulatorRunning){
-		sZeroAndReadFlow->accumulatorFlow+=REG_INPUTsAddr->flowIIRFilterCh0*sCalibrate->targetGasFullScaleRange/6000;
+		pRegHoldingWrap->pZeroAndReadFlow.accumulatorFlow+=pRegInputWrap->flowIIRFilterCh0*pRegHoldingWrap->pCalibrate.targetGasFullScaleRange/6000;
 	}
 }
 void ResetFlowOffset(void)
 {
-	REG_INPUTsAddr->flowOffsetCh0 = REG_INPUTsAddr->flowRawCh0;
+	pRegInputWrap->flowOffsetCh0 = pRegInputWrap->flowRawCh0;
 }
 uint16_t GetADCVoltage(uint8_t ch)
 {

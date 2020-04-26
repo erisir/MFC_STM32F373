@@ -4,7 +4,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+///////////////////////all the type define goes here
 typedef enum{
 	emDigitalControl = 1,
 	emVoltageControl, 
@@ -25,18 +25,18 @@ typedef enum{
 	emAccumulatorRunning ,	
 }AccumulatorStatu;
 
-struct _LinearFittingValue {//6 int32s
+struct TLinearFittingValue {//6 int32s
 	uint16_t value[11];//0-100
 	uint16_t none;
 };
-struct _ControlMode {//1 int32s
+struct TControlMode {//1 int32s
 	uint16_t controlMode ;
 	uint16_t defaultCotrolMode;
 	uint16_t saveEEPROM;
-	uint16_t none;
+	uint16_t systemReset;
 };
 
-struct _SetPoint{//3 int32s
+struct TSetPoint{//3 int32s
 	uint16_t holdFollow;
 	uint16_t delay;
 	uint16_t digitalSetpoint;
@@ -46,7 +46,7 @@ struct _SetPoint{//3 int32s
 
 };
 
-struct _ZeroAndReadFlow{//4 int32s
+struct TZeroAndReadFlow{//4 int32s
 	uint16_t zeroStatus;
 	uint16_t accumulatorMode;
 	uint16_t readFlow;	
@@ -54,18 +54,18 @@ struct _ZeroAndReadFlow{//4 int32s
 	float accumulatorFlow;
 	uint32_t targetNullValue;//FIXED 16.16
 };
-struct _ValveCommand{//2 int32s
+struct TValveCommand{//2 int32s
 	uint16_t valveCommandMode;
 	uint16_t valveCommand;
 	uint16_t valveVoltage;
 	uint16_t valveType;
 };
 
-struct _WarningsAlarms{//1 int32s
+struct TWarningsAlarms{//1 int32s
 	uint16_t enableWarningsAlarms;
 	uint16_t  clearWarningsAlarms;
 };
-struct _Product{//6 int32s
+struct TProduct{//6 int32s
 	uint8_t firmwareRevision[8];//Text8
 	uint8_t PCBRevision[8];//Text8
 	uint8_t modelID[16];//Text16
@@ -77,7 +77,7 @@ struct _Product{//6 int32s
 	uint8_t productName[32];//Text32
 	uint8_t manufacturer[32];//Text32
 };
-struct _Calibrate{//6 int32s
+struct TCalibrate{//6 int32s
 	uint8_t targetGasName[32];//Text32
 	uint16_t targetGasCode;
 	uint16_t targetGasFullScaleRange;
@@ -89,12 +89,66 @@ struct _Calibrate{//6 int32s
 	uint32_t CalGasConversionFactor;//FIXED 16.16
 };
 
-struct _MacBaudrate{//2 int32s
+struct TMacBaudrate{//2 int32s
 	uint16_t RS485MacAddress;
 	uint16_t MBmode;
 	uint16_t baudrate;
 	uint16_t IRRCutoff;
 
+};
+struct TPidParameter{//11 int32s
+  uint16_t none;
+	uint16_t kpid[3]; // kp ki kd
+	uint16_t kpidF[3]; // kp ki kd factor	
+	uint16_t eFuzzyRule[3]; //  high middle low
+	uint16_t ecFuzzyRule[3]; //  high middle low
+ 	
+	uint16_t PID_Cutoff;
+	uint16_t PID_ControlCycle;
+	uint16_t PID_DeadZone;	
+
+	
+	uint32_t PWM_MAX;
+	uint32_t PWM_MIN;
+	uint32_t PWM_STEP;
+};
+
+struct TFuzzyCtrlRuleMap {//37 int32s
+	int8_t data[7][7][3];
+	int8_t none;
+};
+
+struct TRegInputWrap{
+	uint16_t voltageCh0;  
+	uint16_t voltageCh1; 
+	uint16_t voltageSetPoint;
+	int32_t pwmOut;
+	float flowRawCh0;//%
+	float flowRawCh1;//%
+	
+	float flowRealCh0;//%
+	float flowRealCh1;//%
+	
+	float flowIIRFilterCh0;
+	float flowIIRFilterCh1;
+	
+	float flowOffsetCh0;
+	float flowOffsetCh1;
+ 
+//22 int
+};
+struct TRegHoldingWrap{//75*2= 150 int16t
+	struct TPidParameter pPidParameter;//start address: 0
+	struct TFuzzyCtrlRuleMap pFuzzyCtrlRuleMap;//start address: 22
+	struct TLinearFittingValue pLinearFittingY;//start address: 96
+	struct TControlMode pControlMode;// 必须写成数组的形式天知道为神马108 16bits +12 
+	struct TSetPoint pSetPoint;
+	struct TZeroAndReadFlow pZeroAndReadFlow;
+	struct TValveCommand pValveCommand;
+	struct TWarningsAlarms pWarningsAlarms;
+	struct TProduct pProduct;
+	struct TCalibrate pCalibrate;
+	struct TMacBaudrate pMacBaudrate;	
 };
 
 void MFCInit(void);
@@ -111,7 +165,7 @@ void Valve_Close(void);
 void Valve_Open(void);
 
 
-float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFittingValue * yDict,uint16_t DictSize,float xInput);//电压层面的分段线性插值
+float piecewiselinearinterp(struct TLinearFittingValue * xDict,struct TLinearFittingValue * yDict,uint16_t DictSize,float xInput);//电压层面的分段线性插值
 float VoltageToFlow(float voltage);
 float FlowToVoltage(float flow);
 
@@ -131,16 +185,10 @@ uint8_t GetAccumulatorStatu(void);
 void StartSoftStartTimer(uint16_t Voltage_Set_PointLinearFit,float rateFSpsc);
 uint8_t GetSoftStartCounter(void);
 void SoftStartCountintDown(void);
-extern struct  _ControlMode*				sControlMode;
-extern struct  _SetPoint*					  sSetPoint ;
-extern struct  _ZeroAndReadFlow*		sZeroAndReadFlow ;
-extern struct	_ValveCommand*		 	  sValveCommand ;
-extern struct	_WarningsAlarms*			sWarningsAlarms ;
-extern struct	_Product*							sProduct ;
-extern struct	_Calibrate*						sCalibrate;
-extern struct	_Sensor*							sSensor ;
-extern struct	_MacBaudrate*					sMacBaudrate;
 
+
+extern struct TRegInputWrap * pRegInputWrap;
+extern struct TRegHoldingWrap * pRegHoldingWrap;
 #endif /*__ manager_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

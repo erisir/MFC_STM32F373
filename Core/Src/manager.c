@@ -19,20 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "manager.h"
-
-struct  _LinearFittingValue*  sLinearFittingX;
-struct  _LinearFittingValue*  sLinearFittingY;
-struct  _ControlMode*				  sControlMode;
-struct  _SetPoint*					  sSetPoint ;
-struct  _ZeroAndReadFlow*		  sZeroAndReadFlow ;
-struct	_ValveCommand*		 	  sValveCommand ;
-struct	_WarningsAlarms*			sWarningsAlarms ;
-struct	_Product*							sProduct ;
-struct	_Calibrate*						sCalibrate;
-struct	_Sensor*							sSensor ;
-struct	_MacBaudrate*					sMacBaudrate;
-		
- 
+	
 uint16_t data_x,data_y,data_z;
  
 uint8_t isRunning=0;
@@ -42,89 +29,79 @@ float  flow_Set_PointGasFit;
  
 uint16_t VirtAddVarTab[NB_OF_VARIABLES];//VirtAddVarTab
 uint16_t linearFittingX[]={0,10*50,20*50,30*50,40*50,50*50,60*50,70*50,80*50,90*50,100*50};
+struct TLinearFittingValue *sLinearFittingX = (struct TLinearFittingValue*)linearFittingX;
 uint8_t accumulatorStatu= 0;//0 stop,1 pause,2 running
 uint8_t softStartCounter=0;
 void MFCInit(void)
 {
-	spid  = (struct _PID *)REG__HOLDINGssAddr->PIDparam;
+	//fill holding register with default value before MB_Init();
 	PIDInit();
-	sFuzzyCtrlRuleMap = (struct _FuzzyCtrlRuleMap*)REG__HOLDINGssAddr->FuzzyCtrlRuleMap;
 	FuzzyCtrlRuleMapInit();
-	sLinearFittingX = (struct _LinearFittingValue*)linearFittingX;
-	sLinearFittingY = (struct _LinearFittingValue*)REG__HOLDINGssAddr->LinearFittingY;
-	sControlMode = (struct _ControlMode*)REG__HOLDINGssAddr->ControlMode;
-	sSetPoint = (struct _SetPoint*)REG__HOLDINGssAddr->SetPoint;
-	sZeroAndReadFlow = (struct _ZeroAndReadFlow*)REG__HOLDINGssAddr->ZeroAndReadFlow;
-	sValveCommand = (struct _ValveCommand*)REG__HOLDINGssAddr->ValveCommand;
-	sWarningsAlarms = (struct _WarningsAlarms*)REG__HOLDINGssAddr->WarningsAlarms;
-	sProduct = (struct _Product*)REG__HOLDINGssAddr->Product;
-	sCalibrate = (struct _Calibrate*)REG__HOLDINGssAddr->Calibrate;
-	sMacBaudrate = (struct _MacBaudrate*)REG__HOLDINGssAddr->MacBaudrate;
-	
-	sLinearFittingY->value[0] = 0;
-	sLinearFittingY->value[1] = 9.8*50;//500sccm
-	sLinearFittingY->value[2] = 19.8*50;
-	sLinearFittingY->value[3] = 29.8*50;
-	sLinearFittingY->value[4] = 40*50;
-	sLinearFittingY->value[5] = 50*50;
-	sLinearFittingY->value[6] = 60*50;
-	sLinearFittingY->value[7] = 70*50;
-	sLinearFittingY->value[8] = 80*50;
-	sLinearFittingY->value[9] = 90*50;
-	sLinearFittingY->value[10] = 100*50;
+
+	pRegHoldingWrap->pLinearFittingY.value[0] = 0;
+	pRegHoldingWrap->pLinearFittingY.value[1] = 9.8*50;//500sccm
+	pRegHoldingWrap->pLinearFittingY.value[2] = 19.8*50;
+	pRegHoldingWrap->pLinearFittingY.value[3] = 29.8*50;
+	pRegHoldingWrap->pLinearFittingY.value[4] = 40*50;
+	pRegHoldingWrap->pLinearFittingY.value[5] = 50*50;
+	pRegHoldingWrap->pLinearFittingY.value[6] = 60*50;
+	pRegHoldingWrap->pLinearFittingY.value[7] = 70*50;
+	pRegHoldingWrap->pLinearFittingY.value[8] = 80*50;
+	pRegHoldingWrap->pLinearFittingY.value[9] = 90*50;
+	pRegHoldingWrap->pLinearFittingY.value[10] = 100*50;
 	 
-	sControlMode->controlMode = emDigitalControl;
-	sControlMode->defaultCotrolMode=emDigitalControl;//default control mode on power on
-	sControlMode->saveEEPROM = 0;// dont save
+	pRegHoldingWrap->pControlMode.controlMode = emDigitalControl;
+	pRegHoldingWrap->pControlMode.defaultCotrolMode=emDigitalControl;//default control mode on power on
+	pRegHoldingWrap->pControlMode.saveEEPROM = 0;// dont save
 	
-	sSetPoint->activeSetpoint=FloatToUFRAC16(0.0);//UFRAC16 current setpoint by external voltage
-	sSetPoint->delay = 0;//no delay
-	sSetPoint->digitalSetpoint = FloatToUFRAC16(0.0);//UFRAC16feedback target, user setpoint, FS%
-	sSetPoint->holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
-	sSetPoint->shutoffLevel = FloatToUFRAC16(0.015);//UFRAC161.5%FS to shutoff UFRAC16
-	sSetPoint->softStartRate = FloatToUFRAC16(0);//UFRAC16 turn off softstart
+	pRegHoldingWrap->pSetPoint.activeSetpoint=FloatToUFRAC16(0.0);//UFRAC16 current setpoint by external voltage
+	pRegHoldingWrap->pSetPoint.delay = 0;//no delay
+	pRegHoldingWrap->pSetPoint.digitalSetpoint = FloatToUFRAC16(0.0);//UFRAC16feedback target, user setpoint, FS%
+	pRegHoldingWrap->pSetPoint.holdFollow = emFollowSetPoint;//HoldSetPoint action inmidiatly
+	pRegHoldingWrap->pSetPoint.shutoffLevel = FloatToUFRAC16(0.015);//UFRAC161.5%FS to shutoff UFRAC16
+	pRegHoldingWrap->pSetPoint.softStartRate = FloatToUFRAC16(0);//UFRAC16 turn off softstart
 	 
-	sZeroAndReadFlow->accumulatorFlow = 0;//float
-	sZeroAndReadFlow->accumulatorMode = 4;//0 restart,1:pause,3,resume,4,nomal continue flag
-	sZeroAndReadFlow->readFlow = 0;//UFRAC16
-	sZeroAndReadFlow->targetNullValue = 0;//custumer set zeropoint
-	sZeroAndReadFlow->zeroStatus = 0;//set current to zero in 1,need to change to 0
+	pRegHoldingWrap->pZeroAndReadFlow.accumulatorFlow = 0;//float
+	pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode = 4;//0 restart,1:pause,3,resume,4,nomal continue flag
+	pRegHoldingWrap->pZeroAndReadFlow.readFlow = 0;//UFRAC16
+	pRegHoldingWrap->pZeroAndReadFlow.targetNullValue = 0;//custumer set zeropoint
+	pRegHoldingWrap->pZeroAndReadFlow.zeroStatus = 0;//set current to zero in 1,need to change to 0
 	 
-	sValveCommand->valveCommand = emValveClose;// valve off,2 valve on,0,valve pid
-	sValveCommand->valveCommandMode=0;// not function
-	sValveCommand->valveType=0;// normal on type
-	sValveCommand->valveVoltage=0;// not function
+	pRegHoldingWrap->pValveCommand.valveCommand = emValveClose;// valve off,2 valve on,0,valve pid
+	pRegHoldingWrap->pValveCommand.valveCommandMode=0;// not function
+	pRegHoldingWrap->pValveCommand.valveType=0;// normal on type
+	pRegHoldingWrap->pValveCommand.valveVoltage=0;// not function
 	
-	sWarningsAlarms->clearWarningsAlarms=0;// not function
-	sWarningsAlarms->enableWarningsAlarms=0;// not function
+	pRegHoldingWrap->pWarningsAlarms.clearWarningsAlarms=0;// not function
+	pRegHoldingWrap->pWarningsAlarms.enableWarningsAlarms=0;// not function
 	 
 	
-	strcpy((char*)&sProduct->firmwareRevision,"01.01");
-	strcpy((char*)&sProduct->PCBRevision,"01.01");
-	strcpy((char*)&sProduct->modelID,"3687");
-	strcpy((char*)&sProduct->MFCSeiral,"255879");
-	strcpy((char*)&sProduct->manufacturingDate,"19/01/10");
-	strcpy((char*)&sProduct->calibrationDate,"19/01/10");
-	sProduct->productVersion=10;
-	strcpy((char*)&sProduct->productName,"MFCc51");
-	strcpy((char*)&sProduct->manufacturer,"Maice");
+	strcpy((char*)&pRegHoldingWrap->pProduct.firmwareRevision,"01.01");
+	strcpy((char*)&pRegHoldingWrap->pProduct.PCBRevision,"01.01");
+	strcpy((char*)&pRegHoldingWrap->pProduct.modelID,"3687");
+	strcpy((char*)&pRegHoldingWrap->pProduct.MFCSeiral,"255879");
+	strcpy((char*)&pRegHoldingWrap->pProduct.manufacturingDate,"19/01/10");
+	strcpy((char*)&pRegHoldingWrap->pProduct.calibrationDate,"19/01/10");
+	pRegHoldingWrap->pProduct.productVersion=10;
+	strcpy((char*)&pRegHoldingWrap->pProduct.productName,"MFCc51");
+	strcpy((char*)&pRegHoldingWrap->pProduct.manufacturer,"Maice");
 	
-	strcpy((char*)&sCalibrate->targetGasName,"N2");
-	sCalibrate->targetGasCode=13;
-	sCalibrate->targetGasFullScaleRange=500;
-	sCalibrate->tarGasConversionFactor=1*65536;//fix16.16
+	strcpy((char*)&pRegHoldingWrap->pCalibrate.targetGasName,"N2");
+	pRegHoldingWrap->pCalibrate.targetGasCode=13;
+	pRegHoldingWrap->pCalibrate.targetGasFullScaleRange=500;
+	pRegHoldingWrap->pCalibrate.tarGasConversionFactor=1*65536;//fix16.16
 	
-	strcpy((char*)&sCalibrate->CalibrationGasName,"N2");
-	sCalibrate->CalibrationGasCode=13;
-	sCalibrate->CalibrationGasFullScaleRange=500;
-	sCalibrate->CalGasConversionFactor=1*65536;//fix16.16
+	strcpy((char*)&pRegHoldingWrap->pCalibrate.CalibrationGasName,"N2");
+	pRegHoldingWrap->pCalibrate.CalibrationGasCode=13;
+	pRegHoldingWrap->pCalibrate.CalibrationGasFullScaleRange=500;
+	pRegHoldingWrap->pCalibrate.CalGasConversionFactor=1*65536;//fix16.16
 	
-	sMacBaudrate->RS485MacAddress=0x20;
-	sMacBaudrate->baudrate=9600;
-	sMacBaudrate->MBmode=0;//RTU
-	sMacBaudrate->IRRCutoff=5;
+	pRegHoldingWrap->pMacBaudrate.RS485MacAddress=0x20;
+	pRegHoldingWrap->pMacBaudrate.baudrate=9600;
+	pRegHoldingWrap->pMacBaudrate.MBmode=0;//RTU
+	pRegHoldingWrap->pMacBaudrate.IRRCutoff=5;
 	  
-	SetContrlResource(sControlMode->controlMode);
+	SetContrlResource(pRegHoldingWrap->pControlMode.controlMode);
 	accumulatorStatu = emAccumulatorRunning;
 	Valve_Close();
 }
@@ -145,14 +122,14 @@ void EEPROM_INIT(void)//
 	if(data_x != 290)
 	{
 		EE_WriteVariable16bits(VirtAddVarTab[290], 290);
-		EEPROM_SAVE();
+		EEPROM_SAVE();//app run in the first time,storage the default value to ROM
 	}else{
-		EEPROM_READ();
+		EEPROM_READ();//get the last save parameter from the ROM
 	}
 	HAL_FLASH_Lock();
 	
-	SetContrlResource(sControlMode->defaultCotrolMode);
-	sValveCommand->valveCommand = emValveClose;
+	SetContrlResource(pRegHoldingWrap->pControlMode.defaultCotrolMode);
+	pRegHoldingWrap->pValveCommand.valveCommand = emValveClose;
 	Valve_Close();
  
 }
@@ -163,64 +140,70 @@ uint8_t GetAccumulatorStatu()
 void HolddingRegDataChange(void)
 {
 	//accumulator change 0 restart,1:pause,3,resume,4,start continue flag
-	if(sZeroAndReadFlow->accumulatorMode ==0)//reset
+	if(pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode ==0)//reset
 	{	
-		sZeroAndReadFlow->accumulatorMode=3;
+		pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode=3;
 		ResetFlowAccumulator();	
 		accumulatorStatu = emAccumulatorRunning;
-	}else if(sZeroAndReadFlow->accumulatorMode ==1)//pause
+	}else if(pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode ==1)//pause
 	{
 		accumulatorStatu = emAccumulatorPause;
-	}else if(sZeroAndReadFlow->accumulatorMode ==3)//resume
+	}else if(pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode ==3)//resume
 	{
 		accumulatorStatu = emAccumulatorRunning;
 	}
 	
 	//contrlmode change
-	SetContrlResource(sControlMode->controlMode);
+	SetContrlResource(pRegHoldingWrap->pControlMode.controlMode);
 	//pid parameter change
 	FuzzyRuleInit();
 	//eeprom change
-	if(sControlMode->saveEEPROM ==1)
+	if(pRegHoldingWrap->pControlMode.saveEEPROM ==1)
 	{
-		sControlMode->saveEEPROM=0;
+		pRegHoldingWrap->pControlMode.saveEEPROM=0;
 		EEPROM_SAVE();
 	}
+	if(pRegHoldingWrap->pControlMode.systemReset ==1)
+	{
+		pRegHoldingWrap->pControlMode.systemReset=0;
+		NVIC_SystemReset();
+	}
+	
 	// valve mode change
-	if(sValveCommand->valveCommand ==emValveClose){
+	if(pRegHoldingWrap->pValveCommand.valveCommand ==emValveClose){
 		Valve_Close();
-	}else if(sValveCommand->valveCommand ==emValveOpen){
+	}else if(pRegHoldingWrap->pValveCommand.valveCommand ==emValveOpen){
 		if(accumulatorStatu == emAccumulatorRunning)
 			accumulatorStatu = emAccumulatorPauseByOpenValve;
 		Valve_Open();
-	}else if(sValveCommand->valveCommand ==emValvePID){
+	}else if(pRegHoldingWrap->pValveCommand.valveCommand ==emValvePID){
 		if(accumulatorStatu == emAccumulatorPauseByOpenValve)
 			accumulatorStatu = emAccumulatorRunning;
 	}
 	//zero change
-	if(sZeroAndReadFlow->zeroStatus ==1){
+	if(pRegHoldingWrap->pZeroAndReadFlow.zeroStatus ==1){
 		ResetFlowOffset();
-		sZeroAndReadFlow->zeroStatus =0;
+		pRegHoldingWrap->pZeroAndReadFlow.zeroStatus =0;
 	}
 	//digital setpoint change
 	if(*Voltage_Set_PointCur !=lastVoltage_Set_Point ){
-		if(sSetPoint->holdFollow ==emFollowSetPoint){
-			if(sSetPoint->delay<49 && sSetPoint->delay>1){
+		if(pRegHoldingWrap->pSetPoint.holdFollow ==emFollowSetPoint){
+			if(pRegHoldingWrap->pSetPoint.delay<49 && pRegHoldingWrap->pSetPoint.delay>1){
 				osDelay(100);
 			}else{
-				osDelay(sSetPoint->delay);
+				osDelay(pRegHoldingWrap->pSetPoint.delay);
 			}
 			lastVoltage_Set_Point = *Voltage_Set_PointCur ;
-			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(sCalibrate->tarGasConversionFactor/65536.0f);//设定的时候要除 %
-			if(flow_Set_PointGasFit<UFRAC16ToFloat(sSetPoint->shutoffLevel)*100){
-				sValveCommand->valveCommand =emValveClose;
+			flow_Set_PointGasFit =100*UFRAC16ToFloat(*Voltage_Set_PointCur)/(pRegHoldingWrap->pCalibrate.tarGasConversionFactor/65536.0f);//设定的时候要除 %
+			if(flow_Set_PointGasFit<UFRAC16ToFloat(pRegHoldingWrap->pSetPoint.shutoffLevel)*100){
+				pRegHoldingWrap->pValveCommand.valveCommand =emValveClose;
 				Valve_Close();
 			}else{	
 				Voltage_Set_PointLinearFit = FlowToVoltage(flow_Set_PointGasFit);
-				REG_INPUTsAddr->voltageSetPoint = Voltage_Set_PointLinearFit;
+				pRegInputWrap->voltageSetPoint = Voltage_Set_PointLinearFit;
 				
-				if(UFRAC16ToFloat(sSetPoint->softStartRate)>0 &&((Voltage_Set_PointLinearFit-GetADCVoltage(0))>50)){
-					StartSoftStartTimer(Voltage_Set_PointLinearFit,UFRAC16ToFloat(sSetPoint->softStartRate));
+				if(UFRAC16ToFloat(pRegHoldingWrap->pSetPoint.softStartRate)>0 &&((Voltage_Set_PointLinearFit-GetADCVoltage(0))>50)){
+					StartSoftStartTimer(Voltage_Set_PointLinearFit,UFRAC16ToFloat(pRegHoldingWrap->pSetPoint.softStartRate));
 				}else{
 				setVoltageSetPoint(Voltage_Set_PointLinearFit);
 				}
@@ -229,7 +212,7 @@ void HolddingRegDataChange(void)
 		}
 	}
 	//Calculate_FilteringCoefficient
-	Calculate_FilteringCoefficient(sMacBaudrate->IRRCutoff);
+	Calculate_FilteringCoefficient(pRegHoldingWrap->pMacBaudrate.IRRCutoff);
 
 }
 void StartSoftStartTimer(uint16_t Voltage_Set_PointLinearFit,float rateFSpsc)
@@ -248,7 +231,7 @@ void StartSoftStartTimer(uint16_t Voltage_Set_PointLinearFit,float rateFSpsc)
 void SoftStartCountintDown(void)
 {
 	//softStartCounter--;
-	uint16_t targetVoltage = GetADCVoltage(0)+UFRAC16ToFloat(sSetPoint->softStartRate)*5000;
+	uint16_t targetVoltage = GetADCVoltage(0)+UFRAC16ToFloat(pRegHoldingWrap->pSetPoint.softStartRate)*5000;
 	if(targetVoltage<Voltage_Set_PointLinearFit){
 	setVoltageSetPoint(targetVoltage);
 	}else{
@@ -277,21 +260,21 @@ void SetContrlResource(uint8_t mode)
 	  
 		switch(mode){
 		case 1:
-			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;//ufrat16
+			Voltage_Set_PointCur=&pRegHoldingWrap->pSetPoint.digitalSetpoint;//ufrat16
 					
 		break;
 		case 2:
-			Voltage_Set_PointCur = &REG_INPUTsAddr->voltageCh1;//ufrat16
+			Voltage_Set_PointCur = &pRegInputWrap->voltageCh1;//ufrat16
 		break;
 		
 		default:
-			Voltage_Set_PointCur=&sSetPoint->digitalSetpoint;//ufrat16
+			Voltage_Set_PointCur=&pRegHoldingWrap->pSetPoint.digitalSetpoint;//ufrat16
 		break;
 	}
 }
 void EEPROM_SAVE(void)	 
 {
-	uint16_t * pbuf = (uint16_t *)REG__HOLDINGssAddr;
+	uint16_t * pbuf = (uint16_t *)pRegHoldingWrap;
 	HAL_FLASH_Unlock();
 	
 	for(int i=0;i<S_REG_HOLDING_NREGS;i++){
@@ -301,16 +284,15 @@ void EEPROM_SAVE(void)
 }
 void EEPROM_READ(void)	// 
 {
-  uint16_t * pbuf = (uint16_t *)REG__HOLDINGssAddr;
+  uint16_t * pbuf = (uint16_t *)pRegHoldingWrap;
 	HAL_FLASH_Unlock();
 	for(int i=0;i<S_REG_HOLDING_NREGS;i++){
 		EE_ReadVariable16bits(VirtAddVarTab[i], pbuf++);
 	}
-  HAL_FLASH_Lock();
-	  
+  HAL_FLASH_Lock();  
 }
 
-float piecewiselinearinterp(struct _LinearFittingValue * xDict,struct _LinearFittingValue * yDict,uint16_t DictSize,float xInput)
+float piecewiselinearinterp(struct TLinearFittingValue * xDict,struct TLinearFittingValue * yDict,uint16_t DictSize,float xInput)
 {
  
 	uint16_t x1,x2,y1,y2,i=0;
@@ -338,11 +320,11 @@ return:0-100:  %
 */
 float VoltageToFlow(float voltage) 
 {
-	return piecewiselinearinterp(sLinearFittingY,sLinearFittingX,11,voltage)/50;
+	return piecewiselinearinterp(&pRegHoldingWrap->pLinearFittingY,sLinearFittingX,11,voltage)/50;
 }
 float FlowToVoltage(float flow)//real Target voltage cover to current MFC sensor Voltage
 {
-	return piecewiselinearinterp(sLinearFittingX,sLinearFittingY,11,flow*50);
+	return piecewiselinearinterp(sLinearFittingX,&pRegHoldingWrap->pLinearFittingY,11,flow*50);
 }
 float UFRAC16ToFloat(uint16_t ufrac16)
 {
@@ -354,7 +336,7 @@ uint16_t FloatToUFRAC16(float floatValue)
 }
 float GetTargetNullFlow(void)
 {
-	return sZeroAndReadFlow->targetNullValue/65536.0f;
+	return pRegHoldingWrap->pZeroAndReadFlow.targetNullValue/65536.0f;
 }
 void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 {
@@ -365,164 +347,164 @@ void SevenStarExecute(uint8_t * pucFrame, uint16_t *usLength)
 		case 0x69:// control mode & setpoint
 			switch (dataAttribute){
 				case 0x03:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sControlMode->controlMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pControlMode.controlMode,usLength,pucFrame);
 				break;
 				case 0x04:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sControlMode->defaultCotrolMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pControlMode.defaultCotrolMode,usLength,pucFrame);
 				break;
 				case 0x06:
-					sControlMode->saveEEPROM = pucFrame[7];
+					pRegHoldingWrap->pControlMode.saveEEPROM = pucFrame[7];
 				break;
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sSetPoint->holdFollow,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pSetPoint.holdFollow,usLength,pucFrame);
 				break;
 				case 0xA6:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->delay,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pSetPoint.delay,usLength,pucFrame);
 				break;
 				case 0xA4:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->digitalSetpoint,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pSetPoint.digitalSetpoint,usLength,pucFrame);
 				break;
 				case 0xA5:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->digitalSetpoint,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pSetPoint.digitalSetpoint,usLength,pucFrame);
 				break;				
 			}
 		break;
 		case 0x6A:// setpoint &valve cmd
 			switch (dataAttribute){
 				case 0xA4:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->softStartRate,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pSetPoint.softStartRate,usLength,pucFrame);
 				break;
 				case 0xA2:
-					saveSevenStarUINT16DataToMBHoldingReg(&sSetPoint->shutoffLevel,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pSetPoint.shutoffLevel,usLength,pucFrame);
 				break;
 				case 0xA1:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveCommandMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pValveCommand.valveCommandMode,usLength,pucFrame);
 				break;
 				case 0x01:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveCommand,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pValveCommand.valveCommand,usLength,pucFrame);
 				break;	
 				case 0x91:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveVoltage,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pValveCommand.valveVoltage,usLength,pucFrame);
 				break;	
 				case 0x9C:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sValveCommand->valveType,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pValveCommand.valveType,usLength,pucFrame);
 				break;					
 			}
 		break;
 		case 0x68:// zero
 			switch (dataAttribute){
 				case 0xBA:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sZeroAndReadFlow->zeroStatus,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pZeroAndReadFlow.zeroStatus,usLength,pucFrame);
 				break;
 				case 0xB9:
-					saveSevenStarUINT16DataToMBHoldingReg(&sZeroAndReadFlow->readFlow,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pZeroAndReadFlow.readFlow,usLength,pucFrame);
 				break;				 			
 			}
 		break;
 		case 0xA4:// Accumulator
 			switch (dataAttribute){
 				case 0x05:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sZeroAndReadFlow->accumulatorMode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pZeroAndReadFlow.accumulatorMode,usLength,pucFrame);
 				break;
 				case 0x03:
-					saveSevenStarUINT32DataToMBHoldingReg((uint32_t*)&sZeroAndReadFlow->accumulatorFlow,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg((uint32_t*)&pRegHoldingWrap->pZeroAndReadFlow.accumulatorFlow,usLength,pucFrame);
 				break;				 			
 			}
 			break;
 		case 0x65:// warning
 			switch (dataAttribute){
 				case 0xA2:
-					saveSevenStarUINT16DataToMBHoldingReg(&sWarningsAlarms->enableWarningsAlarms,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pWarningsAlarms.enableWarningsAlarms,usLength,pucFrame);
 				break;
 				case 0xA1:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sWarningsAlarms->clearWarningsAlarms,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pWarningsAlarms.clearWarningsAlarms,usLength,pucFrame);
 				break;	
 				case 0xA0:
-					//saveSevenStarUINT8DataToMBHoldingRegUINT16(&sWarningsAlarms->none,usLength,pucFrame);
+					//saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pWarningsAlarms.none,usLength,pucFrame);
 				break;					
 			}
 		break;
 		case 0x01:// Product
 			switch (dataAttribute){
 				case 0x07:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->productName,usLength,pucFrame,32);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.productName,usLength,pucFrame,32);
 				
 				break;
 				case 0x04:
-					saveSevenStarUINT16DataToMBHoldingReg(&sProduct->productVersion,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pProduct.productVersion,usLength,pucFrame);
 				break;					
 			}
 		break;
 	  case 0x64:// Product
 			switch (dataAttribute){
 				case 0x03:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->manufacturer,usLength,pucFrame,32);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.manufacturer,usLength,pucFrame,32);
 				break;
 				case 0x04:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->modelID,usLength,pucFrame,16);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.modelID,usLength,pucFrame,16);
 				break;	
 				case 0x05:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->firmwareRevision,usLength,pucFrame,8);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.firmwareRevision,usLength,pucFrame,8);
 				break;	
 				case 0x06:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->PCBRevision,usLength,pucFrame,8);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.PCBRevision,usLength,pucFrame,8);
 				break;	
 				case 0x07:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->MFCSeiral,usLength,pucFrame,16);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.MFCSeiral,usLength,pucFrame,16);
 				break;	
 				case 0x0a:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->manufacturingDate,usLength,pucFrame,16);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.manufacturingDate,usLength,pucFrame,16);
 				break;	
 				case 0x0c:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sProduct->calibrationDate,usLength,pucFrame,16);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pProduct.calibrationDate,usLength,pucFrame,16);
 				break;					
 			}
 		break;
 		case 0x66:// Calibrate
 			switch (dataAttribute){
 				case 0x01:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sCalibrate->targetGasName,usLength,pucFrame,32);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pCalibrate.targetGasName,usLength,pucFrame,32);
 				break;
 				case 0x02:
-					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasCode,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.targetGasCode,usLength,pucFrame);
 				break;	
 				case 0x03:
-					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->targetGasFullScaleRange,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.targetGasFullScaleRange,usLength,pucFrame);
 				break;	
 				case 0x04:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->tarGasConversionFactor,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.tarGasConversionFactor,usLength,pucFrame);
 				break;	
 				case 0x06:
-					saveSevenStarTEXTxDataToMBHoldingRegUINT8(sCalibrate->CalibrationGasName,usLength,pucFrame,32);
+					saveSevenStarTEXTxDataToMBHoldingRegUINT8(pRegHoldingWrap->pCalibrate.CalibrationGasName,usLength,pucFrame,32);
 				break;	
 				case 0x07:
-					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasCode,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.CalibrationGasCode,usLength,pucFrame);
 				break;	
 				case 0x08:
-					saveSevenStarUINT16DataToMBHoldingReg(&sCalibrate->CalibrationGasFullScaleRange,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.CalibrationGasFullScaleRange,usLength,pucFrame);
 				break;	
 				case 0x09:
-					saveSevenStarUINT32DataToMBHoldingReg(&sCalibrate->CalGasConversionFactor,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg(&pRegHoldingWrap->pCalibrate.CalGasConversionFactor,usLength,pucFrame);
 				break;					
 			}
 		break;
 		case 0xA1:// Calibrate
 			switch (dataAttribute){
 				case 0x07:
-					saveSevenStarUINT32DataToMBHoldingReg(&sZeroAndReadFlow->targetNullValue,usLength,pucFrame);
+					saveSevenStarUINT32DataToMBHoldingReg(&pRegHoldingWrap->pZeroAndReadFlow.targetNullValue,usLength,pucFrame);
 				break;
 			}
 		break;
 		case 0x03:// Calibrate
 			switch (dataAttribute){
 				case 0x01:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sMacBaudrate->RS485MacAddress,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pMacBaudrate.RS485MacAddress,usLength,pucFrame);
 				break;
 				case 0x02:
-					saveSevenStarUINT16DataToMBHoldingReg(&sMacBaudrate->baudrate,usLength,pucFrame);
+					saveSevenStarUINT16DataToMBHoldingReg(&pRegHoldingWrap->pMacBaudrate.baudrate,usLength,pucFrame);
 				break;
 				case 0x03:
-					saveSevenStarUINT8DataToMBHoldingRegUINT16(&sMacBaudrate->MBmode,usLength,pucFrame);
+					saveSevenStarUINT8DataToMBHoldingRegUINT16(&pRegHoldingWrap->pMacBaudrate.MBmode,usLength,pucFrame);
 				break;
 			}
 		break;

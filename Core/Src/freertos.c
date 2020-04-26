@@ -215,9 +215,9 @@ void StartPID(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		if(emValvePID == sValveCommand->valveCommand){// 1 valve off,2 valve on,0,valve pid
+		if(emValvePID == pRegHoldingWrap->pValveCommand.valveCommand){// 1 valve off,2 valve on,0,valve pid
 			PID_Start();
-			osDelay(spid->PID_ControlCycle);
+			osDelay(pRegHoldingWrap->pPidParameter.PID_ControlCycle);
 		}else{
 			osDelay(100);
 		}
